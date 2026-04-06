@@ -12,6 +12,8 @@ type AuthUser = {
   name: string;
   email: string;
   role: UserRole;
+  phone?: string;
+  address?: string;
 };
 
 type DemoAccount = AuthUser & {
@@ -24,6 +26,7 @@ type AuthContextValue = {
   isAuthenticated: boolean;
   login: (email: string, password: string) => { success: boolean; redirectTo?: string; message?: string };
   logout: () => void;
+  updateProfile: (profile: Partial<Pick<AuthUser, "name" | "email" | "phone" | "address">>) => void;
 };
 
 const STORAGE_KEY = "smallshop-auth-user";
@@ -32,6 +35,8 @@ export const demoAccounts: DemoAccount[] = [
   {
     name: "Demo Customer",
     email: "customer@smallshop.com",
+    phone: "+880171400001",
+    address: "Banani, Dhaka",
     password: "demo123",
     role: "customer",
     redirectTo: "/",
@@ -39,6 +44,8 @@ export const demoAccounts: DemoAccount[] = [
   {
     name: "Demo Provider",
     email: "provider@smallshop.com",
+    phone: "+880171400002",
+    address: "Gulshan, Dhaka",
     password: "demo123",
     role: "provider",
     redirectTo: "/provider/dashboard",
@@ -46,6 +53,8 @@ export const demoAccounts: DemoAccount[] = [
   {
     name: "Demo Admin",
     email: "admin@smallshop.com",
+    phone: "+880171400003",
+    address: "Mohakhali, Dhaka",
     password: "demo123",
     role: "admin",
     redirectTo: "/admin/dashboard",
@@ -53,6 +62,8 @@ export const demoAccounts: DemoAccount[] = [
   {
     name: "Demo Super Admin",
     email: "superadmin@smallshop.com",
+    phone: "+880171400004",
+    address: "Dhanmondi, Dhaka",
     password: "demo123",
     role: "super-admin",
     redirectTo: "/super-admin/dashboard",
@@ -102,6 +113,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       name: account.name,
       email: account.email,
       role: account.role,
+      phone: account.phone,
+      address: account.address,
     };
 
     setUser(nextUser);
@@ -116,6 +129,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
   };
 
+  const updateProfile = (
+    profile: Partial<Pick<AuthUser, "name" | "email" | "phone" | "address">>,
+  ) => {
+    setUser((current) => (current ? { ...current, ...profile } : current));
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -123,6 +142,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         isAuthenticated: Boolean(user),
         login,
         logout,
+        updateProfile,
       }}
     >
       {children}

@@ -27,7 +27,7 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
         ? "/admin/dashboard"
         : user?.role === "super-admin"
           ? "/super-admin/dashboard"
-          : "/";
+          : "/account/settings";
 
   return (
     <div className="min-h-screen flex flex-col">
