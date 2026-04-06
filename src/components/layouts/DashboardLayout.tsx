@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/AuthContext";
 import {
   LayoutDashboard, Package, ShoppingCart, Users, BarChart3,
   Settings, ChevronLeft, Menu, Store, FileText, CreditCard,
@@ -57,11 +58,17 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, role }) => 
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const items = menuItems[role] || [];
+
+  const handleLogout = () => {
+    logout();
+    navigate("/", { replace: true });
+  };
 
   return (
     <div className="flex h-screen overflow-hidden bg-secondary/30">
-      {/* Mobile overlay */}
       {mobileOpen && (
         <div
           className="fixed inset-0 z-40 bg-foreground/50 lg:hidden"
@@ -69,7 +76,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, role }) => 
         />
       )}
 
-      {/* Sidebar */}
       <aside
         className={cn(
           "fixed inset-y-0 left-0 z-50 flex flex-col bg-sidebar text-sidebar-foreground transition-all duration-300 lg:relative",
@@ -77,7 +83,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, role }) => 
           mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
-        {/* Logo area */}
         <div className="flex h-16 items-center justify-between border-b border-sidebar-border px-4">
           {!collapsed && (
             <Link to="/" className="flex items-center gap-2">
@@ -98,7 +103,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, role }) => 
           </button>
         </div>
 
-        {/* Nav items */}
         <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
           {items.map((item) => {
             const isActive = location.pathname === item.path;
@@ -121,7 +125,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, role }) => 
           })}
         </nav>
 
-        {/* Bottom section */}
         <div className="border-t border-sidebar-border p-3">
           <button
             onClick={() => setCollapsed(!collapsed)}
@@ -134,15 +137,20 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, role }) => 
             to="/"
             className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors mt-1"
           >
-            <LogOut className="h-5 w-5 shrink-0" />
+            <Store className="h-5 w-5 shrink-0" />
             {!collapsed && <span>Back to Store</span>}
           </Link>
+          <button
+            onClick={handleLogout}
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors mt-1"
+          >
+            <LogOut className="h-5 w-5 shrink-0" />
+            {!collapsed && <span>Logout</span>}
+          </button>
         </div>
       </aside>
 
-      {/* Main content */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Top bar */}
         <header className="flex h-16 items-center gap-4 border-b bg-card px-4 lg:px-6">
           <button
             onClick={() => setMobileOpen(true)}
@@ -153,12 +161,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, role }) => 
           <div className="flex-1" />
           <div className="flex items-center gap-3">
             <div className="h-8 w-8 rounded-full gradient-primary flex items-center justify-center text-primary-foreground text-xs font-bold">
-              A
+              {user?.name?.charAt(0).toUpperCase() || "U"}
             </div>
           </div>
         </header>
 
-        {/* Page content */}
         <main className="flex-1 overflow-y-auto p-4 lg:p-6">
           {children}
         </main>

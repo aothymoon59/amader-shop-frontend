@@ -1,5 +1,6 @@
 import type { RouteObject } from "react-router-dom";
 
+import ProtectedRoute from "../components/auth/ProtectedRoute";
 import ProviderApply from "../pages/provider/ProviderApply";
 import ProviderDashboard from "../pages/provider/ProviderDashboard";
 import ProviderOrders from "../pages/provider/ProviderOrders";
@@ -16,30 +17,30 @@ export const providerRoutes: RouteObject[] = [
   },
   {
     path: "provider/dashboard",
-    element: <ProviderDashboard />,
+    element: <ProtectedRoute allowedRoles={["provider"]}><ProviderDashboard /></ProtectedRoute>,
   },
   {
     path: "provider/products",
-    element: <ProviderProducts />,
+    element: <ProtectedRoute allowedRoles={["provider"]}><ProviderProducts /></ProtectedRoute>,
   },
   {
     path: "provider/orders",
-    element: <ProviderOrders />,
+    element: <ProtectedRoute allowedRoles={["provider"]}><ProviderOrders /></ProtectedRoute>,
   },
   {
     path: "provider/pos",
-    element: <ProviderPOS />,
+    element: <ProtectedRoute allowedRoles={["provider"]}><ProviderPOS /></ProtectedRoute>,
   },
   {
     path: "provider/receipts",
-    element: <ProviderReceipts />,
+    element: <ProtectedRoute allowedRoles={["provider"]}><ProviderReceipts /></ProtectedRoute>,
   },
   {
     path: "provider/reports",
-    element: <ProviderReports />,
+    element: <ProtectedRoute allowedRoles={["provider"]}><ProviderReports /></ProtectedRoute>,
   },
   {
     path: "provider/settings",
-    element: <ProviderSettings />,
+    element: <ProtectedRoute allowedRoles={["provider"]}><ProviderSettings /></ProtectedRoute>,
   },
 ];

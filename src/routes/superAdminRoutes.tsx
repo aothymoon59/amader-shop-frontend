@@ -1,5 +1,6 @@
 import type { RouteObject } from "react-router-dom";
 
+import ProtectedRoute from "../components/auth/ProtectedRoute";
 import SuperAdminAdmins from "../pages/super-admin/SuperAdminAdmins";
 import SuperAdminAnalytics from "../pages/super-admin/SuperAdminAnalytics";
 import SuperAdminDashboard from "../pages/super-admin/SuperAdminDashboard";
@@ -9,22 +10,22 @@ import SuperAdminSettings from "../pages/super-admin/SuperAdminSettings";
 export const superAdminRoutes: RouteObject[] = [
   {
     path: "super-admin/dashboard",
-    element: <SuperAdminDashboard />,
+    element: <ProtectedRoute allowedRoles={["super-admin"]}><SuperAdminDashboard /></ProtectedRoute>,
   },
   {
     path: "super-admin/admins",
-    element: <SuperAdminAdmins />,
+    element: <ProtectedRoute allowedRoles={["super-admin"]}><SuperAdminAdmins /></ProtectedRoute>,
   },
   {
     path: "super-admin/providers",
-    element: <SuperAdminProviders />,
+    element: <ProtectedRoute allowedRoles={["super-admin"]}><SuperAdminProviders /></ProtectedRoute>,
   },
   {
     path: "super-admin/analytics",
-    element: <SuperAdminAnalytics />,
+    element: <ProtectedRoute allowedRoles={["super-admin"]}><SuperAdminAnalytics /></ProtectedRoute>,
   },
   {
     path: "super-admin/settings",
-    element: <SuperAdminSettings />,
+    element: <ProtectedRoute allowedRoles={["super-admin"]}><SuperAdminSettings /></ProtectedRoute>,
   },
 ];

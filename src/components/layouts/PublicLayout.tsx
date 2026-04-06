@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Store, ShoppingCart, Menu, X } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { useCart } from "@/context/CartContext";
 
 const navLinks = [
   { title: "Home", path: "/" },
@@ -15,10 +17,20 @@ const navLinks = [
 const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [mobileNav, setMobileNav] = useState(false);
   const location = useLocation();
+  const { itemCount } = useCart();
+  const { user, isAuthenticated, logout } = useAuth();
+
+  const dashboardPath =
+    user?.role === "provider"
+      ? "/provider/dashboard"
+      : user?.role === "admin"
+        ? "/admin/dashboard"
+        : user?.role === "super-admin"
+          ? "/super-admin/dashboard"
+          : "/";
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Navbar */}
       <header className="sticky top-0 z-50 border-b bg-card/80 backdrop-blur-md">
         <div className="container flex h-16 items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
@@ -26,7 +38,6 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
             <span className="text-xl font-bold text-foreground">SmallShop</span>
           </Link>
 
-          {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-6">
             {navLinks.map((link) => (
               <Link
@@ -34,9 +45,7 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                 to={link.path}
                 className={cn(
                   "text-sm font-medium transition-colors hover:text-primary",
-                  location.pathname === link.path
-                    ? "text-primary"
-                    : "text-muted-foreground"
+                  location.pathname === link.path ? "text-primary" : "text-muted-foreground",
                 )}
               >
                 {link.title}
@@ -45,26 +54,40 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
           </nav>
 
           <div className="hidden md:flex items-center gap-3">
-            <Link to="/cart">
+            <Link to="/cart" className="relative">
               <Button variant="ghost" size="icon">
                 <ShoppingCart className="h-5 w-5" />
               </Button>
+              {itemCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-primary text-primary-foreground text-[11px] flex items-center justify-center font-semibold">
+                  {itemCount}
+                </span>
+              )}
             </Link>
-            <Link to="/login">
-              <Button variant="outline" size="sm">Login</Button>
-            </Link>
-            <Link to="/register">
-              <Button variant="hero" size="sm">Sign Up</Button>
-            </Link>
+            {isAuthenticated ? (
+              <>
+                <Link to={dashboardPath}>
+                  <Button variant="outline" size="sm">{user?.role === "customer" ? "My Account" : "Dashboard"}</Button>
+                </Link>
+                <Button variant="hero" size="sm" onClick={logout}>Logout</Button>
+              </>
+            ) : (
+              <>
+                <Link to="/login">
+                  <Button variant="outline" size="sm">Login</Button>
+                </Link>
+                <Link to="/register">
+                  <Button variant="hero" size="sm">Sign Up</Button>
+                </Link>
+              </>
+            )}
           </div>
 
-          {/* Mobile toggle */}
           <button className="md:hidden text-foreground" onClick={() => setMobileNav(!mobileNav)}>
             {mobileNav ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
 
-        {/* Mobile nav */}
         {mobileNav && (
           <div className="md:hidden border-t bg-card animate-fade-in">
             <div className="container py-4 space-y-3">
@@ -75,29 +98,46 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                   onClick={() => setMobileNav(false)}
                   className={cn(
                     "block text-sm font-medium py-2",
-                    location.pathname === link.path ? "text-primary" : "text-muted-foreground"
+                    location.pathname === link.path ? "text-primary" : "text-muted-foreground",
                   )}
                 >
                   {link.title}
                 </Link>
               ))}
-              <div className="flex gap-2 pt-2">
-                <Link to="/login" className="flex-1">
-                  <Button variant="outline" className="w-full" size="sm">Login</Button>
-                </Link>
-                <Link to="/register" className="flex-1">
-                  <Button variant="hero" className="w-full" size="sm">Sign Up</Button>
-                </Link>
-              </div>
+              <Link
+                to="/cart"
+                onClick={() => setMobileNav(false)}
+                className={cn(
+                  "block text-sm font-medium py-2",
+                  location.pathname === "/cart" ? "text-primary" : "text-muted-foreground",
+                )}
+              >
+                Cart ({itemCount})
+              </Link>
+              {isAuthenticated ? (
+                <div className="flex gap-2 pt-2">
+                  <Link to={dashboardPath} className="flex-1" onClick={() => setMobileNav(false)}>
+                    <Button variant="outline" className="w-full" size="sm">{user?.role === "customer" ? "My Account" : "Dashboard"}</Button>
+                  </Link>
+                  <Button variant="hero" className="flex-1" size="sm" onClick={() => { logout(); setMobileNav(false); }}>Logout</Button>
+                </div>
+              ) : (
+                <div className="flex gap-2 pt-2">
+                  <Link to="/login" className="flex-1">
+                    <Button variant="outline" className="w-full" size="sm">Login</Button>
+                  </Link>
+                  <Link to="/register" className="flex-1">
+                    <Button variant="hero" className="w-full" size="sm">Sign Up</Button>
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         )}
       </header>
 
-      {/* Page content */}
       <main className="flex-1">{children}</main>
 
-      {/* Footer */}
       <footer className="border-t bg-card py-12">
         <div className="container grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
@@ -133,7 +173,7 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
           </div>
         </div>
         <div className="container mt-8 pt-8 border-t text-center text-sm text-muted-foreground">
-          © 2026 SmallShop. All rights reserved.
+          Copyright 2026 SmallShop. All rights reserved.
         </div>
       </footer>
     </div>
