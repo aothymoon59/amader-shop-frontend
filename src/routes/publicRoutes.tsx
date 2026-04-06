@@ -1,12 +1,12 @@
 import type { RouteObject } from "react-router-dom";
 
 import About from "../pages/About";
-import Cart from "../pages/Cart";
-import Checkout from "../pages/Checkout";
 import Contact from "../pages/Contact";
 import Index from "../pages/Index";
-import ProductDetail from "../pages/ProductDetail";
 import Products from "../pages/Products";
+import CartPage from "../pages/shop/CartPage";
+import CheckoutPage from "../pages/shop/CheckoutPage";
+import ProductDetailPage from "../pages/shop/ProductDetailPage";
 
 export const publicRoutes: RouteObject[] = [
   {
@@ -19,15 +19,15 @@ export const publicRoutes: RouteObject[] = [
   },
   {
     path: "products/:id",
-    element: <ProductDetail />,
+    element: <ProductDetailPage />,
   },
   {
     path: "cart",
-    element: <Cart />,
+    element: <CartPage />,
   },
   {
     path: "checkout",
-    element: <Checkout />,
+    element: <CheckoutPage />,
   },
   {
     path: "about",
