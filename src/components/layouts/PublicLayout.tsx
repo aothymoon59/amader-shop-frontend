@@ -155,6 +155,8 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
               <Link to="/products" className="block hover:text-primary">Products</Link>
               <Link to="/about" className="block hover:text-primary">About Us</Link>
               <Link to="/contact" className="block hover:text-primary">Contact</Link>
+              <Link to="/terms" className="block hover:text-primary">Terms</Link>
+              <Link to="/privacy" className="block hover:text-primary">Privacy</Link>
             </div>
           </div>
           <div>

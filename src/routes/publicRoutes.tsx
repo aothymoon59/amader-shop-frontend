@@ -4,6 +4,7 @@ import ProtectedRoute from "../components/auth/ProtectedRoute";
 import AccountSettings from "../pages/AccountSettings";
 import About from "../pages/About";
 import Contact from "../pages/Contact";
+import CmsContentPage from "../pages/CmsContentPage";
 import Index from "../pages/Index";
 import OrderHistory from "../pages/OrderHistory";
 import PaymentHistory from "../pages/PaymentHistory";
@@ -40,6 +41,14 @@ export const publicRoutes: RouteObject[] = [
   {
     path: "contact",
     element: <Contact />,
+  },
+  {
+    path: "terms",
+    element: <CmsContentPage slug="terms" />,
+  },
+  {
+    path: "privacy",
+    element: <CmsContentPage slug="privacy" />,
   },
   {
     path: "account/settings",
