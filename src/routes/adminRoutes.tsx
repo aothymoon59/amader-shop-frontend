@@ -1,5 +1,7 @@
 import type { RouteObject } from "react-router-dom";
 
+import ProtectedRoute from "../components/auth/ProtectedRoute";
+import AdminAuditLog from "../pages/admin/AdminAuditLog";
 import AdminCMS from "../pages/admin/AdminCMS";
 import AdminCustomers from "../pages/admin/AdminCustomers";
 import AdminDashboard from "../pages/admin/AdminDashboard";
@@ -12,34 +14,38 @@ import AdminSettings from "../pages/admin/AdminSettings";
 export const adminRoutes: RouteObject[] = [
   {
     path: "admin/dashboard",
-    element: <AdminDashboard />,
+    element: <ProtectedRoute allowedRoles={["admin"]}><AdminDashboard /></ProtectedRoute>,
   },
   {
     path: "admin/products",
-    element: <AdminProducts />,
+    element: <ProtectedRoute allowedRoles={["admin"]}><AdminProducts /></ProtectedRoute>,
   },
   {
     path: "admin/orders",
-    element: <AdminOrders />,
+    element: <ProtectedRoute allowedRoles={["admin"]}><AdminOrders /></ProtectedRoute>,
   },
   {
     path: "admin/providers",
-    element: <AdminProviders />,
+    element: <ProtectedRoute allowedRoles={["admin"]}><AdminProviders /></ProtectedRoute>,
   },
   {
     path: "admin/customers",
-    element: <AdminCustomers />,
+    element: <ProtectedRoute allowedRoles={["admin"]}><AdminCustomers /></ProtectedRoute>,
   },
   {
     path: "admin/reports",
-    element: <AdminReports />,
+    element: <ProtectedRoute allowedRoles={["admin"]}><AdminReports /></ProtectedRoute>,
   },
   {
     path: "admin/cms",
-    element: <AdminCMS />,
+    element: <ProtectedRoute allowedRoles={["admin"]}><AdminCMS /></ProtectedRoute>,
   },
   {
     path: "admin/settings",
-    element: <AdminSettings />,
+    element: <ProtectedRoute allowedRoles={["admin"]}><AdminSettings /></ProtectedRoute>,
+  },
+  {
+    path: "admin/audit-log",
+    element: <ProtectedRoute allowedRoles={["admin"]}><AdminAuditLog /></ProtectedRoute>,
   },
 ];
