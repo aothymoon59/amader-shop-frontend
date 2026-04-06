@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { CheckCircle, Plus, XCircle } from "lucide-react";
+import { CheckCircle, Eye, Plus, XCircle } from "lucide-react";
 
 import DashboardLayout from "@/components/layouts/DashboardLayout";
+import ProviderDetailsDialog from "@/components/providers/ProviderDetailsDialog";
 import ProviderFormDialog, { type ProviderFormValues } from "@/components/providers/ProviderFormDialog";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
@@ -27,6 +28,7 @@ const initialProviders: SuperAdminProviderRecord[] = [
 const SuperAdminProviders = () => {
   const [providers, setProviders] = useState(initialProviders);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedProvider, setSelectedProvider] = useState<SuperAdminProviderRecord | null>(null);
 
   const handleSubmit = (values: ProviderFormValues) => {
     if (
@@ -86,7 +88,7 @@ const SuperAdminProviders = () => {
           <div>
             <h1 className="text-2xl font-bold">Provider Approvals</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Super admin can approve applications or manually create providers from this screen.
+              Super admin can approve applications, inspect provider details, or manually create providers from this screen.
             </p>
           </div>
           <Button variant="hero" onClick={() => setDialogOpen(true)}>
@@ -107,14 +109,18 @@ const SuperAdminProviders = () => {
               </div>
               {provider.status === "pending" ? (
                 <div className="flex gap-2">
+                  <Button size="sm" variant="outline" onClick={() => setSelectedProvider(provider)}><Eye className="mr-1 h-4 w-4" /> View Details</Button>
                   <Button size="sm" variant="accent" onClick={() => updateStatus(provider.id, "approved")}><CheckCircle className="mr-1 h-4 w-4" /> Approve</Button>
                   <Button size="sm" variant="destructive" onClick={() => updateStatus(provider.id, "rejected")}><XCircle className="mr-1 h-4 w-4" /> Reject</Button>
                 </div>
               ) : (
-                <span className={`text-sm font-medium flex items-center gap-1 ${provider.status === "approved" ? "text-success" : "text-destructive"}`}>
-                  {provider.status === "approved" ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-                  {provider.status === "approved" ? "Approved" : "Rejected"}
-                </span>
+                <div className="flex items-center gap-3">
+                  <Button size="sm" variant="outline" onClick={() => setSelectedProvider(provider)}><Eye className="mr-1 h-4 w-4" /> View Details</Button>
+                  <span className={`text-sm font-medium flex items-center gap-1 ${provider.status === "approved" ? "text-success" : "text-destructive"}`}>
+                    {provider.status === "approved" ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
+                    {provider.status === "approved" ? "Approved" : "Rejected"}
+                  </span>
+                </div>
               )}
             </div>
           ))}
@@ -127,6 +133,11 @@ const SuperAdminProviders = () => {
         title="Add Provider"
         description="Create a provider manually with onboarding details and approval status."
         onSubmit={handleSubmit}
+      />
+      <ProviderDetailsDialog
+        open={Boolean(selectedProvider)}
+        onOpenChange={(open) => !open && setSelectedProvider(null)}
+        provider={selectedProvider}
       />
     </DashboardLayout>
   );
