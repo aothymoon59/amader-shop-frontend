@@ -4,6 +4,7 @@ import ProtectedRoute from "../components/auth/ProtectedRoute";
 import SuperAdminAdmins from "../pages/super-admin/SuperAdminAdmins";
 import SuperAdminAuditLog from "../pages/super-admin/SuperAdminAuditLog";
 import SuperAdminAnalytics from "../pages/super-admin/SuperAdminAnalytics";
+import SuperAdminCMS from "../pages/super-admin/SuperAdminCMS";
 import SuperAdminDashboard from "../pages/super-admin/SuperAdminDashboard";
 import SuperAdminProviders from "../pages/super-admin/SuperAdminProviders";
 import SuperAdminSettings from "../pages/super-admin/SuperAdminSettings";
@@ -32,5 +33,9 @@ export const superAdminRoutes: RouteObject[] = [
   {
     path: "super-admin/audit-log",
     element: <ProtectedRoute allowedRoles={["super-admin"]}><SuperAdminAuditLog /></ProtectedRoute>,
+  },
+  {
+    path: "super-admin/cms",
+    element: <ProtectedRoute allowedRoles={["super-admin"]}><SuperAdminCMS /></ProtectedRoute>,
   },
 ];
