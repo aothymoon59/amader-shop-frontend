@@ -1,5 +1,7 @@
+import { Link } from "react-router-dom";
 import PublicLayout from "@/components/layouts/PublicLayout";
 import ProfileSettingsSection from "@/components/settings/ProfileSettingsSection";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 
 const AccountSettings = () => {
@@ -13,6 +15,14 @@ const AccountSettings = () => {
           <p className="text-muted-foreground mt-2">
             Manage your personal profile settings{user?.role ? ` as ${user.role}` : ""}.
           </p>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <Link to="/account/orders">
+            <Button variant="outline">Order History</Button>
+          </Link>
+          <Link to="/account/payments">
+            <Button variant="outline">Payment History</Button>
+          </Link>
         </div>
         <ProfileSettingsSection title="Customer Profile" />
       </div>

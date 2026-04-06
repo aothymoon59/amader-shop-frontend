@@ -1,6 +1,7 @@
 import type { RouteObject } from "react-router-dom";
 
 import ProtectedRoute from "../components/auth/ProtectedRoute";
+import AdminAuditLog from "../pages/admin/AdminAuditLog";
 import AdminCMS from "../pages/admin/AdminCMS";
 import AdminCustomers from "../pages/admin/AdminCustomers";
 import AdminDashboard from "../pages/admin/AdminDashboard";
@@ -42,5 +43,9 @@ export const adminRoutes: RouteObject[] = [
   {
     path: "admin/settings",
     element: <ProtectedRoute allowedRoles={["admin"]}><AdminSettings /></ProtectedRoute>,
+  },
+  {
+    path: "admin/audit-log",
+    element: <ProtectedRoute allowedRoles={["admin"]}><AdminAuditLog /></ProtectedRoute>,
   },
 ];

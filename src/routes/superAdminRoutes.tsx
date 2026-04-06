@@ -2,6 +2,7 @@ import type { RouteObject } from "react-router-dom";
 
 import ProtectedRoute from "../components/auth/ProtectedRoute";
 import SuperAdminAdmins from "../pages/super-admin/SuperAdminAdmins";
+import SuperAdminAuditLog from "../pages/super-admin/SuperAdminAuditLog";
 import SuperAdminAnalytics from "../pages/super-admin/SuperAdminAnalytics";
 import SuperAdminDashboard from "../pages/super-admin/SuperAdminDashboard";
 import SuperAdminProviders from "../pages/super-admin/SuperAdminProviders";
@@ -27,5 +28,9 @@ export const superAdminRoutes: RouteObject[] = [
   {
     path: "super-admin/settings",
     element: <ProtectedRoute allowedRoles={["super-admin"]}><SuperAdminSettings /></ProtectedRoute>,
+  },
+  {
+    path: "super-admin/audit-log",
+    element: <ProtectedRoute allowedRoles={["super-admin"]}><SuperAdminAuditLog /></ProtectedRoute>,
   },
 ];

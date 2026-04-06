@@ -5,6 +5,8 @@ import AccountSettings from "../pages/AccountSettings";
 import About from "../pages/About";
 import Contact from "../pages/Contact";
 import Index from "../pages/Index";
+import OrderHistory from "../pages/OrderHistory";
+import PaymentHistory from "../pages/PaymentHistory";
 import Products from "../pages/Products";
 import CartPage from "../pages/shop/CartPage";
 import CheckoutPage from "../pages/shop/CheckoutPage";
@@ -42,5 +44,13 @@ export const publicRoutes: RouteObject[] = [
   {
     path: "account/settings",
     element: <ProtectedRoute allowedRoles={["customer"]}><AccountSettings /></ProtectedRoute>,
+  },
+  {
+    path: "account/orders",
+    element: <ProtectedRoute allowedRoles={["customer"]}><OrderHistory /></ProtectedRoute>,
+  },
+  {
+    path: "account/payments",
+    element: <ProtectedRoute allowedRoles={["customer"]}><PaymentHistory /></ProtectedRoute>,
   },
 ];
