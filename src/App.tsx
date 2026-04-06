@@ -5,19 +5,22 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
+import { ProviderSalesProvider } from "@/context/ProviderSalesContext";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <CartProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <Outlet />
-        </TooltipProvider>
-      </CartProvider>
+      <ProviderSalesProvider>
+        <CartProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <Outlet />
+          </TooltipProvider>
+        </CartProvider>
+      </ProviderSalesProvider>
     </AuthProvider>
   </QueryClientProvider>
 );
