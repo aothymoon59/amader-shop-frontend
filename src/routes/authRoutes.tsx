@@ -1,20 +1,33 @@
 import type { RouteObject } from "react-router-dom";
 
-import AdminLogin from "../pages/AdminLogin";
-import Login from "../pages/Login";
-import Register from "../pages/Register";
+import PublicOnlyRoute from "../components/auth/PublicOnlyRoute";
+import AdminLogin from "../pages/auth/AdminLogin";
+import Login from "../pages/auth/Login";
+import Register from "../pages/auth/Register";
 
 export const authRoutes: RouteObject[] = [
   {
     path: "login",
-    element: <Login />,
+    element: (
+      <PublicOnlyRoute>
+        <Login />
+      </PublicOnlyRoute>
+    ),
   },
   {
     path: "register",
-    element: <Register />,
+    element: (
+      <PublicOnlyRoute>
+        <Register />
+      </PublicOnlyRoute>
+    ),
   },
   {
     path: "admin/login",
-    element: <AdminLogin />,
+    element: (
+      <PublicOnlyRoute>
+        <AdminLogin />
+      </PublicOnlyRoute>
+    ),
   },
 ];
