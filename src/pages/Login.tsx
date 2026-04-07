@@ -92,7 +92,9 @@ const Login = () => {
     <div className="min-h-screen flex">
       <div className="hidden lg:flex flex-1 gradient-hero items-center justify-center p-12">
         <div className="max-w-md text-center">
-          <Store className="h-16 w-16 mx-auto mb-6 text-primary" />
+          <Link to="/" className="flex items-center gap-2 mb-6 justify-center">
+            <Store className="h-16 w-16 mx-auto mb-6 text-primary" />
+          </Link>
           <h2
             className="text-3xl font-bold mb-4"
             style={{ color: "hsl(0,0%,100%)" }}

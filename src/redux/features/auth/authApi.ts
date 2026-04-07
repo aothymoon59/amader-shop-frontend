@@ -29,7 +29,6 @@ const authApi = baseApi.injectEndpoints({
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
-
           dispatch(
             setUser({
               user: data.data.user,
@@ -37,7 +36,7 @@ const authApi = baseApi.injectEndpoints({
             }),
           );
         } catch {
-          // Page-level handlers show the error messages.
+          // do nothing
         }
       },
     }),

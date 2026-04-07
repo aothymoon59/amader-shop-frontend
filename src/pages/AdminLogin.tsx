@@ -58,13 +58,8 @@ const AdminLogin = () => {
         title: "Login successful",
         description: response.message || "Admin access granted.",
       });
-      console.log("Login response:", response);
 
       if (response?.success === true) {
-        console.log(
-          "Redirecting to:",
-          redirectFromState || getRedirectPath(userRole),
-        );
         navigate(redirectFromState || getRedirectPath(userRole), {
           replace: true,
         });
