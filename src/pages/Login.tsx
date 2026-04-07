@@ -6,10 +6,19 @@ import { Eye, EyeOff, LoaderCircle, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/components/ui/use-toast";
 
-import { useLoginMutation } from "@/redux/features/auth/authApi";
-import { normalizeUserRole, roleMap } from "@/redux/features/auth/authSlice";
+import {
+  type LoginRequestRole,
+  useLoginMutation,
+} from "@/redux/features/auth/authApi";
+import { useAppDispatch } from "@/redux/hooks";
+import {
+  normalizeUserRole,
+  roleMap,
+  setUser,
+} from "@/redux/features/auth/authSlice";
 
 const getRedirectPath = (role: string) => {
   switch (normalizeUserRole(role)) {
@@ -29,8 +38,11 @@ const getRedirectPath = (role: string) => {
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useAppDispatch();
 
   const [showPass, setShowPass] = useState(false);
+  const [selectedRole, setSelectedRole] =
+    useState<LoginRequestRole>("CUSTOMER");
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -47,6 +59,7 @@ const Login = () => {
       const userInfo = {
         email: formData.email,
         password: formData.password,
+        role: selectedRole,
       };
 
       const res = await login(userInfo).unwrap();
@@ -62,6 +75,13 @@ const Login = () => {
       }
 
       if (res?.success === true) {
+        dispatch(
+          setUser({
+            user: res.data.user,
+            token: res.data.accessToken,
+          }),
+        );
+
         toast({
           title: "Login successful",
           description: res.message || "You are now signed in.",
@@ -122,6 +142,20 @@ const Login = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Tabs
+                value={selectedRole}
+                onValueChange={(value) =>
+                  setSelectedRole(value as LoginRequestRole)
+                }
+              >
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="CUSTOMER">Customer</TabsTrigger>
+                  <TabsTrigger value="PROVIDER">Provider</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+
             <div>
               <Label>Email</Label>
               <Input

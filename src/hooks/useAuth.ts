@@ -28,7 +28,7 @@ export const useAuth = () => {
 
   return {
     user,
-    userData: userDataFromApi?.data,
+    userData: userDataFromApi?.data ?? null,
     isAuthenticated: Boolean(user),
     logout,
     updateProfile,
