@@ -17,7 +17,7 @@ type LoginResponse = {
   };
 };
 
-const authApi = baseApi.injectEndpoints({
+export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     login: builder.mutation<LoginResponse, LoginCredentials>({
       query: (userInfo) => ({
@@ -47,7 +47,23 @@ const authApi = baseApi.injectEndpoints({
         body: userInfo,
       }),
     }),
+    logout: builder.mutation({
+      query: () => ({
+        url: "/auth/logout",
+        method: "POST",
+      }),
+      invalidatesTags: [tagTypes.USER_INFO],
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          dispatch(setUser({ user: null, token: null }));
+        } catch {
+          // do nothing
+        }
+      },
+    }),
   }),
 });
 
-export const { useLoginMutation, useRegisterUserMutation } = authApi;
+export const { useLoginMutation, useRegisterUserMutation, useLogoutMutation } =
+  authApi;

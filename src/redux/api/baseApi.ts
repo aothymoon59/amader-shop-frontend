@@ -8,7 +8,8 @@ import {
   fetchBaseQuery,
 } from "@reduxjs/toolkit/query/react";
 import { RootState } from "../store";
-import { logout, setUser } from "../features/auth/authSlice";
+import { logoutUser } from "../features/auth/authActions";
+import { setUser } from "../features/auth/authSlice";
 import { tagTypesList } from "../tagTypes";
 
 const baseUrl = `${import.meta.env.VITE_API_BASE_URL}/api/v1`;
@@ -57,7 +58,7 @@ const baseQueryWithRefreshToken: BaseQueryFn<
 
       result = await baseQuery(args, api, extraOptions);
     } else {
-      api.dispatch(logout());
+      api.dispatch(logoutUser());
     }
   }
 

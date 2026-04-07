@@ -1,22 +1,20 @@
-import {
-  createContext,
-  useContext,
-  type ReactNode,
-} from "react";
+import { createContext, useContext, type ReactNode } from "react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import {
-  logOut,
   updateUser,
   useCurrentUser,
   type User as AuthUser,
   type UserRole,
 } from "@/redux/features/auth/authSlice";
+import { logoutUser } from "@/redux/features/auth/authActions";
 
 type AuthContextValue = {
   user: AuthUser | null;
   isAuthenticated: boolean;
   logout: () => void;
-  updateProfile: (profile: Partial<Pick<AuthUser, "name" | "email" | "phone" | "address">>) => void;
+  updateProfile: (
+    profile: Partial<Pick<AuthUser, "name" | "email" | "phone" | "address">>,
+  ) => void;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -26,8 +24,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const user = useAppSelector(useCurrentUser);
 
   const logout = () => {
-    dispatch(logOut());
+    dispatch(logoutUser());
   };
+
+  console.log("AuthContext user:", user);
 
   const updateProfile = (
     profile: Partial<Pick<AuthUser, "name" | "email" | "phone" | "address">>,
