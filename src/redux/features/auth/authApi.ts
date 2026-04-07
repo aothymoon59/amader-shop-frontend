@@ -1,17 +1,54 @@
-import { baseApi } from "@/redux/api/baseApi";
 import { tagTypes } from "@/redux/tagTypes";
-import { cleanObject } from "@/utils/cleanObject";
+import { baseApi } from "../../api/baseApi";
+import { setUser, type TUser } from "./authSlice";
 
-export const authApi = baseApi.injectEndpoints({
+type LoginCredentials = {
+  email: string;
+  password: string;
+};
+
+type LoginResponse = {
+  success: boolean;
+  message: string;
+  meta: unknown;
+  data: {
+    user: TUser;
+    accessToken: string;
+  };
+};
+
+const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getProfile: builder.query({
-      query: () => ({
-        url: "/profile",
-        method: "GET",
+    login: builder.mutation<LoginResponse, LoginCredentials>({
+      query: (userInfo) => ({
+        url: "/auth/login",
+        method: "POST",
+        body: userInfo,
       }),
-      providesTags: [tagTypes.USER_INFO],
+      invalidatesTags: [tagTypes.USER_INFO],
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+
+          dispatch(
+            setUser({
+              user: data.data.user,
+              token: data.data.accessToken,
+            }),
+          );
+        } catch {
+          // Page-level handlers show the error messages.
+        }
+      },
+    }),
+    registerUser: builder.mutation({
+      query: (userInfo) => ({
+        url: "/auth/register-user",
+        method: "POST",
+        body: userInfo,
+      }),
     }),
   }),
 });
 
-export const { useGetProfileQuery } = authApi;
+export const { useLoginMutation, useRegisterUserMutation } = authApi;

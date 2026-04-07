@@ -1,4 +1,5 @@
-import { useState } from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState, type FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Shield } from "lucide-react";
 
@@ -6,40 +7,64 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
-import { demoAccounts, useAuth } from "@/context/AuthContext";
+import { useLoginMutation } from "@/redux/features/auth/authApi";
+import { normalizeUserRole } from "@/redux/features/auth/authSlice";
+
+const getRedirectPath = (role: string) => {
+  switch (normalizeUserRole(role)) {
+    case "super-admin":
+      return "/super-admin/dashboard";
+    case "admin":
+      return "/admin/dashboard";
+    case "provider":
+      return "/provider/dashboard";
+    default:
+      return "/";
+  }
+};
 
 const AdminLogin = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuth();
   const [formData, setFormData] = useState({
-    email: "",
-    password: "",
+    email: "admin@example.com",
+    password: "123456",
   });
+  const [login, { isLoading }] = useLoginMutation();
 
-  const adminAccounts = demoAccounts.filter((account) =>
-    account.role === "admin" || account.role === "super-admin",
-  );
+  const handleLogin = async (email: string, password: string) => {
+    try {
+      const response = await login({ email, password }).unwrap();
 
-  const handleLogin = (email: string, password: string) => {
-    const result = login(email, password);
+      const redirectFromState = (
+        location.state as { from?: { pathname?: string } } | null
+      )?.from?.pathname;
 
-    if (!result.success) {
+      toast({
+        title: "Login successful",
+        description: response.message || "Admin access granted.",
+      });
+
+      navigate(
+        redirectFromState || getRedirectPath(response.data.user.role),
+        { replace: true },
+      );
+    } catch (error: any) {
       toast({
         title: "Login failed",
-        description: result.message,
+        description:
+          error?.data?.errorMessage ||
+          error?.data?.message ||
+          "Something went wrong",
         variant: "destructive",
       });
-      return;
     }
+  };
 
-    toast({
-      title: "Demo login successful",
-      description: "Admin access granted.",
-    });
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
 
-    const redirectFromState = (location.state as { from?: string } | null)?.from;
-    navigate(redirectFromState || result.redirectTo || "/admin/dashboard", { replace: true });
+    await handleLogin(formData.email, formData.password);
   };
 
   return (
@@ -50,26 +75,20 @@ const AdminLogin = () => {
             <Shield className="h-7 w-7 text-primary-foreground" />
           </div>
           <h1 className="text-2xl font-bold" style={{ color: "hsl(0,0%,100%)" }}>Admin Portal</h1>
-          <p className="text-sm mt-1" style={{ color: "hsl(220,14%,50%)" }}>Use a demo admin or super admin account</p>
+          <p className="text-sm mt-1" style={{ color: "hsl(220,14%,50%)" }}>Sign in with your admin credentials</p>
         </div>
-        <div className="rounded-xl border border-sidebar-border bg-sidebar-accent p-6 space-y-4">
-          <div><Label style={{ color: "hsl(220,14%,70%)" }}>Email</Label><Input type="email" value={formData.email} onChange={(e) => setFormData((current) => ({ ...current, email: e.target.value }))} placeholder="admin@smallshop.com" className="mt-1.5 bg-sidebar border-sidebar-border" style={{ color: "hsl(0,0%,100%)" }} /></div>
-          <div><Label style={{ color: "hsl(220,14%,70%)" }}>Password</Label><Input type="password" value={formData.password} onChange={(e) => setFormData((current) => ({ ...current, password: e.target.value }))} placeholder="demo123" className="mt-1.5 bg-sidebar border-sidebar-border" style={{ color: "hsl(0,0%,100%)" }} /></div>
-          <Button variant="hero" className="w-full" size="lg" onClick={() => handleLogin(formData.email, formData.password)}>Access Dashboard</Button>
-        </div>
-        <div className="rounded-xl border border-sidebar-border bg-sidebar-accent p-4 space-y-3 mt-4">
-          {adminAccounts.map((account) => (
-            <button
-              key={account.email}
-              type="button"
-              className="w-full rounded-lg border border-sidebar-border p-3 text-left hover:border-primary transition-colors"
-              onClick={() => handleLogin(account.email, account.password)}
-            >
-              <div className="font-medium" style={{ color: "hsl(0,0%,100%)" }}>{account.name}</div>
-              <div className="text-xs" style={{ color: "hsl(220,14%,60%)" }}>{account.email}</div>
-              <div className="text-xs" style={{ color: "hsl(220,14%,60%)" }}>Password: {account.password}</div>
-            </button>
-          ))}
+        <form
+          className="rounded-xl border border-sidebar-border bg-sidebar-accent p-6 space-y-4"
+          onSubmit={handleSubmit}
+        >
+          <div><Label htmlFor="admin-login-email" style={{ color: "hsl(220,14%,70%)" }}>Email</Label><Input id="admin-login-email" type="email" value={formData.email} onChange={(e) => setFormData((current) => ({ ...current, email: e.target.value }))} placeholder="admin@example.com" className="mt-1.5 bg-sidebar border-sidebar-border" style={{ color: "hsl(0,0%,100%)" }} required /></div>
+          <div><Label htmlFor="admin-login-password" style={{ color: "hsl(220,14%,70%)" }}>Password</Label><Input id="admin-login-password" type="password" value={formData.password} onChange={(e) => setFormData((current) => ({ ...current, password: e.target.value }))} placeholder="Enter your password" className="mt-1.5 bg-sidebar border-sidebar-border" style={{ color: "hsl(0,0%,100%)" }} required /></div>
+          <Button variant="hero" className="w-full" size="lg" type="submit" disabled={isLoading}>{isLoading ? "Signing In..." : "Access Dashboard"}</Button>
+        </form>
+        <div className="rounded-xl border border-sidebar-border bg-sidebar-accent p-4 space-y-1 mt-4">
+          <div className="font-medium" style={{ color: "hsl(0,0%,100%)" }}>Test credentials</div>
+          <div className="text-xs" style={{ color: "hsl(220,14%,60%)" }}>Email: admin@example.com</div>
+          <div className="text-xs" style={{ color: "hsl(220,14%,60%)" }}>Password: 123456</div>
         </div>
         <p className="text-center text-xs mt-6" style={{ color: "hsl(220,14%,40%)" }}>
           <Link to="/login" className="hover:underline">Back to customer and provider login</Link>

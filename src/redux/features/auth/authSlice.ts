@@ -1,19 +1,41 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
-import type { RootState } from "../../store";
+import { RootState } from "../../store";
 
-type User = {
-  role: string;
+export type UserRole = "CUSTOMER" | "PROVIDER" | "ADMIN" | "SUPER_ADMIN";
+
+export type TUser = {
+  id?: string;
+  email?: string;
+  name?: string;
+  role: UserRole;
+  phone?: string;
+  address?: string;
+  iat?: number;
+  exp?: number;
   [key: string]: unknown;
 };
 
-type AuthState = {
-  user: User | null;
+type TAuthState = {
+  user: TUser | null;
   token: string | null;
 };
 
-const initialState: AuthState = {
+const initialState: TAuthState = {
   user: null,
   token: null,
+};
+
+export const roleMap: Record<string, UserRole> = {
+  CUSTOMER: "CUSTOMER",
+  PROVIDER: "PROVIDER",
+  ADMIN: "ADMIN",
+  SUPER_ADMIN: "SUPER_ADMIN",
+};
+
+export const normalizeUserRole = (role: unknown): UserRole => {
+  const normalizedRole = String(role ?? "").trim();
+
+  return roleMap[normalizedRole] ?? "CUSTOMER";
 };
 
 const authSlice = createSlice({
@@ -22,21 +44,42 @@ const authSlice = createSlice({
   reducers: {
     setUser: (
       state,
-      action: PayloadAction<{ user: User | null; token: string | null }>,
+      action: PayloadAction<{ user: TUser | null; token: string | null }>,
     ) => {
       const { user, token } = action.payload;
-      state.user = user;
+      state.user = user
+        ? {
+            ...user,
+            role: normalizeUserRole(user.role),
+          }
+        : null;
       state.token = token;
     },
-    logOut: (state) => {
+    updateUser: (state, action: PayloadAction<Partial<TUser>>) => {
+      if (!state.user) return;
+
+      state.user = {
+        ...state.user,
+        ...action.payload,
+        role: action.payload.role
+          ? normalizeUserRole(action.payload.role)
+          : state.user.role,
+      };
+    },
+    logout: (state) => {
       state.user = null;
       state.token = null;
     },
   },
 });
 
-export const { setUser, logOut } = authSlice.actions;
+export const { setUser, updateUser, logout } = authSlice.actions;
+
 export default authSlice.reducer;
 
-export const useCurrentToken = (state: RootState) => state.auth?.token ?? null;
-export const useCurrentUser = (state: RootState) => state.auth?.user ?? null;
+export const currentToken = (state: RootState) => state.auth.token;
+export const currentUser = (state: RootState) => state.auth.user;
+export const useCurrentToken = currentToken;
+export const useCurrentUser = currentUser;
+export const logOut = logout;
+export type User = TUser;

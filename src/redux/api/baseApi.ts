@@ -1,80 +1,63 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
+  BaseQueryApi,
   BaseQueryFn,
+  DefinitionType,
   FetchArgs,
-  FetchBaseQueryError,
   createApi,
   fetchBaseQuery,
 } from "@reduxjs/toolkit/query/react";
+import { RootState } from "../store";
+import { logout, setUser } from "../features/auth/authSlice";
 import { tagTypesList } from "../tagTypes";
-import { logOut, setUser } from "../features/auth/authSlice";
 
-import type { RootState } from "../store";
+const baseUrl = `${import.meta.env.VITE_API_BASE_URL}/api/v1`;
 
-const skipAuthEndpoints = ["getSiteSettingsContent"] as const;
-
-type SkipAuthEndpoint = (typeof skipAuthEndpoints)[number];
-
-const isSkipAuthEndpoint = (endpoint: string): endpoint is SkipAuthEndpoint => {
-  return (skipAuthEndpoints as readonly string[]).includes(endpoint);
-};
-
-const rawBaseQuery = fetchBaseQuery({
-  baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL,
+const baseQuery = fetchBaseQuery({
+  baseUrl,
   credentials: "include",
-  prepareHeaders: (headers, { getState, endpoint }) => {
-    if (isSkipAuthEndpoint(endpoint)) return headers; // skip Authorization
-
+  prepareHeaders: (headers, { getState }) => {
     const token = (getState() as RootState).auth.token;
-    if (token) headers.set("Authorization", `Bearer ${token}`);
+
+    if (token) {
+      headers.set("authorization", `${token}`);
+    }
 
     return headers;
   },
 });
 
-type RefreshResponse = {
-  accessToken?: string;
-};
-
 const baseQueryWithRefreshToken: BaseQueryFn<
-  string | FetchArgs,
-  unknown,
-  FetchBaseQueryError
-> = async (args, api, extraOptions) => {
-  let result = await rawBaseQuery(args, api, extraOptions);
-
-  // Only try refresh if user is still logged in
-  const isLoggedIn = Boolean((api.getState() as RootState).auth.token);
+  FetchArgs,
+  BaseQueryApi,
+  DefinitionType
+> = async (args, api, extraOptions): Promise<any> => {
+  let result = await baseQuery(args, api, extraOptions);
 
   if (result?.error?.status === 401) {
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/refresh`,
-        {
-          method: "POST",
-          credentials: "include",
-        },
+    //* Send Refresh
+    console.log("Sending refresh token");
+
+    const res = await fetch(`${baseUrl}/auth/refresh-token`, {
+      method: "POST",
+      credentials: "include",
+    });
+
+    const data = await res.json();
+
+    if (data?.data?.accessToken) {
+      const user = (api.getState() as RootState).auth.user;
+
+      api.dispatch(
+        setUser({
+          user,
+          token: data.data.accessToken,
+        }),
       );
 
-      const data: RefreshResponse = await res.json();
-
-      if (data?.accessToken) {
-        const user = (api.getState() as RootState).auth.user;
-
-        api.dispatch(
-          setUser({
-            user,
-            token: data.accessToken,
-          }),
-        );
-
-        // retry original request
-        result = await rawBaseQuery(args, api, extraOptions);
-      } else {
-        api.dispatch(logOut());
-      }
-    } catch (e) {
-      console.error("Refresh token failed", e);
-      api.dispatch(logOut());
+      result = await baseQuery(args, api, extraOptions);
+    } else {
+      api.dispatch(logout());
     }
   }
 
@@ -84,6 +67,6 @@ const baseQueryWithRefreshToken: BaseQueryFn<
 export const baseApi = createApi({
   reducerPath: "baseApi",
   baseQuery: baseQueryWithRefreshToken,
-  endpoints: () => ({}),
   tagTypes: tagTypesList,
+  endpoints: () => ({}),
 });
