@@ -6,10 +6,19 @@ import { Eye, EyeOff, LoaderCircle, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/components/ui/use-toast";
 
-import { useLoginMutation } from "@/redux/features/auth/authApi";
-import { normalizeUserRole, roleMap } from "@/redux/features/auth/authSlice";
+import {
+  type LoginRequestRole,
+  useLoginMutation,
+} from "@/redux/features/auth/authApi";
+import { useAppDispatch } from "@/redux/hooks";
+import {
+  normalizeUserRole,
+  roleMap,
+  setUser,
+} from "@/redux/features/auth/authSlice";
 
 const getRedirectPath = (role: string) => {
   switch (normalizeUserRole(role)) {
@@ -29,8 +38,11 @@ const getRedirectPath = (role: string) => {
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useAppDispatch();
 
   const [showPass, setShowPass] = useState(false);
+  const [selectedRole, setSelectedRole] =
+    useState<LoginRequestRole>("CUSTOMER");
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -47,6 +59,7 @@ const Login = () => {
       const userInfo = {
         email: formData.email,
         password: formData.password,
+        role: selectedRole,
       };
 
       const res = await login(userInfo).unwrap();
@@ -62,6 +75,13 @@ const Login = () => {
       }
 
       if (res?.success === true) {
+        dispatch(
+          setUser({
+            user: res.data.user,
+            token: res.data.accessToken,
+          }),
+        );
+
         toast({
           title: "Login successful",
           description: res.message || "You are now signed in.",
@@ -92,7 +112,9 @@ const Login = () => {
     <div className="min-h-screen flex">
       <div className="hidden lg:flex flex-1 gradient-hero items-center justify-center p-12">
         <div className="max-w-md text-center">
-          <Store className="h-16 w-16 mx-auto mb-6 text-primary" />
+          <Link to="/" className="flex items-center gap-2 mb-6 justify-center">
+            <Store className="h-16 w-16 mx-auto mb-6 text-primary" />
+          </Link>
           <h2
             className="text-3xl font-bold mb-4"
             style={{ color: "hsl(0,0%,100%)" }}

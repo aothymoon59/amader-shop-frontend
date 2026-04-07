@@ -2,9 +2,12 @@ import { tagTypes } from "@/redux/tagTypes";
 import { baseApi } from "../../api/baseApi";
 import { setUser, type TUser } from "./authSlice";
 
+export type LoginRequestRole = "CUSTOMER" | "PROVIDER" | "ADMIN";
+
 type LoginCredentials = {
   email: string;
   password: string;
+  role?: LoginRequestRole;
 };
 
 type LoginResponse = {
@@ -17,7 +20,7 @@ type LoginResponse = {
   };
 };
 
-const authApi = baseApi.injectEndpoints({
+export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     login: builder.mutation<LoginResponse, LoginCredentials>({
       query: (userInfo) => ({
@@ -26,29 +29,31 @@ const authApi = baseApi.injectEndpoints({
         body: userInfo,
       }),
       invalidatesTags: [tagTypes.USER_INFO],
-      async onQueryStarted(_, { dispatch, queryFulfilled }) {
-        try {
-          const { data } = await queryFulfilled;
-
-          dispatch(
-            setUser({
-              user: data.data.user,
-              token: data.data.accessToken,
-            }),
-          );
-        } catch {
-          // Page-level handlers show the error messages.
-        }
-      },
     }),
     registerUser: builder.mutation({
       query: (userInfo) => ({
-        url: "/auth/register-user",
+        url: "/auth/register",
         method: "POST",
         body: userInfo,
       }),
     }),
+    logout: builder.mutation({
+      query: () => ({
+        url: "/auth/logout",
+        method: "POST",
+      }),
+      invalidatesTags: [tagTypes.USER_INFO],
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          dispatch(setUser({ user: null, token: null }));
+        } catch {
+          // do nothing
+        }
+      },
+    }),
   }),
 });
 
-export const { useLoginMutation, useRegisterUserMutation } = authApi;
+export const { useLoginMutation, useRegisterUserMutation, useLogoutMutation } =
+  authApi;

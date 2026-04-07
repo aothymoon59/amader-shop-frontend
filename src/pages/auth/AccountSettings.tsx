@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import PublicLayout from "@/components/layouts/PublicLayout";
 import ProfileSettingsSection from "@/components/settings/ProfileSettingsSection";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 
 const AccountSettings = () => {
   const { user } = useAuth();
