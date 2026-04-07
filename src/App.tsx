@@ -7,25 +7,29 @@ import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
 import { CmsProvider } from "@/context/CmsContext";
 import { ProviderSalesProvider } from "@/context/ProviderSalesContext";
+import { Provider } from "react-redux";
+import { store } from "./redux/store";
 
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <CmsProvider>
-        <ProviderSalesProvider>
-          <CartProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <Outlet />
-            </TooltipProvider>
-          </CartProvider>
-        </ProviderSalesProvider>
-      </CmsProvider>
-    </AuthProvider>
-  </QueryClientProvider>
+  <Provider store={store}>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <CmsProvider>
+          <ProviderSalesProvider>
+            <CartProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <Outlet />
+              </TooltipProvider>
+            </CartProvider>
+          </ProviderSalesProvider>
+        </CmsProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  </Provider>
 );
 
 export default App;

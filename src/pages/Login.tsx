@@ -1,45 +1,91 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Store } from "lucide-react";
+import { Eye, EyeOff, LoaderCircle, Store } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
-import { demoAccounts, useAuth } from "@/context/AuthContext";
+
+import { useLoginMutation } from "@/redux/features/auth/authApi";
+import { normalizeUserRole, roleMap } from "@/redux/features/auth/authSlice";
+
+const getRedirectPath = (role: string) => {
+  switch (normalizeUserRole(role)) {
+    case roleMap.PROVIDER:
+      return "/provider/dashboard";
+    case roleMap.CUSTOMER:
+      return "/";
+    case roleMap.ADMIN:
+      return "/admin/dashboard";
+    case roleMap.SUPER_ADMIN:
+      return "/super-admin/dashboard";
+    default:
+      return "/";
+  }
+};
 
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuth();
+
+  const [showPass, setShowPass] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
 
-  const demoUsers = demoAccounts.filter((account) =>
-    account.role === "customer" || account.role === "provider",
-  );
+  const [login, { isLoading }] = useLoginMutation();
 
-  const handleLogin = (email: string, password: string) => {
-    const result = login(email, password);
+  const from =
+    (location.state as { from?: { pathname?: string } } | null)?.from
+      ?.pathname || "/";
 
-    if (!result.success) {
+  const handleLogin = async () => {
+    try {
+      const userInfo = {
+        email: formData.email,
+        password: formData.password,
+      };
+
+      const res = await login(userInfo).unwrap();
+      const userRole = normalizeUserRole(res?.data?.user?.role);
+
+      if (userRole !== roleMap.CUSTOMER && userRole !== roleMap.PROVIDER) {
+        toast({
+          title: "Access denied",
+          description: "Only customers and providers can log in here",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (res?.success === true) {
+        toast({
+          title: "Login successful",
+          description: res.message || "You are now signed in.",
+        });
+
+        navigate(from !== "/" ? from : getRedirectPath(userRole), {
+          replace: true,
+        });
+      }
+    } catch (error: any) {
       toast({
         title: "Login failed",
-        description: result.message,
+        description:
+          error?.data?.errorMessage ||
+          error?.data?.message ||
+          "Something went wrong",
         variant: "destructive",
       });
-      return;
     }
+  };
 
-    toast({
-      title: "Demo login successful",
-      description: "You are now signed in.",
-    });
-
-    const redirectFromState = (location.state as { from?: string } | null)?.from;
-    navigate(redirectFromState || result.redirectTo || "/", { replace: true });
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await handleLogin();
   };
 
   return (
@@ -47,10 +93,18 @@ const Login = () => {
       <div className="hidden lg:flex flex-1 gradient-hero items-center justify-center p-12">
         <div className="max-w-md text-center">
           <Store className="h-16 w-16 mx-auto mb-6 text-primary" />
-          <h2 className="text-3xl font-bold mb-4" style={{ color: "hsl(0,0%,100%)" }}>Welcome Back</h2>
-          <p style={{ color: "hsl(220,14%,70%)" }}>Use a demo account to sign in as a customer or provider.</p>
+          <h2
+            className="text-3xl font-bold mb-4"
+            style={{ color: "hsl(0,0%,100%)" }}
+          >
+            Welcome Back
+          </h2>
+          <p style={{ color: "hsl(220,14%,70%)" }}>
+            Please enter your credentials to sign in as a customer or provider.
+          </p>
         </div>
       </div>
+
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-sm">
           <div className="mb-8">
@@ -58,36 +112,90 @@ const Login = () => {
               <Store className="h-7 w-7 text-primary" />
               <span className="text-xl font-bold">SmallShop</span>
             </Link>
+
             <h1 className="text-2xl font-bold">Sign In</h1>
-            <p className="text-sm text-muted-foreground mt-1">Use any demo account below to continue</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Enter your email and password to continue
+            </p>
           </div>
-          <div className="space-y-4">
-            <div><Label>Email</Label><Input type="email" value={formData.email} onChange={(e) => setFormData((current) => ({ ...current, email: e.target.value }))} placeholder="you@example.com" className="mt-1.5" /></div>
-            <div><Label>Password</Label><Input type="password" value={formData.password} onChange={(e) => setFormData((current) => ({ ...current, password: e.target.value }))} placeholder="demo123" className="mt-1.5" /></div>
-            <Button variant="hero" className="w-full" size="lg" onClick={() => handleLogin(formData.email, formData.password)}>Sign In</Button>
-          </div>
-          <div className="mt-6 rounded-xl border bg-card p-4">
-            <p className="text-sm font-medium mb-3">Demo accounts</p>
-            <div className="space-y-3">
-              {demoUsers.map((account) => (
-                <button
-                  key={account.email}
-                  type="button"
-                  className="w-full rounded-lg border p-3 text-left hover:border-primary transition-colors"
-                  onClick={() => handleLogin(account.email, account.password)}
-                >
-                  <div className="font-medium">{account.name}</div>
-                  <div className="text-xs text-muted-foreground">{account.email}</div>
-                  <div className="text-xs text-muted-foreground">Password: {account.password}</div>
-                </button>
-              ))}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <Label>Email</Label>
+              <Input
+                type="email"
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData((current) => ({
+                    ...current,
+                    email: e.target.value,
+                  }))
+                }
+                placeholder="you@example.com"
+                className="mt-1.5"
+                required
+              />
             </div>
-          </div>
+
+            <div>
+              <Label>Password</Label>
+              <div className="relative mt-1.5">
+                <Input
+                  type={showPass ? "text" : "password"}
+                  value={formData.password}
+                  onChange={(e) =>
+                    setFormData((current) => ({
+                      ...current,
+                      password: e.target.value,
+                    }))
+                  }
+                  placeholder="******"
+                  className="pr-10"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPass(!showPass)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                >
+                  {showPass ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <Button
+              variant="hero"
+              className="w-full"
+              size="lg"
+              type="submit"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <LoaderCircle className="h-4 w-4 animate-spin" />
+              ) : (
+                "Sign In"
+              )}
+            </Button>
+          </form>
+
           <p className="text-sm text-center text-muted-foreground mt-6">
-            Don&apos;t have an account? <Link to="/register" className="text-primary font-medium hover:underline">Sign Up</Link>
+            Don&apos;t have an account?{" "}
+            <Link
+              to="/register"
+              className="text-primary font-medium hover:underline"
+            >
+              Sign Up
+            </Link>
           </p>
+
           <p className="text-xs text-center text-muted-foreground mt-3">
-            <Link to="/admin/login" className="hover:underline">Admin and Super Admin Login</Link>
+            <Link to="/admin/login" className="hover:underline">
+              Admin and Super Admin Login
+            </Link>
           </p>
         </div>
       </div>
