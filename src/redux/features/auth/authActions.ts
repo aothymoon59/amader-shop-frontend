@@ -3,9 +3,18 @@ import { persistor, type AppDispatch } from "@/redux/store";
 import { authApi } from "./authApi";
 import { logout, setUser } from "./authSlice";
 
-export const logoutUser = () => async (dispatch: AppDispatch) => {
+type LogoutUserOptions = {
+  callApi?: boolean;
+};
+
+export const logoutUser =
+  (options: LogoutUserOptions = {}) => async (dispatch: AppDispatch) => {
+    const { callApi = true } = options;
+
   try {
-    await dispatch(authApi.endpoints.logout.initiate(undefined)).unwrap();
+    if (callApi) {
+      await dispatch(authApi.endpoints.logout.initiate(undefined)).unwrap();
+    }
   } catch {
     dispatch(setUser({ user: null, token: null }));
   } finally {
@@ -13,4 +22,4 @@ export const logoutUser = () => async (dispatch: AppDispatch) => {
     dispatch(baseApi.util.resetApiState());
     await persistor.flush();
   }
-};
+  };

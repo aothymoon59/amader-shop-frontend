@@ -1,6 +1,6 @@
 import { Navigate, useLocation } from "react-router-dom";
 
-import { useAuth, type UserRole } from "@/context/AuthContext";
+import { useAuth, type UserRole } from "@/hooks/useAuth";
 
 const getLoginPath = (role: UserRole) =>
   role === "admin" || role === "super-admin" ? "/admin/login" : "/login";

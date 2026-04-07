@@ -1,12 +1,14 @@
 import { createContext, useContext, type ReactNode } from "react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import {
+  useCurrentToken,
   updateUser,
   useCurrentUser,
   type User as AuthUser,
   type UserRole,
 } from "@/redux/features/auth/authSlice";
 import { logoutUser } from "@/redux/features/auth/authActions";
+import { useGetMeQuery } from "@/redux/features/auth/usersApi";
 
 type AuthContextValue = {
   user: AuthUser | null;
@@ -22,12 +24,12 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const dispatch = useAppDispatch();
   const user = useAppSelector(useCurrentUser);
+  const token = useAppSelector(useCurrentToken);
+  useGetMeQuery(undefined, { skip: !token });
 
   const logout = () => {
     dispatch(logoutUser());
   };
-
-  console.log("AuthContext user:", user);
 
   const updateProfile = (
     profile: Partial<Pick<AuthUser, "name" | "email" | "phone" | "address">>,

@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { Store, ShoppingCart, Menu, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/context/CartContext";
 
 const navLinks = [
