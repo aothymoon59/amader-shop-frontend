@@ -1,7 +1,7 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 import { RootState } from "../../store";
 
-export type UserRole = "CUSTOMER" | "PROVIDER" | "ADMIN" | "SUPER_ADMIN";
+export type UserRole = "customer" | "provider" | "admin" | "super-admin";
 
 export type TUser = {
   id?: string;
@@ -26,16 +26,21 @@ const initialState: TAuthState = {
 };
 
 export const roleMap: Record<string, UserRole> = {
-  CUSTOMER: "CUSTOMER",
-  PROVIDER: "PROVIDER",
-  ADMIN: "ADMIN",
-  SUPER_ADMIN: "SUPER_ADMIN",
+  CUSTOMER: "customer",
+  customer: "customer",
+  PROVIDER: "provider",
+  provider: "provider",
+  ADMIN: "admin",
+  admin: "admin",
+  SUPER_ADMIN: "super-admin",
+  super_admin: "super-admin",
+  "super-admin": "super-admin",
 };
 
 export const normalizeUserRole = (role: unknown): UserRole => {
   const normalizedRole = String(role ?? "").trim();
 
-  return roleMap[normalizedRole] ?? "CUSTOMER";
+  return roleMap[normalizedRole] ?? "customer";
 };
 
 const authSlice = createSlice({
