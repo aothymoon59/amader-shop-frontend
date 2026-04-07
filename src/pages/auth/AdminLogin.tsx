@@ -8,7 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
 import { useLoginMutation } from "@/redux/features/auth/authApi";
-import { normalizeUserRole, roleMap } from "@/redux/features/auth/authSlice";
+import { useAppDispatch } from "@/redux/hooks";
+import {
+  normalizeUserRole,
+  roleMap,
+  setUser,
+} from "@/redux/features/auth/authSlice";
 
 const getRedirectPath = (role: string) => {
   switch (normalizeUserRole(role)) {
@@ -24,6 +29,7 @@ const getRedirectPath = (role: string) => {
 const AdminLogin = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useAppDispatch();
 
   const [formData, setFormData] = useState({
     email: "admin@example.com",
@@ -34,7 +40,11 @@ const AdminLogin = () => {
 
   const handleLogin = async (email: string, password: string) => {
     try {
-      const response = await login({ email, password }).unwrap();
+      const response = await login({
+        email,
+        password,
+        role: "ADMIN",
+      }).unwrap();
 
       const userRole = normalizeUserRole(response?.data?.user?.role);
 
@@ -58,13 +68,15 @@ const AdminLogin = () => {
         title: "Login successful",
         description: response.message || "Admin access granted.",
       });
-      console.log("Login response:", response);
 
       if (response?.success === true) {
-        console.log(
-          "Redirecting to:",
-          redirectFromState || getRedirectPath(userRole),
+        dispatch(
+          setUser({
+            user: response.data.user,
+            token: response.data.accessToken,
+          }),
         );
+
         navigate(redirectFromState || getRedirectPath(userRole), {
           replace: true,
         });

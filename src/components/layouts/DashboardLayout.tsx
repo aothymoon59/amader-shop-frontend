@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import {
   LayoutDashboard, Package, ShoppingCart, Users, BarChart3,
   Settings, ChevronLeft, Menu, Store, FileText, CreditCard,

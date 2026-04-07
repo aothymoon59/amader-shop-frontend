@@ -1,7 +1,7 @@
 import type { RouteObject } from "react-router-dom";
 
 import ProtectedRoute from "../components/auth/ProtectedRoute";
-import AccountSettings from "../pages/AccountSettings";
+import AccountSettings from "../pages/auth/AccountSettings";
 import About from "../pages/About";
 import Contact from "../pages/Contact";
 import CmsContentPage from "../pages/CmsContentPage";
@@ -52,14 +52,26 @@ export const publicRoutes: RouteObject[] = [
   },
   {
     path: "account/settings",
-    element: <ProtectedRoute allowedRoles={["customer"]}><AccountSettings /></ProtectedRoute>,
+    element: (
+      <ProtectedRoute allowedRoles={["customer"]}>
+        <AccountSettings />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "account/orders",
-    element: <ProtectedRoute allowedRoles={["customer"]}><OrderHistory /></ProtectedRoute>,
+    element: (
+      <ProtectedRoute allowedRoles={["customer"]}>
+        <OrderHistory />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "account/payments",
-    element: <ProtectedRoute allowedRoles={["customer"]}><PaymentHistory /></ProtectedRoute>,
+    element: (
+      <ProtectedRoute allowedRoles={["customer"]}>
+        <PaymentHistory />
+      </ProtectedRoute>
+    ),
   },
 ];
