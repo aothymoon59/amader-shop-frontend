@@ -142,20 +142,6 @@ const Login = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Tabs
-                value={selectedRole}
-                onValueChange={(value) =>
-                  setSelectedRole(value as LoginRequestRole)
-                }
-              >
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="CUSTOMER">Customer</TabsTrigger>
-                  <TabsTrigger value="PROVIDER">Provider</TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </div>
-
             <div>
               <Label>Email</Label>
               <Input
