@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   CheckCircleOutlined,
   CloseCircleOutlined,
@@ -10,15 +10,17 @@ import { Button, Card, Popover, Select, Space, Tag, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
 import DashboardLayout from "@/components/layouts/DashboardLayout";
-import ProviderDetailsDialog from "@/components/providers/ProviderDetailsDialog";
-import ProviderFormDialog, {
-  type ProviderFormValues,
-} from "@/components/providers/ProviderFormDialog";
 import { toast } from "@/components/ui/use-toast";
-import { useGetAllProvidersQuery } from "@/redux/features/admin/providerManagementApi";
+import {
+  useApproveProviderMutation,
+  useGetAllProvidersQuery,
+  useRejectProviderMutation,
+} from "@/redux/features/admin/providerManagementApi";
 import CustomTable from "@/components/shared/table/CustomTable";
 import TableSearch from "@/components/shared/table/TableSearch";
 import ProviderDetailsModal from "@/components/admins/providerManagement/ProviderDetailsModal";
+import CreateProviderByAdminModal from "@/components/admins/providerManagement/CreateProviderByAdminModal";
+import { MdAdminPanelSettings } from "react-icons/md";
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -27,6 +29,7 @@ type ProviderStatus = "PENDING" | "APPROVED" | "REJECTED";
 type ProviderRecord = {
   id: string;
   userId: string;
+  createdById?: string | null;
   shopName: string;
   businessType: string;
   phone: string;
@@ -42,6 +45,12 @@ type ProviderRecord = {
     email: string;
     role: string;
   };
+  createdBy?: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  } | null;
 };
 
 type ProviderQuery = {
@@ -56,8 +65,8 @@ const AdminProviders = () => {
   const [isViewDetailsModalOpen, setIsViewDetailsModalOpen] = useState(false);
   const [selectedProvider, setSelectedProvider] =
     useState<ProviderRecord | null>(null);
-
-  console.log("selectedProvider", selectedProvider);
+  const [approveProvider] = useApproveProviderMutation();
+  const [rejectProvider] = useRejectProviderMutation();
 
   const [query, setQuery] = useState<ProviderQuery>({
     page: 1,
@@ -72,24 +81,6 @@ const AdminProviders = () => {
 
   const providers: ProviderRecord[] = data?.data || [];
   const meta = data?.meta;
-
-  const handleSubmit = async (_values: ProviderFormValues) => {
-    toast({
-      title: "Manual provider creation",
-      description:
-        "Connect this dialog with your create provider API if needed.",
-    });
-    setDialogOpen(false);
-  };
-
-  const handleSearchChange = (value: string) => {
-    setQuery((prev) => ({
-      ...prev,
-      page: 1,
-      search: value,
-    }));
-  };
-
   const handleStatusChange = (value?: ProviderStatus) => {
     setQuery((prev) => ({
       ...prev,
@@ -107,9 +98,13 @@ const AdminProviders = () => {
     });
   };
 
-  const updateStatus = async (_providerId: string, status: ProviderStatus) => {
+  const updateStatus = async (providerId: string, status: ProviderStatus) => {
     try {
-      // await updateProviderStatus({ id: _providerId, status }).unwrap();
+      if (status === "APPROVED") {
+        await approveProvider(providerId).unwrap();
+      } else if (status === "REJECTED") {
+        await rejectProvider(providerId).unwrap();
+      }
 
       toast({
         title: "Provider updated",
@@ -141,7 +136,7 @@ const AdminProviders = () => {
       render: (_, record) => (
         <Space align="start">
           <div className="h-10 w-10 rounded-xl gradient-primary flex items-center justify-center text-primary-foreground font-semibold text-base shrink-0">
-            {record.shopName?.[0] || "S"}
+            {record.shopName?.[0] || "S"}{" "}
           </div>
           <div>
             <div className="font-semibold">{record.shopName}</div>
@@ -329,12 +324,9 @@ const AdminProviders = () => {
         </Card>
       </div>
 
-      <ProviderFormDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        title="Add Provider"
-        description="Create a provider account manually by filling in the onboarding details."
-        onSubmit={handleSubmit}
+      <CreateProviderByAdminModal
+        isModalOpen={dialogOpen}
+        closeModal={() => setDialogOpen(false)}
       />
 
       <ProviderDetailsModal

@@ -6,23 +6,10 @@ import { FiUpload } from "react-icons/fi";
 import { useApplyProviderMutation } from "@/redux/features/provider/providerApi";
 import { toast } from "@/hooks/use-toast";
 import type { UploadFile } from "antd/es/upload/interface";
+import { businessTypes } from "@/constants/businessType";
 
 const { TextArea } = Input;
 const { Option } = Select;
-
-// TODO: it will be dynamic later
-const businessTypes = [
-  "Retail Grocery",
-  "Electronics",
-  "Fashion",
-  "Pharmacy",
-  "Stationery",
-  "Home & Kitchen",
-  "Beauty & Personal Care",
-  "Agriculture",
-  "Hardware",
-  "Other",
-];
 
 const normalizeUploadValue = (
   event: { fileList?: UploadFile[] } | UploadFile[],

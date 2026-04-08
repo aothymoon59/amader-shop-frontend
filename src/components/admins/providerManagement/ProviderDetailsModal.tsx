@@ -17,6 +17,7 @@ type ProviderStatus = "PENDING" | "APPROVED" | "REJECTED";
 type ProviderRecord = {
   id: string;
   userId: string;
+  createdById?: string | null;
   shopName: string;
   businessType: string;
   phone: string;
@@ -32,6 +33,12 @@ type ProviderRecord = {
     email: string;
     role: string;
   };
+  createdBy?: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  } | null;
 };
 
 type ProviderDetailsModalProps = {
@@ -187,6 +194,26 @@ const ProviderDetailsModal = ({
               </Button>
             </div>
           </div>
+
+          {provider.createdBy && (
+            <div className="rounded-xl border p-4 space-y-4">
+              <h3 className="text-base font-semibold">Created By(Admin)</h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Text type="secondary">Name</Text>
+                  <div className="font-medium">{provider.createdBy.name}</div>
+                </div>
+
+                <div>
+                  <Text type="secondary">Email</Text>
+                  <div className="font-medium break-all">
+                    {provider.createdBy.email}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="rounded-xl border p-4 space-y-2">
