@@ -1,11 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, type FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Shield } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button, Form, Input } from "antd";
 import { toast } from "@/components/ui/use-toast";
 import { useLoginMutation } from "@/redux/features/auth/authApi";
 import { useAppDispatch } from "@/redux/hooks";
@@ -26,29 +22,28 @@ const getRedirectPath = (role: string) => {
   }
 };
 
+type AdminLoginFormValues = {
+  email: string;
+  password: string;
+};
+
 const AdminLogin = () => {
+  const [form] = Form.useForm();
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useAppDispatch();
-
-  const [formData, setFormData] = useState({
-    email: "admin@example.com",
-    password: "123456",
-  });
-
   const [login, { isLoading }] = useLoginMutation();
 
-  const handleLogin = async (email: string, password: string) => {
+  const onFinish = async (values: AdminLoginFormValues) => {
     try {
       const response = await login({
-        email,
-        password,
+        email: values.email,
+        password: values.password,
         role: "ADMIN",
       }).unwrap();
 
       const userRole = normalizeUserRole(response?.data?.user?.role);
 
-      // 🚫 BLOCK customer + provider
       if (userRole !== roleMap.ADMIN && userRole !== roleMap.SUPER_ADMIN) {
         toast({
           title: "Access denied",
@@ -77,6 +72,8 @@ const AdminLogin = () => {
           }),
         );
 
+        form.resetFields();
+
         navigate(redirectFromState || getRedirectPath(userRole), {
           replace: true,
         });
@@ -93,11 +90,6 @@ const AdminLogin = () => {
     }
   };
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    await handleLogin(formData.email, formData.password);
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-sidebar p-8">
       <div className="w-full max-w-sm">
@@ -105,79 +97,77 @@ const AdminLogin = () => {
           <div className="mx-auto h-14 w-14 rounded-xl gradient-primary flex items-center justify-center mb-4">
             <Shield className="h-7 w-7 text-primary-foreground" />
           </div>
+
           <h1
             className="text-2xl font-bold"
             style={{ color: "hsl(0,0%,100%)" }}
           >
             Admin Portal
           </h1>
+
           <p className="text-sm mt-1" style={{ color: "hsl(220,14%,50%)" }}>
             Sign in with your admin credentials
           </p>
         </div>
 
-        <form
-          className="rounded-xl border border-sidebar-border bg-sidebar-accent p-6 space-y-4"
-          onSubmit={handleSubmit}
-        >
-          <div>
-            <Label
-              htmlFor="admin-login-email"
-              style={{ color: "hsl(220,14%,70%)" }}
-            >
-              Email
-            </Label>
-            <Input
-              id="admin-login-email"
-              type="email"
-              value={formData.email}
-              onChange={(e) =>
-                setFormData((current) => ({
-                  ...current,
-                  email: e.target.value,
-                }))
-              }
-              placeholder="admin@example.com"
-              className="mt-1.5 bg-sidebar border-sidebar-border"
-              style={{ color: "hsl(0,0%,100%)" }}
-              required
-            />
-          </div>
-
-          <div>
-            <Label
-              htmlFor="admin-login-password"
-              style={{ color: "hsl(220,14%,70%)" }}
-            >
-              Password
-            </Label>
-            <Input
-              id="admin-login-password"
-              type="password"
-              value={formData.password}
-              onChange={(e) =>
-                setFormData((current) => ({
-                  ...current,
-                  password: e.target.value,
-                }))
-              }
-              placeholder="Enter your password"
-              className="mt-1.5 bg-sidebar border-sidebar-border"
-              style={{ color: "hsl(0,0%,100%)" }}
-              required
-            />
-          </div>
-
-          <Button
-            variant="hero"
-            className="w-full"
-            size="lg"
-            type="submit"
-            disabled={isLoading}
+        <div className="rounded-xl border border-sidebar-border bg-sidebar-accent p-6">
+          <Form
+            form={form}
+            layout="vertical"
+            onFinish={onFinish}
+            requiredMark={false}
+            initialValues={{
+              email: "admin@example.com",
+              password: "123456",
+            }}
           >
-            {isLoading ? "Signing In..." : "Access Dashboard"}
-          </Button>
-        </form>
+            <Form.Item
+              label={<span style={{ color: "hsl(220,14%,70%)" }}>Email</span>}
+              name="email"
+              rules={[
+                { required: true, message: "Email is required" },
+                { type: "email", message: "Enter a valid email address" },
+              ]}
+            >
+              <Input
+                placeholder="admin@example.com"
+                size="large"
+                className="bg-sidebar border-sidebar-border"
+                style={{ color: "hsl(0,0%,100%)" }}
+              />
+            </Form.Item>
+
+            <Form.Item
+              label={
+                <span style={{ color: "hsl(220,14%,70%)" }}>Password</span>
+              }
+              name="password"
+              rules={[
+                { required: true, message: "Password is required" },
+                { min: 6, message: "Password must be at least 6 characters" },
+              ]}
+            >
+              <Input.Password
+                placeholder="Enter your password"
+                size="large"
+                className="bg-sidebar border-sidebar-border"
+                style={{ color: "hsl(0,0%,100%)" }}
+              />
+            </Form.Item>
+
+            <Form.Item className="mb-0">
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={isLoading}
+                block
+                size="large"
+              >
+                Access Dashboard
+              </Button>
+            </Form.Item>
+          </Form>
+        </div>
 
         <div className="rounded-xl border border-sidebar-border bg-sidebar-accent p-4 space-y-1 mt-4">
           <div className="font-medium" style={{ color: "hsl(0,0%,100%)" }}>

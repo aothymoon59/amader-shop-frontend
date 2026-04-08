@@ -3,9 +3,23 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import {
-  LayoutDashboard, Package, ShoppingCart, Users, BarChart3,
-  Settings, ChevronLeft, Menu, Store, FileText, CreditCard,
-  Shield, UserCheck, TrendingUp, Receipt, LogOut, X
+  LayoutDashboard,
+  Package,
+  ShoppingCart,
+  Users,
+  BarChart3,
+  Settings,
+  ChevronLeft,
+  Menu,
+  Store,
+  FileText,
+  CreditCard,
+  Shield,
+  UserCheck,
+  TrendingUp,
+  Receipt,
+  LogOut,
+  X,
 } from "lucide-react";
 
 interface SidebarItem {
@@ -41,7 +55,11 @@ const menuItems: Record<string, SidebarItem[]> = {
     { title: "Settings", icon: Settings, path: "/provider/settings" },
   ],
   "super-admin": [
-    { title: "Dashboard", icon: LayoutDashboard, path: "/super-admin/dashboard" },
+    {
+      title: "Dashboard",
+      icon: LayoutDashboard,
+      path: "/super-admin/dashboard",
+    },
     { title: "Admins", icon: Shield, path: "/super-admin/admins" },
     { title: "Providers", icon: UserCheck, path: "/super-admin/providers" },
     { title: "Analytics", icon: BarChart3, path: "/super-admin/analytics" },
@@ -57,12 +75,14 @@ const roleLabels: Record<string, string> = {
   "super-admin": "Super Admin",
 };
 
-const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, role }) => {
+const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  // console.log("user", user);
+  const role = user?.role;
   const items = menuItems[role] || [];
 
   const handleLogout = () => {
@@ -83,7 +103,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, role }) => 
         className={cn(
           "fixed inset-y-0 left-0 z-50 flex flex-col bg-sidebar text-sidebar-foreground transition-all duration-300 lg:relative",
           collapsed ? "w-[70px]" : "w-64",
-          mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+          mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
         )}
       >
         <div className="flex h-16 items-center justify-between border-b border-sidebar-border px-4">
@@ -118,10 +138,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, role }) => 
                   "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
                   isActive
                     ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                 )}
               >
-                <item.icon className={cn("h-5 w-5 shrink-0", isActive && "drop-shadow-sm")} />
+                <item.icon
+                  className={cn(
+                    "h-5 w-5 shrink-0",
+                    isActive && "drop-shadow-sm",
+                  )}
+                />
                 {!collapsed && <span>{item.title}</span>}
               </Link>
             );
@@ -133,7 +158,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, role }) => 
             onClick={() => setCollapsed(!collapsed)}
             className="hidden lg:flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
           >
-            <ChevronLeft className={cn("h-5 w-5 transition-transform", collapsed && "rotate-180")} />
+            <ChevronLeft
+              className={cn(
+                "h-5 w-5 transition-transform",
+                collapsed && "rotate-180",
+              )}
+            />
             {!collapsed && <span>Collapse</span>}
           </button>
           <Link
@@ -169,9 +199,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, role }) => 
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6">
-          {children}
-        </main>
+        <main className="flex-1 overflow-y-auto p-4 lg:p-6">{children}</main>
       </div>
     </div>
   );

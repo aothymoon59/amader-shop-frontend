@@ -1,14 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, LoaderCircle, Store } from "lucide-react";
+import { EyeInvisibleOutlined, EyeTwoTone } from "@ant-design/icons";
+import { Store } from "lucide-react";
+import { Button, Form, Input } from "antd";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/components/ui/use-toast";
-
 import {
   type LoginRequestRole,
   useLoginMutation,
@@ -35,30 +32,29 @@ const getRedirectPath = (role: string) => {
   }
 };
 
+type LoginFormValues = {
+  email: string;
+  password: string;
+};
+
 const Login = () => {
+  const [form] = Form.useForm();
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useAppDispatch();
 
-  const [showPass, setShowPass] = useState(false);
-  const [selectedRole, setSelectedRole] =
-    useState<LoginRequestRole>("CUSTOMER");
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
-
+  const [selectedRole] = useState<LoginRequestRole>("CUSTOMER");
   const [login, { isLoading }] = useLoginMutation();
 
   const from =
     (location.state as { from?: { pathname?: string } } | null)?.from
       ?.pathname || "/";
 
-  const handleLogin = async () => {
+  const onFinish = async (values: LoginFormValues) => {
     try {
       const userInfo = {
-        email: formData.email,
-        password: formData.password,
+        email: values.email,
+        password: values.password,
         role: selectedRole,
       };
 
@@ -87,6 +83,8 @@ const Login = () => {
           description: res.message || "You are now signed in.",
         });
 
+        form.resetFields();
+
         navigate(from !== "/" ? from : getRedirectPath(userRole), {
           replace: true,
         });
@@ -103,11 +101,6 @@ const Login = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await handleLogin();
-  };
-
   return (
     <div className="min-h-screen flex">
       <div className="hidden lg:flex flex-1 gradient-hero items-center justify-center p-12">
@@ -115,12 +108,14 @@ const Login = () => {
           <Link to="/" className="flex items-center gap-2 mb-6 justify-center">
             <Store className="h-16 w-16 mx-auto mb-6 text-primary" />
           </Link>
+
           <h2
             className="text-3xl font-bold mb-4"
             style={{ color: "hsl(0,0%,100%)" }}
           >
             Welcome Back
           </h2>
+
           <p style={{ color: "hsl(220,14%,70%)" }}>
             Please enter your credentials to sign in as a customer or provider.
           </p>
@@ -141,68 +136,52 @@ const Login = () => {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label>Email</Label>
-              <Input
-                type="email"
-                value={formData.email}
-                onChange={(e) =>
-                  setFormData((current) => ({
-                    ...current,
-                    email: e.target.value,
-                  }))
-                }
-                placeholder="you@example.com"
-                className="mt-1.5"
-                required
-              />
-            </div>
-
-            <div>
-              <Label>Password</Label>
-              <div className="relative mt-1.5">
-                <Input
-                  type={showPass ? "text" : "password"}
-                  value={formData.password}
-                  onChange={(e) =>
-                    setFormData((current) => ({
-                      ...current,
-                      password: e.target.value,
-                    }))
-                  }
-                  placeholder="******"
-                  className="pr-10"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPass(!showPass)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                >
-                  {showPass ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            <Button
-              variant="hero"
-              className="w-full"
-              size="lg"
-              type="submit"
-              disabled={isLoading}
+          <Form
+            form={form}
+            layout="vertical"
+            onFinish={onFinish}
+            requiredMark={false}
+          >
+            <Form.Item
+              label="Email"
+              name="email"
+              rules={[
+                { required: true, message: "Email is required" },
+                { type: "email", message: "Enter a valid email address" },
+              ]}
             >
-              {isLoading ? (
-                <LoaderCircle className="h-4 w-4 animate-spin" />
-              ) : (
-                "Sign In"
-              )}
-            </Button>
-          </form>
+              <Input placeholder="you@example.com" size="large" />
+            </Form.Item>
+
+            <Form.Item
+              label="Password"
+              name="password"
+              rules={[
+                { required: true, message: "Password is required" },
+                { min: 6, message: "Password must be at least 6 characters" },
+              ]}
+            >
+              <Input.Password
+                placeholder="Enter your password"
+                size="large"
+                iconRender={(visible) =>
+                  visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+                }
+              />
+            </Form.Item>
+
+            <Form.Item className="mb-0">
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={isLoading}
+                block
+                size="large"
+              >
+                Sign In
+              </Button>
+            </Form.Item>
+          </Form>
 
           <p className="text-sm text-center text-muted-foreground mt-6">
             Don&apos;t have an account?{" "}

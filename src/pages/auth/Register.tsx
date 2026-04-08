@@ -1,34 +1,29 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Store } from "lucide-react";
+import { Button, Form, Input } from "antd";
 import { toast } from "@/components/ui/use-toast";
-
 import { useRegisterUserMutation } from "@/redux/features/auth/authApi";
+
+type RegisterFormValues = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+};
 
 const Register = () => {
   const navigate = useNavigate();
+  const [form] = Form.useForm();
   const [registerUser, { isLoading }] = useRegisterUserMutation();
 
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    password: "",
-  });
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const onFinish = async (values: RegisterFormValues) => {
     try {
       const payload = {
-        name: `${formData.firstName} ${formData.lastName}`,
-        email: formData.email,
-        password: formData.password,
-        role: "CUSTOMER", // default role
+        name: `${values.firstName} ${values.lastName}`,
+        email: values.email,
+        password: values.password,
+        role: "CUSTOMER",
       };
 
       const res = await registerUser(payload).unwrap();
@@ -39,7 +34,7 @@ const Register = () => {
           description: res.message || "Account created successfully",
         });
 
-        // redirect to login
+        form.resetFields();
         navigate("/login");
       }
     } catch (error: any) {
@@ -78,84 +73,68 @@ const Register = () => {
             Fill in your details to get started
           </p>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <Form
+            form={form}
+            layout="vertical"
+            onFinish={onFinish}
+            requiredMark={false}
+          >
+            {/* First + Last Name */}
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>First Name</Label>
-                <Input
-                  placeholder="John"
-                  className="mt-1.5"
-                  value={formData.firstName}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      firstName: e.target.value,
-                    }))
-                  }
-                  required
-                />
-              </div>
-              <div>
-                <Label>Last Name</Label>
-                <Input
-                  placeholder="Doe"
-                  className="mt-1.5"
-                  value={formData.lastName}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      lastName: e.target.value,
-                    }))
-                  }
-                  required
-                />
-              </div>
+              <Form.Item
+                label="First Name"
+                name="firstName"
+                rules={[{ required: true, message: "First name is required" }]}
+              >
+                <Input placeholder="John" size="large" />
+              </Form.Item>
+
+              <Form.Item
+                label="Last Name"
+                name="lastName"
+                rules={[{ required: true, message: "Last name is required" }]}
+              >
+                <Input placeholder="Doe" size="large" />
+              </Form.Item>
             </div>
 
-            <div>
-              <Label>Email</Label>
-              <Input
-                type="email"
-                placeholder="you@example.com"
-                className="mt-1.5"
-                value={formData.email}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    email: e.target.value,
-                  }))
-                }
-                required
-              />
-            </div>
-
-            <div>
-              <Label>Password</Label>
-              <Input
-                type="password"
-                placeholder="••••••••"
-                className="mt-1.5"
-                value={formData.password}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    password: e.target.value,
-                  }))
-                }
-                required
-              />
-            </div>
-
-            <Button
-              variant="hero"
-              className="w-full"
-              size="lg"
-              type="submit"
-              disabled={isLoading}
+            {/* Email */}
+            <Form.Item
+              label="Email"
+              name="email"
+              rules={[
+                { required: true, message: "Email is required" },
+                { type: "email", message: "Enter a valid email" },
+              ]}
             >
-              {isLoading ? "Creating..." : "Create Account"}
-            </Button>
-          </form>
+              <Input placeholder="you@example.com" size="large" />
+            </Form.Item>
+
+            {/* Password */}
+            <Form.Item
+              label="Password"
+              name="password"
+              rules={[
+                { required: true, message: "Password is required" },
+                { min: 6, message: "Minimum 6 characters required" },
+              ]}
+            >
+              <Input.Password placeholder="••••••••" size="large" />
+            </Form.Item>
+
+            {/* Submit */}
+            <Form.Item className="mb-0">
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={isLoading}
+                block
+                size="large"
+              >
+                Create Account
+              </Button>
+            </Form.Item>
+          </Form>
 
           <p className="text-sm text-center text-muted-foreground mt-6">
             Already have an account?{" "}
