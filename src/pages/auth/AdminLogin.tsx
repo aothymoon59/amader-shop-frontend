@@ -117,7 +117,7 @@ const AdminLogin = () => {
             onFinish={onFinish}
             requiredMark={false}
             initialValues={{
-              email: "admin@example.com",
+              email: "mmoon8745@gmail.com",
               password: "123456",
             }}
           >
