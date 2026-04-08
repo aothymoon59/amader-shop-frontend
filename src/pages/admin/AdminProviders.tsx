@@ -209,7 +209,8 @@ const AdminProviders = () => {
             <>
               <Popover content="Approve">
                 <Button
-                  type="primary"
+                  color="green"
+                  variant="solid"
                   icon={<CheckCircleOutlined />}
                   onClick={() => updateStatus(record.id, "APPROVED")}
                 />
@@ -217,6 +218,7 @@ const AdminProviders = () => {
               <Popover content="Reject">
                 <Button
                   danger
+                  variant="filled"
                   icon={<CloseCircleOutlined />}
                   onClick={() => updateStatus(record.id, "REJECTED")}
                 />
