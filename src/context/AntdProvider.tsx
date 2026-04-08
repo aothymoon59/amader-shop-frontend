@@ -19,6 +19,8 @@ const AntdProvider = ({ children }: { children: React.ReactNode }) => {
           Input: {
             activeBorderColor: "#356AF4",
             hoverBorderColor: "#356AF4",
+            activeBg: "transparent",
+            hoverBg: "transparent",
           },
         },
       }}
