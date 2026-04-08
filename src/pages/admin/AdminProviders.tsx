@@ -316,9 +316,6 @@ const AdminProviders = () => {
                 });
               }}
               isPagination
-              locale={{
-                emptyText: "No providers found",
-              }}
             />
           </div>
         </Card>
