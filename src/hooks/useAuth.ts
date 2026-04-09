@@ -21,7 +21,12 @@ export const useAuth = () => {
   };
 
   const updateProfile = (
-    profile: Partial<Pick<AuthUser, "name" | "email" | "phone" | "address">>,
+    profile: Partial<
+      Pick<
+        AuthUser,
+        "name" | "email" | "personalContact" | "personalAddress" | "dateOfBirth" | "profileImage"
+      >
+    >,
   ) => {
     dispatch(updateUser(profile));
   };

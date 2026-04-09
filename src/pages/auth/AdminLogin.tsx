@@ -117,8 +117,8 @@ const AdminLogin = () => {
             onFinish={onFinish}
             requiredMark={false}
             initialValues={{
-              email: "admin@example.com",
-              password: "123456",
+              email: "mmoon8745@gmail.com",
+              password: "12345678",
             }}
           >
             <Form.Item

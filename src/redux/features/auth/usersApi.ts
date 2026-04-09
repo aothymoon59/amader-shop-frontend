@@ -9,6 +9,11 @@ type GetMeResponse = {
   data: TUser;
 };
 
+type ChangePasswordPayload = {
+  currentPassword: string;
+  newPassword: string;
+};
+
 export const usersApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getMe: builder.query<GetMeResponse, void>({
@@ -39,7 +44,41 @@ export const usersApi = baseApi.injectEndpoints({
         }
       },
     }),
+    updateMe: builder.mutation<GetMeResponse, FormData>({
+      query: (payload) => ({
+        url: "/users/me",
+        method: "PATCH",
+        body: payload,
+      }),
+      invalidatesTags: [tagTypes.USER_INFO],
+      async onQueryStarted(_, { dispatch, getState, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          const token = (getState() as RootState).auth.token;
+
+          dispatch(
+            setUser({
+              user: data.data,
+              token,
+            }),
+          );
+        } catch {
+          // Keep current state on failed profile update.
+        }
+      },
+    }),
+    changePassword: builder.mutation<
+      { success: boolean; message?: string; data: { updated: boolean } },
+      ChangePasswordPayload
+    >({
+      query: (payload) => ({
+        url: "/users/change-password",
+        method: "PATCH",
+        body: payload,
+      }),
+    }),
   }),
 });
 
-export const { useGetMeQuery } = usersApi;
+export const { useGetMeQuery, useUpdateMeMutation, useChangePasswordMutation } =
+  usersApi;
