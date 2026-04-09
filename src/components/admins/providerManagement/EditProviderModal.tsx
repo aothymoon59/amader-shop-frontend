@@ -23,6 +23,7 @@ type ProviderRecord = {
   tradeLicense: string;
   description: string | null;
   status: ProviderStatus;
+  isActive: boolean;
 };
 
 type EditProviderFormValues = {

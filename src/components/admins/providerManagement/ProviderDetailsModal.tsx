@@ -25,6 +25,7 @@ type ProviderRecord = {
   tradeLicense: string;
   description: string | null;
   status: ProviderStatus;
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
   user: {
@@ -58,6 +59,9 @@ const getStatusTag = (status?: ProviderStatus) => {
 
   return <Tag color="warning">PENDING</Tag>;
 };
+
+const getAccessTag = (isActive?: boolean) =>
+  isActive ? <Tag color="blue">ACTIVE</Tag> : <Tag color="default">INACTIVE</Tag>;
 
 const ProviderDetailsModal = ({
   isModalOpen,
@@ -94,6 +98,7 @@ const ProviderDetailsModal = ({
                 </h2>
                 <div className="flex flex-wrap items-center gap-2 mb-2">
                   {getStatusTag(provider.status)}
+                  {getAccessTag(provider.isActive)}
                   <Tag>{provider.businessType}</Tag>
                 </div>
               </div>
@@ -168,6 +173,16 @@ const ProviderDetailsModal = ({
                   <div>
                     <Text type="secondary">Current User Role</Text>
                     <div className="font-medium">{provider.user?.role}</div>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <UserOutlined className="mt-1 text-primary" />
+                  <div>
+                    <Text type="secondary">Provider Access</Text>
+                    <div className="font-medium">
+                      {provider.isActive ? "Active" : "Inactive"}
+                    </div>
                   </div>
                 </div>
               </div>

@@ -53,6 +53,14 @@ export const providerManagementApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [tagTypes.PROVIDERS],
     }),
+    updateProviderActiveState: builder.mutation({
+      query: ({ id, isActive }: { id: string; isActive: boolean }) => ({
+        url: `/providers/${id}/active`,
+        method: "PATCH",
+        body: { isActive },
+      }),
+      invalidatesTags: [tagTypes.PROVIDERS],
+    }),
   }),
 });
 
@@ -61,4 +69,5 @@ export const {
   useCreateProviderByAdminMutation,
   useUpdateProviderMutation,
   useUpdateProviderStatusMutation,
+  useUpdateProviderActiveStateMutation,
 } = providerManagementApi;

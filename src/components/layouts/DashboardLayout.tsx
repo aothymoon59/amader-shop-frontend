@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
+import { Alert } from "antd";
 import {
   LayoutDashboard,
   Package,
@@ -80,7 +81,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, userData, logout } = useAuth();
   // console.log("user", user);
   const role = user?.role;
   const items = menuItems[role] || [];
@@ -199,7 +200,18 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto p-4 lg:p-6">
+          {role === "provider" && userData?.providerProfile?.isActive === false && (
+            <Alert
+              className="mb-4"
+              type="warning"
+              showIcon
+              message="Provider account inactive"
+              description="Your provider account is currently inactive. You can still view your account, but provider actions are blocked until an administrator reactivates it."
+            />
+          )}
+          {children}
+        </main>
       </div>
     </div>
   );
