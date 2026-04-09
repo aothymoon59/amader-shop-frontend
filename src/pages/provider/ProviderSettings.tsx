@@ -205,15 +205,6 @@ const ProviderSettings = () => {
           </div>
         </Card>
 
-        {!providerProfile.isActive && (
-          <Alert
-            showIcon
-            type="warning"
-            message="Your provider account is inactive"
-            description="Profile details can still be reviewed here, but provider actions stay blocked until an administrator reactivates your account."
-          />
-        )}
-
         <SettingsTabs
           title={null}
           description={null}
