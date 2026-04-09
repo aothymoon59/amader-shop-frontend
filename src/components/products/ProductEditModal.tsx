@@ -1,4 +1,5 @@
 import { Button, Form } from "antd";
+import type { UploadFile } from "antd/es/upload/interface";
 import { useEffect, useState } from "react";
 
 import AntdModal from "@/components/shared/modal/AntdModal";
@@ -38,16 +39,19 @@ const ProductEditModal = ({
 }: ProductEditModalProps) => {
   const [form] = Form.useForm<ProductFormValues>();
   const [retainedImages, setRetainedImages] = useState<ProductImage[]>([]);
+  const [imageFileList, setImageFileList] = useState<UploadFile[]>([]);
   const [updateProduct, { isLoading }] = useUpdateProductMutation();
 
   useEffect(() => {
     if (!isModalOpen || !product) {
       form.resetFields();
       setRetainedImages([]);
+      setImageFileList([]);
       return;
     }
 
     setRetainedImages(product.images ?? []);
+    setImageFileList([]);
     form.setFieldsValue({
       providerId: product.providerId,
       categoryId: product.categoryId,
@@ -71,6 +75,7 @@ const ProductEditModal = ({
   const handleClose = () => {
     form.resetFields();
     setRetainedImages([]);
+    setImageFileList([]);
     closeModal();
   };
 
@@ -82,7 +87,10 @@ const ProductEditModal = ({
     try {
       const payload = buildProductPayload({
         role,
-        values,
+        values: {
+          ...values,
+          images: imageFileList,
+        },
         retainedImageIds: retainedImages.map((image) => image.id),
         clearImages: !retainedImages.length,
       });
@@ -132,6 +140,8 @@ const ProductEditModal = ({
               current.filter((image) => image.id !== imageId),
             )
           }
+          imageFileList={imageFileList}
+          onImageFileListChange={setImageFileList}
         />
 
         <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">

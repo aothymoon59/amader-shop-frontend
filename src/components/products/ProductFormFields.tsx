@@ -27,6 +27,8 @@ type ProductFormFieldsProps = {
   providerOptions: ProviderOption[];
   retainedImages?: ProductImage[];
   onRemoveRetainedImage?: (imageId: string) => void;
+  imageFileList?: UploadFile[];
+  onImageFileListChange?: (fileList: UploadFile[]) => void;
 };
 
 const ProductFormFields = ({
@@ -35,6 +37,8 @@ const ProductFormFields = ({
   providerOptions,
   retainedImages = [],
   onRemoveRetainedImage,
+  imageFileList,
+  onImageFileListChange,
 }: ProductFormFieldsProps) => {
   return (
     <div className="overflow-x-hidden">
@@ -233,6 +237,8 @@ const ProductFormFields = ({
                 maxCount={6}
                 multiple
                 accept=".jpg,.jpeg,.png,.webp"
+                fileList={imageFileList}
+                onChange={({ fileList }) => onImageFileListChange?.(fileList)}
               >
                 <div>
                   <Plus size={18} />
