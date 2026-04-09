@@ -73,6 +73,7 @@ export type ManagedProductQuery = {
   search?: string;
   categoryId?: string;
   providerId?: string;
+  archivedOnly?: boolean;
   published?: boolean;
   isFeatured?: boolean;
   isDiscount?: boolean;
@@ -134,6 +135,13 @@ export const productApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [tagTypes.PRODUCTS],
     }),
+    restoreProduct: builder.mutation<ManagedProductResponse, string>({
+      query: (id) => ({
+        url: `/products/${id}/restore`,
+        method: "PATCH",
+      }),
+      invalidatesTags: [tagTypes.PRODUCTS],
+    }),
   }),
 });
 
@@ -143,4 +151,5 @@ export const {
   useCreateProductMutation,
   useUpdateProductMutation,
   useDeleteProductMutation,
+  useRestoreProductMutation,
 } = productApi;

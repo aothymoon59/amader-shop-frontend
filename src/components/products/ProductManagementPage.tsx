@@ -6,6 +6,7 @@ import {
   Image,
   Input,
   Popconfirm,
+  Segmented,
   Select,
   Space,
   Spin,
@@ -20,6 +21,7 @@ import {
   LayoutList,
   Pencil,
   Plus,
+  RotateCcw,
   Search,
   Trash2,
 } from "lucide-react";
@@ -46,6 +48,7 @@ import {
   type Product,
   useDeleteProductMutation,
   useGetManagedProductsQuery,
+  useRestoreProductMutation,
 } from "@/redux/features/products/productApi";
 import TableSearch from "../shared/table/TableSearch";
 
@@ -74,6 +77,7 @@ const ProductManagementPage = ({ role }: ProductManagementPageProps) => {
     page: 1,
     limit: 10,
   });
+  const [listMode, setListMode] = useState<"active" | "archived">("active");
   const [viewMode, setViewMode] = useState<ViewMode>("table");
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -97,6 +101,7 @@ const ProductManagementPage = ({ role }: ProductManagementPageProps) => {
     search: filters.search || undefined,
     categoryId: filters.categoryId || undefined,
     providerId: role === "admin" ? filters.providerId || undefined : undefined,
+    archivedOnly: role === "admin" ? listMode === "archived" : undefined,
     status: filters.status,
     isFeatured: filters.isFeatured,
     isDiscount: filters.isDiscount,
@@ -107,6 +112,8 @@ const ProductManagementPage = ({ role }: ProductManagementPageProps) => {
   });
 
   const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
+  const [restoreProduct, { isLoading: isRestoring }] =
+    useRestoreProductMutation();
 
   const categoryOptions = useMemo<CategoryOption[]>(
     () => (categoryResponse?.data ?? []) as CategoryOption[],
@@ -184,6 +191,14 @@ const ProductManagementPage = ({ role }: ProductManagementPageProps) => {
     setEditingProduct(null);
   };
 
+  const handleListModeChange = (value: string | number) => {
+    setListMode(value as "active" | "archived");
+    setPagination({
+      page: 1,
+      limit: 10,
+    });
+  };
+
   const handleDelete = async (productId: string) => {
     try {
       await deleteProduct(productId).unwrap();
@@ -197,6 +212,24 @@ const ProductManagementPage = ({ role }: ProductManagementPageProps) => {
         description:
           getErrorMessage(error) ||
           "Something went wrong while archiving the product.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleRestore = async (productId: string) => {
+    try {
+      await restoreProduct(productId).unwrap();
+      toast({
+        title: "Product restored",
+        description: "The product has been restored successfully.",
+      });
+    } catch (error: unknown) {
+      toast({
+        title: "Restore failed",
+        description:
+          getErrorMessage(error) ||
+          "Something went wrong while restoring the product.",
         variant: "destructive",
       });
     }
@@ -293,6 +326,7 @@ const ProductManagementPage = ({ role }: ProductManagementPageProps) => {
               {product.isPublished ? "Published" : "Draft"}
             </Tag>
             {product.isFeatured ? <Tag color="blue">Featured</Tag> : null}
+            {product.deletedAt ? <Tag color="red">Archived</Tag> : null}
           </Space>
         ),
       },
@@ -314,25 +348,36 @@ const ProductManagementPage = ({ role }: ProductManagementPageProps) => {
               icon={<Eye size={16} />}
               onClick={() => setDetailsProduct(product)}
             />
-            <Button
-              type="text"
-              icon={<Pencil size={16} />}
-              onClick={() => openEditModal(product)}
-            />
-            <Popconfirm
-              title="Archive this product?"
-              description="This product will be hidden from active lists."
-              onConfirm={() => handleDelete(product.id)}
-              okText="Archive"
-              okButtonProps={{ danger: true, loading: isDeleting }}
-            >
-              <Button type="text" danger icon={<Trash2 size={16} />} />
-            </Popconfirm>
+            {listMode === "archived" ? (
+              <Button
+                type="text"
+                icon={<RotateCcw size={16} />}
+                loading={isRestoring}
+                onClick={() => handleRestore(product.id)}
+              />
+            ) : (
+              <>
+                <Button
+                  type="text"
+                  icon={<Pencil size={16} />}
+                  onClick={() => openEditModal(product)}
+                />
+                <Popconfirm
+                  title="Archive this product?"
+                  description="This product will be hidden from active lists."
+                  onConfirm={() => handleDelete(product.id)}
+                  okText="Archive"
+                  okButtonProps={{ danger: true, loading: isDeleting }}
+                >
+                  <Button type="text" danger icon={<Trash2 size={16} />} />
+                </Popconfirm>
+              </>
+            )}
           </Space>
         ),
       },
     ],
-    [isDeleting, role],
+    [isDeleting, isRestoring, listMode, role],
   );
 
   return (
@@ -349,14 +394,29 @@ const ProductManagementPage = ({ role }: ProductManagementPageProps) => {
           </Paragraph>
         </div>
 
-        <Button
-          type="primary"
-          size="large"
-          icon={<Plus size={16} />}
-          onClick={openCreateModal}
-        >
-          Add Product
-        </Button>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          {role === "admin" ? (
+            <Segmented
+              value={listMode}
+              onChange={handleListModeChange}
+              options={[
+                { label: "Active Products", value: "active" },
+                { label: "Archived Products", value: "archived" },
+              ]}
+            />
+          ) : null}
+
+          {listMode === "active" ? (
+            <Button
+              type="primary"
+              size="large"
+              icon={<Plus size={16} />}
+              onClick={openCreateModal}
+            >
+              Add Product
+            </Button>
+          ) : null}
+        </div>
       </div>
 
       <Card bordered={false} className="shadow-sm">
@@ -428,6 +488,9 @@ const ProductManagementPage = ({ role }: ProductManagementPageProps) => {
           </div>
 
           <div className="flex flex-wrap gap-2">
+            {role === "admin" && listMode === "archived" ? (
+              <Tag color="red">Archived Products</Tag>
+            ) : null}
             {filters.status ? (
               <Tag color="blue">Status: {filters.status}</Tag>
             ) : null}
@@ -492,6 +555,8 @@ const ProductManagementPage = ({ role }: ProductManagementPageProps) => {
             products={products}
             role={role}
             isDeleting={isDeleting}
+            isArchivedView={listMode === "archived"}
+            isRestoring={isRestoring}
             currentPage={meta?.page || pagination.page}
             pageSize={meta?.limit || pagination.limit}
             total={meta?.total || 0}
@@ -499,6 +564,7 @@ const ProductManagementPage = ({ role }: ProductManagementPageProps) => {
             onView={setDetailsProduct}
             onEdit={openEditModal}
             onDelete={handleDelete}
+            onRestore={handleRestore}
           />
         ) : (
           <Empty
