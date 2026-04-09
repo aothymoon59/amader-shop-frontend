@@ -21,6 +21,10 @@ export const adminRoutes: RouteObject[] = [
     element: <ProtectedRoute allowedRoles={["admin"]}><AdminProducts /></ProtectedRoute>,
   },
   {
+    path: "admin/manage-products",
+    element: <ProtectedRoute allowedRoles={["admin"]}><AdminProducts /></ProtectedRoute>,
+  },
+  {
     path: "admin/orders",
     element: <ProtectedRoute allowedRoles={["admin"]}><AdminOrders /></ProtectedRoute>,
   },

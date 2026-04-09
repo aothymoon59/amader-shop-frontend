@@ -37,7 +37,7 @@ interface DashboardLayoutProps {
 const menuItems: Record<string, SidebarItem[]> = {
   admin: [
     { title: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard" },
-    { title: "Products", icon: Package, path: "/admin/products" },
+    { title: "Manage Products", icon: Package, path: "/admin/manage-products" },
     { title: "Orders", icon: ShoppingCart, path: "/admin/orders" },
     { title: "Providers", icon: Store, path: "/admin/providers" },
     { title: "Customers", icon: Users, path: "/admin/customers" },
