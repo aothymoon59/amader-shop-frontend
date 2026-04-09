@@ -1,6 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect } from "react";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
+import ChangePasswordSection from "@/components/settings/ChangePasswordSection";
+import ProfileSettingsSection from "@/components/settings/ProfileSettingsSection";
+import SettingsTabs from "@/components/settings/SettingsTabs";
 import {
   Alert,
   Button,
@@ -211,330 +214,322 @@ const ProviderSettings = () => {
           />
         )}
 
-        <Row gutter={[16, 16]}>
-          <Col xs={24} xl={8}>
-            <Card bordered={false} className="shadow-sm">
-              <div className="mb-5">
-                <Title level={4} className="!mb-1">
-                  Personal Information
-                </Title>
-                <Paragraph className="!mb-0 text-muted-foreground">
-                  Account-level details linked to your login profile.
-                </Paragraph>
-              </div>
-
-              <div className="space-y-4">
-                <div className="rounded-xl border border-border/80 bg-secondary/20 p-4">
-                  <Text type="secondary">Full Name</Text>
-                  <p className="mt-1 text-sm font-semibold text-foreground">
-                    {userData?.name || "Not available"}
-                  </p>
-                </div>
-
-                <div className="rounded-xl border border-border/80 bg-secondary/20 p-4">
-                  <Text type="secondary">Email Address</Text>
-                  <p className="mt-1 break-all text-sm font-semibold text-foreground">
-                    {userData?.email || "Not available"}
-                  </p>
-                </div>
-
-                <div className="rounded-xl border border-dashed border-border bg-background p-4">
-                  <Text className="block font-medium">
-                    Personal info API will be added next
-                  </Text>
-                  <Text type="secondary">
-                    This section is ready for future fields like personal phone,
-                    address, and account profile updates.
-                  </Text>
-                </div>
-              </div>
-            </Card>
-          </Col>
-
-          <Col xs={24} xl={16}>
-            <Card bordered={false} className="shadow-sm">
-              <div className="mb-5">
-                <Title level={4} className="!mb-1">
-                  Update Personal Information
-                </Title>
-                <Paragraph className="!mb-0 text-muted-foreground">
-                  Layout prepared for the upcoming personal account update API.
-                </Paragraph>
-              </div>
-
-              <Form layout="vertical" disabled>
-                <Row gutter={16}>
-                  <Col xs={24}>
-                    <Form.Item label="Full Name">
-                      <Input
-                        size="large"
-                        value={String(userData?.name || "")}
-                        placeholder="Your full name"
-                        readOnly
-                      />
-                    </Form.Item>
-                  </Col>
-
-                  <Col xs={24}>
-                    <Form.Item label="Email Address">
-                      <Input
-                        size="large"
-                        value={String(userData?.email || "")}
-                        placeholder="your@email.com"
-                        readOnly
-                      />
-                    </Form.Item>
-                  </Col>
-
-                  <Col xs={24}>
-                    <Form.Item label="Phone Number">
-                      <Input
-                        size="large"
-                        placeholder="Will be enabled with the personal info API"
-                        readOnly
-                      />
-                    </Form.Item>
-                  </Col>
-                </Row>
-
-                <div className="flex flex-col gap-3 rounded-xl border border-dashed border-border bg-secondary/10 p-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <Text className="block font-medium">
-                      Personal account update is not connected yet
-                    </Text>
-                    <Text type="secondary">
-                      Once the backend API is ready, this form can become fully
-                      editable without changing the page structure.
-                    </Text>
-                  </div>
-
-                  <Button size="large" disabled>
-                    Update Personal Info
-                  </Button>
-                </div>
-              </Form>
-            </Card>
-          </Col>
-        </Row>
-
-        <Row gutter={[16, 16]}>
-          <Col xs={24} lg={8}>
-            <Card bordered={false} className="shadow-sm">
-              <Space direction="vertical" size={14} className="w-full">
-                <div>
-                  <Text type="secondary">Current Profile</Text>
-                  <Title level={4} className="!mb-1 !mt-1">
-                    {providerProfile.shopName}
-                  </Title>
-                  <Paragraph className="!mb-0 text-muted-foreground">
-                    Review the profile information currently saved for your
-                    provider account.
-                  </Paragraph>
-                </div>
-
+        <SettingsTabs
+          title={null}
+          description={null}
+          items={[
+            {
+              key: "personal-profile",
+              label: "Personal Profile",
+              children: <ProfileSettingsSection title="My Account" />,
+            },
+            {
+              key: "change-password",
+              label: "Change Password",
+              children: <ChangePasswordSection />,
+            },
+            {
+              key: "business-profile",
+              label: "Business Profile",
+              children: (
                 <div className="space-y-4">
-                  <div className="rounded-xl border border-border/80 bg-secondary/20 p-4">
-                    <Text type="secondary">Business Type</Text>
-                    <p className="mt-1 text-sm font-semibold text-foreground">
-                      {providerProfile.businessType}
-                    </p>
-                  </div>
-
-                  <div className="rounded-xl border border-border/80 bg-secondary/20 p-4">
-                    <Text type="secondary">Contact Phone</Text>
-                    <p className="mt-1 text-sm font-semibold text-foreground">
-                      {providerProfile.phone}
-                    </p>
-                  </div>
-
-                  <div className="rounded-xl border border-border/80 bg-secondary/20 p-4">
-                    <Text type="secondary">Address</Text>
-                    <p className="mt-1 text-sm font-semibold text-foreground">
-                      {providerProfile.address}
-                    </p>
-                  </div>
-
-                  <div className="rounded-xl border border-border/80 bg-secondary/20 p-4">
-                    <Text type="secondary">Account Email</Text>
-                    <p className="mt-1 break-all text-sm font-semibold text-foreground">
-                      {userData?.email}
-                    </p>
-                  </div>
-                </div>
-
-                {providerProfile.tradeLicense && (
                   <Card
-                    size="small"
-                    className="border border-border/80 bg-background shadow-none"
-                    title="Trade License"
+                    bordered={false}
+                    className="overflow-hidden shadow-sm"
+                    bodyStyle={{ padding: 0 }}
                   >
-                    <div className="flex items-start justify-between gap-3">
-                      <Space align="start">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                          <FileTextOutlined />
+                    <div className="bg-gradient-to-r from-primary/10 via-background to-secondary/40 px-5 py-5 sm:px-6">
+                      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                        <div className="min-w-0">
+                          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary">
+                            <ShopOutlined />
+                            Business Profile
+                          </div>
+                          <Title level={4} className="!mb-1">
+                            {providerProfile.shopName}
+                          </Title>
+                          <Paragraph className="!mb-0 max-w-2xl text-muted-foreground">
+                            Keep your storefront information accurate so admins
+                            and customers see the right business details.
+                          </Paragraph>
                         </div>
-                        <div>
-                          <Text className="block font-medium">
-                            Current trade license
-                          </Text>
-                          <Text type="secondary">
-                            Open the existing file or replace it from the form.
-                          </Text>
-                        </div>
-                      </Space>
 
-                      <Link href={providerProfile.tradeLicense} target="_blank">
-                        View File
-                      </Link>
+                        <div className="grid grid-cols-2 gap-3 sm:min-w-[260px]">
+                          <div className="rounded-2xl border border-border/80 bg-background/90 p-3">
+                            <Text type="secondary">Status</Text>
+                            <div className="mt-2">
+                              <Tag
+                                color={currentStatus.color}
+                                icon={currentStatus.icon}
+                              >
+                                {currentStatus.label}
+                              </Tag>
+                            </div>
+                          </div>
+
+                          <div className="rounded-2xl border border-border/80 bg-background/90 p-3">
+                            <Text type="secondary">Account</Text>
+                            <div className="mt-2">
+                              <Tag
+                                color={
+                                  providerProfile.isActive ? "blue" : "default"
+                                }
+                              >
+                                {providerProfile.isActive
+                                  ? "Active"
+                                  : "Inactive"}
+                              </Tag>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </Card>
-                )}
-              </Space>
-            </Card>
-          </Col>
 
-          <Col xs={24} xl={16}>
-            <Card bordered={false} className="shadow-sm">
-              <div className="mb-6">
-                <Title level={4} className="!mb-1">
-                  Update Provider Profile
-                </Title>
-                <Paragraph className="!mb-0 text-muted-foreground">
-                  Only changed values will be submitted.
-                </Paragraph>
-              </div>
+                  <Row gutter={[16, 16]}>
+                    <Col xs={24} xl={9}>
+                      <div className="space-y-4">
+                        <Card bordered={false} className="shadow-sm">
+                          <div className="mb-4">
+                            <Text type="secondary">Current Snapshot</Text>
+                            <Title level={5} className="!mb-1 !mt-1">
+                              Business details on file
+                            </Title>
+                            <Paragraph className="!mb-0 text-muted-foreground">
+                              Review the information currently saved for your
+                              provider account.
+                            </Paragraph>
+                          </div>
 
-              <Form
-                form={form}
-                layout="vertical"
-                onFinish={onFinish}
-                className="space-y-1"
-              >
-                <Row gutter={16}>
-                  <Col xs={24} md={12}>
-                    <Form.Item
-                      label="Shop Name"
-                      name="shopName"
-                      rules={[
-                        {
-                          min: 2,
-                          message:
-                            "Shop name must be at least 2 characters long",
-                        },
-                      ]}
-                    >
-                      <Input
-                        size="large"
-                        prefix={
-                          <ShopOutlined className="text-muted-foreground" />
-                        }
-                        placeholder="Rahim Store"
-                      />
-                    </Form.Item>
-                  </Col>
+                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-1">
+                            <div className="rounded-xl border border-border/80 bg-secondary/20 p-4">
+                              <Text type="secondary">Business Type</Text>
+                              <p className="mt-1 text-sm font-semibold text-foreground">
+                                {providerProfile.businessType}
+                              </p>
+                            </div>
 
-                  <Col xs={24} md={12}>
-                    <Form.Item label="Business Type" name="businessType">
-                      <Select size="large" placeholder="Select business type">
-                        {businessTypes.map((type) => (
-                          <Option key={type} value={type}>
-                            {type}
-                          </Option>
-                        ))}
-                      </Select>
-                    </Form.Item>
-                  </Col>
+                            <div className="rounded-xl border border-border/80 bg-secondary/20 p-4">
+                              <Text type="secondary">Contact Phone</Text>
+                              <p className="mt-1 text-sm font-semibold text-foreground">
+                                {providerProfile.phone}
+                              </p>
+                            </div>
 
-                  <Col xs={24} md={12}>
-                    <Form.Item
-                      label="Phone Number"
-                      name="phone"
-                      rules={[
-                        {
-                          pattern: /^01[0-9]{9}$/,
-                          message: "Enter a valid Bangladeshi phone number",
-                        },
-                      ]}
-                    >
-                      <Input
-                        size="large"
-                        prefix={
-                          <UserOutlined className="text-muted-foreground" />
-                        }
-                        placeholder="01700111222"
-                      />
-                    </Form.Item>
-                  </Col>
+                            <div className="rounded-xl border border-border/80 bg-secondary/20 p-4 sm:col-span-2 xl:col-span-1">
+                              <Text type="secondary">Address</Text>
+                              <p className="mt-1 text-sm font-semibold text-foreground">
+                                {providerProfile.address}
+                              </p>
+                            </div>
 
-                  <Col xs={24} md={12}>
-                    <Form.Item
-                      label="Trade License"
-                      name="tradeLicense"
-                      valuePropName="fileList"
-                      getValueFromEvent={normalizeUploadValue}
-                      extra="Upload a new file only if you want to replace the existing one."
-                    >
-                      <Upload
-                        beforeUpload={() => false}
-                        maxCount={1}
-                        accept=".pdf,.jpg,.jpeg,.png,.webp"
-                      >
-                        <Button size="large" className="w-full md:w-auto">
-                          Replace Trade License
-                        </Button>
-                      </Upload>
-                    </Form.Item>
-                  </Col>
+                            <div className="rounded-xl border border-border/80 bg-secondary/20 p-4 sm:col-span-2 xl:col-span-1">
+                              <Text type="secondary">Account Email</Text>
+                              <p className="mt-1 break-all text-sm font-semibold text-foreground">
+                                {userData?.email}
+                              </p>
+                            </div>
+                          </div>
+                        </Card>
 
-                  <Col xs={24}>
-                    <Form.Item
-                      label="Address"
-                      name="address"
-                      rules={[
-                        {
-                          min: 5,
-                          message: "Address must be at least 5 characters long",
-                        },
-                      ]}
-                    >
-                      <Input size="large" placeholder="Dhaka, Bangladesh" />
-                    </Form.Item>
-                  </Col>
+                        {providerProfile.tradeLicense && (
+                          <Card
+                            bordered={false}
+                            className="shadow-sm"
+                            title="Trade License"
+                          >
+                            <div className="flex flex-col gap-4">
+                              <div className="flex items-start gap-3 rounded-xl border border-border/80 bg-secondary/20 p-4">
+                                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                                  <FileTextOutlined />
+                                </div>
+                                <div className="min-w-0">
+                                  <Text className="block font-medium">
+                                    Current trade license file
+                                  </Text>
+                                  <Text type="secondary">
+                                    Open the uploaded file or replace it from
+                                    the update form.
+                                  </Text>
+                                </div>
+                              </div>
 
-                  <Col xs={24}>
-                    <Form.Item label="Description" name="description">
-                      <TextArea
-                        rows={5}
-                        placeholder="Describe your shop, product focus, and service area..."
-                      />
-                    </Form.Item>
-                  </Col>
-                </Row>
+                              <Link
+                                href={providerProfile.tradeLicense}
+                                target="_blank"
+                                className="inline-flex w-full items-center justify-center rounded-lg border border-border px-4 py-2 text-center sm:w-auto"
+                              >
+                                View Current File
+                              </Link>
+                            </div>
+                          </Card>
+                        )}
+                      </div>
+                    </Col>
 
-                <div className="flex flex-col gap-3 rounded-xl border border-border/80 bg-secondary/20 p-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <Text className="block font-medium">
-                      Save profile updates
-                    </Text>
-                    <Text type="secondary">
-                      Changes will update your provider profile immediately.
-                    </Text>
-                  </div>
+                    <Col xs={24} xl={15}>
+                      <Card bordered={false} className="shadow-sm">
+                        <div className="mb-6">
+                          <Title level={4} className="!mb-1">
+                            Update Business Profile
+                          </Title>
+                          <Paragraph className="!mb-0 text-muted-foreground">
+                            Edit your shop details below. Only changed values
+                            will be submitted.
+                          </Paragraph>
+                        </div>
 
-                  <Button
-                    type="primary"
-                    htmlType="submit"
-                    size="large"
-                    loading={isLoading}
-                    className="w-full sm:w-auto"
-                  >
-                    Save Changes
-                  </Button>
+                        <Form
+                          form={form}
+                          layout="vertical"
+                          onFinish={onFinish}
+                          className="space-y-1"
+                        >
+                          <Row gutter={16}>
+                            <Col xs={24} md={12}>
+                              <Form.Item
+                                label="Shop Name"
+                                name="shopName"
+                                rules={[
+                                  {
+                                    min: 2,
+                                    message:
+                                      "Shop name must be at least 2 characters long",
+                                  },
+                                ]}
+                              >
+                                <Input
+                                  size="large"
+                                  prefix={
+                                    <ShopOutlined className="text-muted-foreground" />
+                                  }
+                                  placeholder="Rahim Store"
+                                />
+                              </Form.Item>
+                            </Col>
+
+                            <Col xs={24} md={12}>
+                              <Form.Item
+                                label="Business Type"
+                                name="businessType"
+                              >
+                                <Select
+                                  size="large"
+                                  placeholder="Select business type"
+                                >
+                                  {businessTypes.map((type) => (
+                                    <Option key={type} value={type}>
+                                      {type}
+                                    </Option>
+                                  ))}
+                                </Select>
+                              </Form.Item>
+                            </Col>
+
+                            <Col xs={24} md={12}>
+                              <Form.Item
+                                label="Phone Number"
+                                name="phone"
+                                rules={[
+                                  {
+                                    pattern: /^01[0-9]{9}$/,
+                                    message:
+                                      "Enter a valid Bangladeshi phone number",
+                                  },
+                                ]}
+                              >
+                                <Input
+                                  size="large"
+                                  prefix={
+                                    <UserOutlined className="text-muted-foreground" />
+                                  }
+                                  placeholder="01700111222"
+                                />
+                              </Form.Item>
+                            </Col>
+
+                            <Col xs={24} md={12}>
+                              <Form.Item
+                                label="Trade License"
+                                name="tradeLicense"
+                                valuePropName="fileList"
+                                getValueFromEvent={normalizeUploadValue}
+                                extra="Upload a new file only if you want to replace the existing one."
+                              >
+                                <Upload
+                                  beforeUpload={() => false}
+                                  maxCount={1}
+                                  accept=".pdf,.jpg,.jpeg,.png,.webp"
+                                >
+                                  <Button
+                                    size="large"
+                                    className="w-full md:w-auto"
+                                  >
+                                    Replace Trade License
+                                  </Button>
+                                </Upload>
+                              </Form.Item>
+                            </Col>
+
+                            <Col xs={24}>
+                              <Form.Item
+                                label="Address"
+                                name="address"
+                                rules={[
+                                  {
+                                    min: 5,
+                                    message:
+                                      "Address must be at least 5 characters long",
+                                  },
+                                ]}
+                              >
+                                <Input
+                                  size="large"
+                                  placeholder="Dhaka, Bangladesh"
+                                />
+                              </Form.Item>
+                            </Col>
+
+                            <Col xs={24}>
+                              <Form.Item label="Description" name="description">
+                                <TextArea
+                                  rows={5}
+                                  placeholder="Describe your shop, product focus, and service area..."
+                                />
+                              </Form.Item>
+                            </Col>
+                          </Row>
+
+                          <div className="flex flex-col gap-3 rounded-xl border border-border/80 bg-secondary/20 p-4 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                              <Text className="block font-medium">
+                                Save business profile updates
+                              </Text>
+                              <Text type="secondary">
+                                Changes will update your provider profile
+                                immediately.
+                              </Text>
+                            </div>
+
+                            <Button
+                              type="primary"
+                              htmlType="submit"
+                              size="large"
+                              loading={isLoading}
+                              className="w-full sm:w-auto"
+                            >
+                              Save Changes
+                            </Button>
+                          </div>
+                        </Form>
+                      </Card>
+                    </Col>
+                  </Row>
                 </div>
-              </Form>
-            </Card>
-          </Col>
-        </Row>
+              ),
+            },
+          ]}
+        />
       </div>
     </DashboardLayout>
   );

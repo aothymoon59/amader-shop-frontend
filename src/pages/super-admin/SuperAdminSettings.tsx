@@ -1,20 +1,27 @@
 import DashboardLayout from "@/components/layouts/DashboardLayout";
+import ChangePasswordSection from "@/components/settings/ChangePasswordSection";
 import ProfileSettingsSection from "@/components/settings/ProfileSettingsSection";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import SettingsTabs from "@/components/settings/SettingsTabs";
 
 const SuperAdminSettings = () => (
   <DashboardLayout role="super-admin">
-    <div className="space-y-6 max-w-2xl">
-      <h1 className="text-2xl font-bold">System Settings</h1>
-      <ProfileSettingsSection title="Super Admin Profile Settings" />
-      <div className="rounded-xl border bg-card p-6 space-y-4">
-        <h2 className="font-semibold">Platform Configuration</h2>
-        <div><Label>Platform Name</Label><Input defaultValue="SmallShop" className="mt-1.5" /></div>
-        <div><Label>Admin Email</Label><Input defaultValue="admin@smallshop.com" className="mt-1.5" /></div>
-        <Button variant="hero">Save Changes</Button>
-      </div>
+    <div className="mx-auto">
+      <SettingsTabs
+        title="Profile Settings"
+        description="Manage your profile information and account password."
+        items={[
+          {
+            key: "profile",
+            label: "Personal Profile",
+            children: <ProfileSettingsSection title="My Account" />,
+          },
+          {
+            key: "password",
+            label: "Change Password",
+            children: <ChangePasswordSection />,
+          },
+        ]}
+      />
     </div>
   </DashboardLayout>
 );

@@ -8,14 +8,16 @@ export type TUser = {
   email?: string;
   name?: string;
   role: UserRole;
+  personalContact?: string | null;
+  personalAddress?: string | null;
+  dateOfBirth?: string | null;
+  profileImage?: string | null;
   providerProfile?: {
     id?: string;
     shopName?: string;
     status?: "PENDING" | "APPROVED" | "REJECTED";
     isActive?: boolean;
   } | null;
-  phone?: string;
-  address?: string;
   iat?: number;
   exp?: number;
   [key: string]: unknown;
