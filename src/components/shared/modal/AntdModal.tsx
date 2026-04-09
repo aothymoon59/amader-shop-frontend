@@ -34,6 +34,7 @@ const AntdModal = ({
           maxHeight: height,
           minHeight: height,
           overflowY: height ? "auto" : undefined,
+          overflowX: "hidden",
         },
       }}
     >

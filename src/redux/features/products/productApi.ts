@@ -58,7 +58,7 @@ export type ManagedProductsResponse = {
     page?: number;
     limit?: number;
     total?: number;
-    totalPage?: number;
+    totalPages?: number;
   };
   data: Product[];
 };
@@ -74,8 +74,13 @@ export type ManagedProductQuery = {
   categoryId?: string;
   providerId?: string;
   published?: boolean;
-  featured?: boolean;
-  paginate?: boolean;
+  isFeatured?: boolean;
+  isDiscount?: boolean;
+  status?: "published" | "draft";
+  sortBy?: "price" | "date" | "name";
+  sortOrder?: "asc" | "desc";
+  priceSort?: "low-to-high" | "high-to-low";
+  dateSort?: "new-to-old" | "old-to-new";
   page?: number;
   limit?: number;
 };
