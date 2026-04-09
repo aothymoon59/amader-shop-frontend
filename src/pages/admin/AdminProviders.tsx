@@ -6,15 +6,24 @@ import {
   EyeOutlined,
   PlusOutlined,
 } from "@ant-design/icons";
-import { Button, Card, Popover, Select, Space, Tag, Typography } from "antd";
+import {
+  Button,
+  Card,
+  Popconfirm,
+  Popover,
+  Select,
+  Space,
+  Tag,
+  Typography,
+} from "antd";
 import type { ColumnsType } from "antd/es/table";
 
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { toast } from "@/components/ui/use-toast";
 import {
-  useApproveProviderMutation,
   useGetAllProvidersQuery,
-  useRejectProviderMutation,
+  useUpdateProviderStatusMutation,
+  type ProviderStatus,
 } from "@/redux/features/admin/providerManagementApi";
 import CustomTable from "@/components/shared/table/CustomTable";
 import TableSearch from "@/components/shared/table/TableSearch";
@@ -23,8 +32,6 @@ import CreateProviderByAdminModal from "@/components/admins/providerManagement/C
 import { MdAdminPanelSettings } from "react-icons/md";
 
 const { Title, Paragraph, Text } = Typography;
-
-type ProviderStatus = "PENDING" | "APPROVED" | "REJECTED";
 
 type ProviderRecord = {
   id: string;
@@ -65,8 +72,7 @@ const AdminProviders = () => {
   const [isViewDetailsModalOpen, setIsViewDetailsModalOpen] = useState(false);
   const [selectedProvider, setSelectedProvider] =
     useState<ProviderRecord | null>(null);
-  const [approveProvider] = useApproveProviderMutation();
-  const [rejectProvider] = useRejectProviderMutation();
+  const [updateProviderStatusMutation] = useUpdateProviderStatusMutation();
 
   const [query, setQuery] = useState<ProviderQuery>({
     page: 1,
@@ -100,10 +106,8 @@ const AdminProviders = () => {
 
   const updateStatus = async (providerId: string, status: ProviderStatus) => {
     try {
-      if (status === "APPROVED") {
-        await approveProvider(providerId).unwrap();
-      } else if (status === "REJECTED") {
-        await rejectProvider(providerId).unwrap();
+      if (status !== "PENDING") {
+        await updateProviderStatusMutation({ id: providerId, status }).unwrap();
       }
 
       toast({
@@ -190,6 +194,7 @@ const AdminProviders = () => {
       align: "right",
       render: (_, record) => (
         <div className="flex items-center justify-end gap-2">
+          {/* View */}
           <Popover content="View Details">
             <Button
               icon={<EyeOutlined />}
@@ -200,24 +205,38 @@ const AdminProviders = () => {
             />
           </Popover>
 
+          {/* Approve / Reject */}
           {record.status === "PENDING" && (
             <>
-              <Popover content="Approve">
+              {/* Approve */}
+              <Popconfirm
+                title="Approve Provider"
+                description="Are you sure you want to approve this provider?"
+                okText="Yes"
+                cancelText="No"
+                onConfirm={() => updateStatus(record.id, "APPROVED")}
+              >
                 <Button
                   color="green"
                   variant="solid"
                   icon={<CheckCircleOutlined />}
-                  onClick={() => updateStatus(record.id, "APPROVED")}
                 />
-              </Popover>
-              <Popover content="Reject">
+              </Popconfirm>
+
+              {/* Reject */}
+              <Popconfirm
+                title="Reject Provider"
+                description="Are you sure you want to reject this provider?"
+                okText="Yes"
+                cancelText="No"
+                onConfirm={() => updateStatus(record.id, "REJECTED")}
+              >
                 <Button
                   danger
                   variant="filled"
                   icon={<CloseCircleOutlined />}
-                  onClick={() => updateStatus(record.id, "REJECTED")}
                 />
-              </Popover>
+              </Popconfirm>
             </>
           )}
         </div>
