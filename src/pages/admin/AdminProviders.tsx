@@ -3,28 +3,32 @@ import { useState } from "react";
 import {
   CheckCircleOutlined,
   CloseCircleOutlined,
+  EditOutlined,
   EyeOutlined,
+  PauseCircleOutlined,
+  PlayCircleOutlined,
   PlusOutlined,
 } from "@ant-design/icons";
-import { Button, Card, Popover, Select, Space, Tag, Typography } from "antd";
+import { Button, Card, Select, Space, Tag, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { toast } from "@/components/ui/use-toast";
 import {
-  useApproveProviderMutation,
   useGetAllProvidersQuery,
-  useRejectProviderMutation,
+  useUpdateProviderActiveStateMutation,
+  useUpdateProviderStatusMutation,
+  type ProviderStatus,
 } from "@/redux/features/admin/providerManagementApi";
 import CustomTable from "@/components/shared/table/CustomTable";
 import TableSearch from "@/components/shared/table/TableSearch";
 import ProviderDetailsModal from "@/components/admins/providerManagement/ProviderDetailsModal";
 import CreateProviderByAdminModal from "@/components/admins/providerManagement/CreateProviderByAdminModal";
-import { MdAdminPanelSettings } from "react-icons/md";
+import RefreshButton from "@/components/shared/button/RefreshButton";
+import EditProviderModal from "@/components/admins/providerManagement/EditProviderModal";
+import TableActionMenu from "@/components/shared/table/TableActionMenu";
 
 const { Title, Paragraph, Text } = Typography;
-
-type ProviderStatus = "PENDING" | "APPROVED" | "REJECTED";
 
 type ProviderRecord = {
   id: string;
@@ -37,6 +41,7 @@ type ProviderRecord = {
   tradeLicense: string;
   description: string | null;
   status: ProviderStatus;
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
   user: {
@@ -63,10 +68,12 @@ type ProviderQuery = {
 const AdminProviders = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isViewDetailsModalOpen, setIsViewDetailsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedProvider, setSelectedProvider] =
     useState<ProviderRecord | null>(null);
-  const [approveProvider] = useApproveProviderMutation();
-  const [rejectProvider] = useRejectProviderMutation();
+  const [updateProviderStatusMutation] = useUpdateProviderStatusMutation();
+  const [updateProviderActiveStateMutation] =
+    useUpdateProviderActiveStateMutation();
 
   const [query, setQuery] = useState<ProviderQuery>({
     page: 1,
@@ -77,7 +84,8 @@ const AdminProviders = () => {
 
   const hasActiveFilters = Boolean(query.search || query.status);
 
-  const { data, isLoading, isFetching } = useGetAllProvidersQuery(query);
+  const { data, isLoading, isFetching, refetch } =
+    useGetAllProvidersQuery(query);
 
   const providers: ProviderRecord[] = data?.data || [];
   const meta = data?.meta;
@@ -100,10 +108,8 @@ const AdminProviders = () => {
 
   const updateStatus = async (providerId: string, status: ProviderStatus) => {
     try {
-      if (status === "APPROVED") {
-        await approveProvider(providerId).unwrap();
-      } else if (status === "REJECTED") {
-        await rejectProvider(providerId).unwrap();
+      if (status !== "PENDING") {
+        await updateProviderStatusMutation({ id: providerId, status }).unwrap();
       }
 
       toast({
@@ -122,11 +128,41 @@ const AdminProviders = () => {
     }
   };
 
+  const updateActiveState = async (providerId: string, isActive: boolean) => {
+    try {
+      await updateProviderActiveStateMutation({
+        id: providerId,
+        isActive,
+      }).unwrap();
+
+      toast({
+        title: "Provider updated",
+        description: `Provider ${isActive ? "activated" : "deactivated"} successfully.`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Update failed",
+        description:
+          error?.data?.errorMessage ||
+          error?.data?.message ||
+          "Something went wrong",
+        variant: "destructive",
+      });
+    }
+  };
+
   const getStatusTag = (status: ProviderStatus) => {
     if (status === "APPROVED") return <Tag color="success">APPROVED</Tag>;
     if (status === "REJECTED") return <Tag color="error">REJECTED</Tag>;
     return <Tag color="warning">PENDING</Tag>;
   };
+
+  const getAccessTag = (isActive: boolean) =>
+    isActive ? (
+      <Tag color="green">ACTIVE</Tag>
+    ) : (
+      <Tag color="red">INACTIVE</Tag>
+    );
 
   const columns: ColumnsType<ProviderRecord> = [
     {
@@ -177,6 +213,13 @@ const AdminProviders = () => {
       render: (status: ProviderStatus) => getStatusTag(status),
     },
     {
+      title: "Access",
+      dataIndex: "isActive",
+      key: "isActive",
+      width: 120,
+      render: (isActive: boolean) => getAccessTag(isActive),
+    },
+    {
       title: "Applied At",
       dataIndex: "createdAt",
       key: "createdAt",
@@ -186,40 +229,80 @@ const AdminProviders = () => {
     {
       title: "Actions",
       key: "actions",
-      width: 180,
+      width: 90,
       align: "right",
       render: (_, record) => (
-        <div className="flex items-center justify-end gap-2">
-          <Popover content="View Details">
-            <Button
-              icon={<EyeOutlined />}
-              onClick={() => {
-                setSelectedProvider(record);
-                setIsViewDetailsModalOpen(true);
-              }}
-            />
-          </Popover>
-
-          {record.status === "PENDING" && (
-            <>
-              <Popover content="Approve">
-                <Button
-                  color="green"
-                  variant="solid"
-                  icon={<CheckCircleOutlined />}
-                  onClick={() => updateStatus(record.id, "APPROVED")}
-                />
-              </Popover>
-              <Popover content="Reject">
-                <Button
-                  danger
-                  variant="filled"
-                  icon={<CloseCircleOutlined />}
-                  onClick={() => updateStatus(record.id, "REJECTED")}
-                />
-              </Popover>
-            </>
-          )}
+        <div className="flex justify-end">
+          <TableActionMenu
+            items={[
+              {
+                key: "view",
+                label: "View Details",
+                icon: <EyeOutlined />,
+                onClick: () => {
+                  setSelectedProvider(record);
+                  setIsViewDetailsModalOpen(true);
+                },
+              },
+              {
+                key: "edit",
+                label: "Edit Provider",
+                icon: <EditOutlined />,
+                onClick: () => {
+                  setSelectedProvider(record);
+                  setIsEditModalOpen(true);
+                },
+              },
+              {
+                key: "approve",
+                label: "Approve",
+                icon: <CheckCircleOutlined />,
+                hidden: record.status !== "PENDING",
+                onClick: () => updateStatus(record.id, "APPROVED"),
+                confirm: {
+                  title: "Approve Provider",
+                  description:
+                    "Are you sure you want to approve this provider?",
+                },
+              },
+              {
+                key: "reject",
+                label: "Reject",
+                icon: <CloseCircleOutlined />,
+                danger: true,
+                hidden: record.status !== "PENDING",
+                onClick: () => updateStatus(record.id, "REJECTED"),
+                confirm: {
+                  title: "Reject Provider",
+                  description: "Are you sure you want to reject this provider?",
+                },
+              },
+              {
+                key: "deactivate",
+                label: "Deactivate",
+                icon: <PauseCircleOutlined />,
+                hidden: record.status !== "APPROVED" || !record.isActive,
+                onClick: () => updateActiveState(record.id, false),
+                confirm: {
+                  title: "Deactivate Provider",
+                  description:
+                    "This provider will no longer be able to act as a provider until reactivated.",
+                },
+              },
+              {
+                key: "activate",
+                label: "Activate",
+                icon: <PlayCircleOutlined />,
+                hidden: record.status !== "APPROVED" || record.isActive,
+                onClick: () => updateActiveState(record.id, true),
+                confirm: {
+                  title: "Activate Provider",
+                  description:
+                    "This provider will regain provider access immediately.",
+                },
+              },
+            ]}
+          />
         </div>
       ),
     },
@@ -289,6 +372,12 @@ const AdminProviders = () => {
         </Card>
 
         <Card bordered={false} className="shadow-sm">
+          <div className="flex items-center justify-end gap-2 mb-3">
+            <RefreshButton
+              refetch={refetch}
+              isLoading={isLoading || isFetching}
+            />
+          </div>
           <div className="overflow-hidden">
             <CustomTable<ProviderRecord>
               loading={isLoading || isFetching}
@@ -316,9 +405,6 @@ const AdminProviders = () => {
                 });
               }}
               isPagination
-              locale={{
-                emptyText: "No providers found",
-              }}
             />
           </div>
         </Card>
@@ -333,6 +419,12 @@ const AdminProviders = () => {
         isModalOpen={isViewDetailsModalOpen}
         closeModal={() => setIsViewDetailsModalOpen(false)}
         data={selectedProvider}
+      />
+
+      <EditProviderModal
+        isModalOpen={isEditModalOpen}
+        closeModal={() => setIsEditModalOpen(false)}
+        provider={selectedProvider}
       />
     </DashboardLayout>
   );

@@ -15,7 +15,12 @@ type AuthContextValue = {
   isAuthenticated: boolean;
   logout: () => void;
   updateProfile: (
-    profile: Partial<Pick<AuthUser, "name" | "email" | "phone" | "address">>,
+    profile: Partial<
+      Pick<
+        AuthUser,
+        "name" | "email" | "personalContact" | "personalAddress" | "dateOfBirth" | "profileImage"
+      >
+    >,
   ) => void;
 };
 
@@ -32,7 +37,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updateProfile = (
-    profile: Partial<Pick<AuthUser, "name" | "email" | "phone" | "address">>,
+    profile: Partial<
+      Pick<
+        AuthUser,
+        "name" | "email" | "personalContact" | "personalAddress" | "dateOfBirth" | "profileImage"
+      >
+    >,
   ) => {
     dispatch(updateUser(profile));
   };

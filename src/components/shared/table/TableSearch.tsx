@@ -2,7 +2,7 @@ import { Input } from "antd";
 import { useState, useEffect } from "react";
 import Proptypes from "prop-types";
 
-const TableSearch = ({ setQuery, placeholder = "Search..." }) => {
+const TableSearch = ({ setQuery, placeholder = "Search...", size = "" }) => {
   const [value, setValue] = useState("");
 
   useEffect(() => {
@@ -15,6 +15,7 @@ const TableSearch = ({ setQuery, placeholder = "Search..." }) => {
 
   return (
     <Input
+      size={size as "small" | "middle" | "large"}
       placeholder={placeholder}
       value={value}
       onChange={(e) => setValue(e.target.value)}

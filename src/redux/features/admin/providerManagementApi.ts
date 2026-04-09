@@ -14,6 +14,8 @@ export type AdminCreateProviderPayload = {
   description?: string;
 };
 
+export type ProviderStatus = "PENDING" | "APPROVED" | "REJECTED";
+
 export const providerManagementApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getAllProviders: builder.query({
@@ -35,17 +37,27 @@ export const providerManagementApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [tagTypes.PROVIDERS],
     }),
-    approveProvider: builder.mutation({
-      query: (id: string) => ({
-        url: `/providers/${id}/approve`,
+    updateProvider: builder.mutation({
+      query: ({ id, payload }: { id: string; payload: FormData }) => ({
+        url: `/providers/${id}`,
         method: "PATCH",
+        body: payload,
       }),
       invalidatesTags: [tagTypes.PROVIDERS],
     }),
-    rejectProvider: builder.mutation({
-      query: (id: string) => ({
-        url: `/providers/${id}/reject`,
+    updateProviderStatus: builder.mutation({
+      query: ({ id, status }: { id: string; status: Exclude<ProviderStatus, "PENDING"> }) => ({
+        url: `/providers/${id}/status`,
         method: "PATCH",
+        body: { status },
+      }),
+      invalidatesTags: [tagTypes.PROVIDERS],
+    }),
+    updateProviderActiveState: builder.mutation({
+      query: ({ id, isActive }: { id: string; isActive: boolean }) => ({
+        url: `/providers/${id}/active`,
+        method: "PATCH",
+        body: { isActive },
       }),
       invalidatesTags: [tagTypes.PROVIDERS],
     }),
@@ -55,6 +67,7 @@ export const providerManagementApi = baseApi.injectEndpoints({
 export const {
   useGetAllProvidersQuery,
   useCreateProviderByAdminMutation,
-  useApproveProviderMutation,
-  useRejectProviderMutation,
+  useUpdateProviderMutation,
+  useUpdateProviderStatusMutation,
+  useUpdateProviderActiveStateMutation,
 } = providerManagementApi;
