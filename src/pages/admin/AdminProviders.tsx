@@ -29,7 +29,7 @@ import CustomTable from "@/components/shared/table/CustomTable";
 import TableSearch from "@/components/shared/table/TableSearch";
 import ProviderDetailsModal from "@/components/admins/providerManagement/ProviderDetailsModal";
 import CreateProviderByAdminModal from "@/components/admins/providerManagement/CreateProviderByAdminModal";
-import { MdAdminPanelSettings } from "react-icons/md";
+import RefreshButton from "@/components/shared/button/RefreshButton";
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -83,7 +83,8 @@ const AdminProviders = () => {
 
   const hasActiveFilters = Boolean(query.search || query.status);
 
-  const { data, isLoading, isFetching } = useGetAllProvidersQuery(query);
+  const { data, isLoading, isFetching, refetch } =
+    useGetAllProvidersQuery(query);
 
   const providers: ProviderRecord[] = data?.data || [];
   const meta = data?.meta;
@@ -308,6 +309,12 @@ const AdminProviders = () => {
         </Card>
 
         <Card bordered={false} className="shadow-sm">
+          <div className="flex items-center justify-end gap-2 mb-3">
+            <RefreshButton
+              refetch={refetch}
+              isLoading={isLoading || isFetching}
+            />
+          </div>
           <div className="overflow-hidden">
             <CustomTable<ProviderRecord>
               loading={isLoading || isFetching}
