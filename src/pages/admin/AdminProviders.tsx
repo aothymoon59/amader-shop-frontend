@@ -3,6 +3,7 @@ import { useState } from "react";
 import {
   CheckCircleOutlined,
   CloseCircleOutlined,
+  EditOutlined,
   EyeOutlined,
   PlusOutlined,
 } from "@ant-design/icons";
@@ -30,6 +31,7 @@ import TableSearch from "@/components/shared/table/TableSearch";
 import ProviderDetailsModal from "@/components/admins/providerManagement/ProviderDetailsModal";
 import CreateProviderByAdminModal from "@/components/admins/providerManagement/CreateProviderByAdminModal";
 import RefreshButton from "@/components/shared/button/RefreshButton";
+import EditProviderModal from "@/components/admins/providerManagement/EditProviderModal";
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -70,6 +72,7 @@ type ProviderQuery = {
 const AdminProviders = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isViewDetailsModalOpen, setIsViewDetailsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedProvider, setSelectedProvider] =
     useState<ProviderRecord | null>(null);
   const [updateProviderStatusMutation] = useUpdateProviderStatusMutation();
@@ -202,6 +205,16 @@ const AdminProviders = () => {
               onClick={() => {
                 setSelectedProvider(record);
                 setIsViewDetailsModalOpen(true);
+              }}
+            />
+          </Popover>
+
+          <Popover content="Edit Provider">
+            <Button
+              icon={<EditOutlined />}
+              onClick={() => {
+                setSelectedProvider(record);
+                setIsEditModalOpen(true);
               }}
             />
           </Popover>
@@ -356,6 +369,12 @@ const AdminProviders = () => {
         isModalOpen={isViewDetailsModalOpen}
         closeModal={() => setIsViewDetailsModalOpen(false)}
         data={selectedProvider}
+      />
+
+      <EditProviderModal
+        isModalOpen={isEditModalOpen}
+        closeModal={() => setIsEditModalOpen(false)}
+        provider={selectedProvider}
       />
     </DashboardLayout>
   );

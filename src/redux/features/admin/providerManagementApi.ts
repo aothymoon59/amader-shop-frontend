@@ -37,6 +37,14 @@ export const providerManagementApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [tagTypes.PROVIDERS],
     }),
+    updateProvider: builder.mutation({
+      query: ({ id, payload }: { id: string; payload: FormData }) => ({
+        url: `/providers/${id}`,
+        method: "PATCH",
+        body: payload,
+      }),
+      invalidatesTags: [tagTypes.PROVIDERS],
+    }),
     updateProviderStatus: builder.mutation({
       query: ({ id, status }: { id: string; status: Exclude<ProviderStatus, "PENDING"> }) => ({
         url: `/providers/${id}/status`,
@@ -51,5 +59,6 @@ export const providerManagementApi = baseApi.injectEndpoints({
 export const {
   useGetAllProvidersQuery,
   useCreateProviderByAdminMutation,
+  useUpdateProviderMutation,
   useUpdateProviderStatusMutation,
 } = providerManagementApi;
