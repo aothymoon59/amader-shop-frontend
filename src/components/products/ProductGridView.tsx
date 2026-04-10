@@ -1,5 +1,5 @@
 import { Button, Card, Pagination, Popconfirm, Tag } from "antd";
-import { Eye, Pencil, Trash2 } from "lucide-react";
+import { Eye, Pencil, RotateCcw, Trash2 } from "lucide-react";
 
 import type { PaginationState } from "@/components/products/productManagement.types";
 import type { Product } from "@/redux/features/products/productApi";
@@ -8,6 +8,8 @@ type ProductGridViewProps = {
   products: Product[];
   role: "provider" | "admin";
   isDeleting: boolean;
+  isArchivedView?: boolean;
+  isRestoring?: boolean;
   currentPage: number;
   pageSize: number;
   total: number;
@@ -15,6 +17,7 @@ type ProductGridViewProps = {
   onView: (product: Product) => void;
   onEdit: (product: Product) => void;
   onDelete: (productId: string) => void;
+  onRestore?: (productId: string) => void;
 };
 
 const getProductImage = (product: Product) =>
@@ -25,6 +28,8 @@ const ProductGridView = ({
   products,
   role,
   isDeleting,
+  isArchivedView = false,
+  isRestoring = false,
   currentPage,
   pageSize,
   total,
@@ -32,6 +37,7 @@ const ProductGridView = ({
   onView,
   onEdit,
   onDelete,
+  onRestore,
 }: ProductGridViewProps) => {
   if (!products.length) {
     return null;
@@ -63,14 +69,25 @@ const ProductGridView = ({
               >
                 View
               </Button>,
-              <Button
-                key="edit"
-                type="text"
-                icon={<Pencil size={16} />}
-                onClick={() => onEdit(product)}
-              >
-                Edit
-              </Button>,
+              isArchivedView ? (
+                <Button
+                  key="restore"
+                  type="text"
+                  icon={<RotateCcw size={16} />}
+                  onClick={() => onRestore?.(product.id)}
+                >
+                  Restore
+                </Button>
+              ) : (
+                <Button
+                  key="edit"
+                  type="text"
+                  icon={<Pencil size={16} />}
+                  onClick={() => onEdit(product)}
+                >
+                  Edit
+                </Button>
+              ),
             ]}
           >
             <div className="space-y-3">
@@ -128,17 +145,29 @@ const ProductGridView = ({
                 </div>
               ) : null}
 
-              <Popconfirm
-                title="Archive this product?"
-                description="This product will be hidden from active lists."
-                onConfirm={() => onDelete(product.id)}
-                okText="Archive"
-                okButtonProps={{ danger: true, loading: isDeleting }}
-              >
-                <Button danger block icon={<Trash2 size={16} />}>
-                  Archive Product
+              {isArchivedView ? (
+                <Button
+                  type="primary"
+                  block
+                  icon={<RotateCcw size={16} />}
+                  loading={isRestoring}
+                  onClick={() => onRestore?.(product.id)}
+                >
+                  Restore Product
                 </Button>
-              </Popconfirm>
+              ) : (
+                <Popconfirm
+                  title="Archive this product?"
+                  description="This product will be hidden from active lists."
+                  onConfirm={() => onDelete(product.id)}
+                  okText="Archive"
+                  okButtonProps={{ danger: true, loading: isDeleting }}
+                >
+                  <Button danger block icon={<Trash2 size={16} />}>
+                    Archive Product
+                  </Button>
+                </Popconfirm>
+              )}
             </div>
           </Card>
         ))}
