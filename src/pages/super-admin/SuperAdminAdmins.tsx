@@ -1,176 +1,435 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
-import { Edit, Eye, Plus, Trash2 } from "lucide-react";
+import {
+  EditOutlined,
+  EyeOutlined,
+  PauseCircleOutlined,
+  PlayCircleOutlined,
+  PlusOutlined,
+  RollbackOutlined,
+  StopOutlined,
+} from "@ant-design/icons";
+import { Button, Card, Select, Tag, Typography } from "antd";
+import type { ColumnsType } from "antd/es/table";
 
+import AdminDetailsModal from "@/components/admins/adminManagement/AdminDetailsModal";
+import CreateAdminModal from "@/components/admins/adminManagement/CreateAdminModal";
+import EditAdminModal from "@/components/admins/adminManagement/EditAdminModal";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
-import AdminDetailsDialog from "@/components/admins/AdminDetailsDialog";
-import AdminFormDialog, { type AdminFormValues } from "@/components/admins/AdminFormDialog";
-import { Button } from "@/components/ui/button";
-import { toast } from "@/components/ui/use-toast";
+import RefreshButton from "@/components/shared/button/RefreshButton";
+import CustomTable from "@/components/shared/table/CustomTable";
+import TableActionMenu from "@/components/shared/table/TableActionMenu";
+import TableSearch from "@/components/shared/table/TableSearch";
+import { toast } from "@/hooks/use-toast";
+import {
+  type AdminRecord,
+  useArchiveAdminMutation,
+  useGetAdminsQuery,
+  useRestoreAdminMutation,
+  useUpdateAdminActiveMutation,
+} from "@/redux/features/admin/adminManagementApi";
 
-type AdminRecord = {
-  id: number;
-  fullName: string;
-  email: string;
-  phone: string;
-  role: string;
-  department: string;
-  status: string;
-  address: string;
-  notes: string;
+const { Title, Paragraph, Text } = Typography;
+
+type AdminQuery = {
+  page: number;
+  limit: number;
+  search: string;
+  archived?: "true" | "false";
+  isActive?: "true" | "false";
 };
 
-const initialAdmins: AdminRecord[] = [
-  {
-    id: 1,
-    fullName: "Sarah Johnson",
-    email: "sarah@smallshop.com",
-    phone: "+880171300001",
-    role: "Admin",
-    department: "Operations",
-    status: "Active",
-    address: "Banani, Dhaka",
-    notes: "Handles provider operations and escalations.",
-  },
-  {
-    id: 2,
-    fullName: "Mike Chen",
-    email: "mike@smallshop.com",
-    phone: "+880171300002",
-    role: "Senior Admin",
-    department: "Catalog",
-    status: "Active",
-    address: "Gulshan, Dhaka",
-    notes: "Oversees product and content moderation.",
-  },
-  {
-    id: 3,
-    fullName: "Lisa Park",
-    email: "lisa@smallshop.com",
-    phone: "+880171300003",
-    role: "Operations Admin",
-    department: "Support",
-    status: "Invited",
-    address: "Dhanmondi, Dhaka",
-    notes: "Pending final onboarding and login setup.",
-  },
-];
-
 const SuperAdminAdmins = () => {
-  const [admins, setAdmins] = useState(initialAdmins);
-  const [formOpen, setFormOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isViewDetailsModalOpen, setIsViewDetailsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedAdmin, setSelectedAdmin] = useState<AdminRecord | null>(null);
-  const [editingAdmin, setEditingAdmin] = useState<AdminRecord | null>(null);
+  const [query, setQuery] = useState<AdminQuery>({
+    page: 1,
+    limit: 10,
+    search: "",
+    archived: "false",
+    isActive: undefined,
+  });
 
-  const openAddDialog = () => {
-    setEditingAdmin(null);
-    setFormOpen(true);
+  const { data, isLoading, isFetching, refetch } = useGetAdminsQuery({
+    search: query.search,
+    archived: query.archived === "true",
+    isActive:
+      query.isActive === undefined ? undefined : query.isActive === "true",
+    page: query.page,
+    limit: query.limit,
+  });
+  const [updateAdminActive, { isLoading: isTogglingActive }] =
+    useUpdateAdminActiveMutation();
+  const [archiveAdmin, { isLoading: isArchiving }] = useArchiveAdminMutation();
+  const [restoreAdmin, { isLoading: isRestoring }] = useRestoreAdminMutation();
+
+  const admins = data?.data || [];
+  const meta = data?.meta;
+  const isMutating = isTogglingActive || isArchiving || isRestoring;
+  const hasActiveFilters = Boolean(
+    query.search || query.archived !== "false" || query.isActive,
+  );
+
+  const handleArchivedChange = (value?: "true" | "false") => {
+    setQuery((prev) => ({
+      ...prev,
+      page: 1,
+      archived: value || "false",
+    }));
   };
 
-  const openEditDialog = (admin: AdminRecord) => {
-    setEditingAdmin(admin);
-    setFormOpen(true);
+  const handleAccessFilterChange = (value?: "true" | "false") => {
+    setQuery((prev) => ({
+      ...prev,
+      page: 1,
+      isActive: value || undefined,
+    }));
   };
 
-  const handleSubmit = (values: AdminFormValues) => {
-    if (
-      !values.fullName.trim() ||
-      !values.email.trim() ||
-      !values.phone.trim() ||
-      !values.role.trim() ||
-      !values.department.trim() ||
-      !values.status.trim() ||
-      !values.address.trim()
-    ) {
-      toast({
-        title: "Missing admin details",
-        description: "Please fill in all required admin fields.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (editingAdmin) {
-      setAdmins((current) =>
-        current.map((admin) =>
-          admin.id === editingAdmin.id ? { ...admin, ...values } : admin,
-        ),
-      );
-      toast({
-        title: "Admin updated",
-        description: `${values.fullName} has been updated.`,
-      });
-    } else {
-      setAdmins((current) => [
-        {
-          id: Date.now(),
-          ...values,
-        },
-        ...current,
-      ]);
-      toast({
-        title: "Admin added",
-        description: `${values.fullName} has been added to admin management.`,
-      });
-    }
-
-    setFormOpen(false);
-    setEditingAdmin(null);
-  };
-
-  const handleDelete = (adminId: number) => {
-    setAdmins((current) => current.filter((admin) => admin.id !== adminId));
-    toast({
-      title: "Admin removed",
-      description: "The admin entry has been deleted.",
+  const handleResetFilters = () => {
+    setQuery({
+      page: 1,
+      limit: 10,
+      search: "",
+      archived: "false",
+      isActive: undefined,
     });
   };
 
+  const handleActiveToggle = async (admin: AdminRecord) => {
+    try {
+      await updateAdminActive({
+        id: admin.id,
+        isActive: !admin.isActive,
+      }).unwrap();
+
+      toast({
+        title: admin.isActive ? "Admin deactivated" : "Admin activated",
+        description: `${admin.name} has been ${admin.isActive ? "deactivated" : "activated"}.`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Status update failed",
+        description: error?.data?.message || "Could not update admin status.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleArchive = async (admin: AdminRecord) => {
+    try {
+      await archiveAdmin(admin.id).unwrap();
+      toast({
+        title: "Admin archived",
+        description: `${admin.name} has been moved to archive.`,
+      });
+      if (selectedAdmin?.id === admin.id) {
+        setSelectedAdmin(null);
+      }
+    } catch (error: any) {
+      toast({
+        title: "Archive failed",
+        description: error?.data?.message || "Could not archive this admin.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleRestore = async (admin: AdminRecord) => {
+    try {
+      await restoreAdmin(admin.id).unwrap();
+      toast({
+        title: "Admin restored",
+        description: `${admin.name} has been restored and activated.`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Restore failed",
+        description: error?.data?.message || "Could not restore this admin.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const getAccessTag = (admin: AdminRecord) => {
+    if (admin.archivedAt) return <Tag color="warning">ARCHIVED</Tag>;
+    return admin.isActive ? (
+      <Tag color="green">ACTIVE</Tag>
+    ) : (
+      <Tag color="red">INACTIVE</Tag>
+    );
+  };
+
+  const columns: ColumnsType<AdminRecord> = [
+    {
+      title: "Admin",
+      key: "admin",
+      width: 250,
+      render: (_, record) => (
+        <div>
+          <div className="font-semibold">{record.name}</div>
+          <Text type="secondary">{record.email}</Text>
+        </div>
+      ),
+    },
+    {
+      title: "Phone",
+      dataIndex: "personalContact",
+      key: "personalContact",
+      width: 150,
+      render: (value: string | null) => value || "N/A",
+    },
+    {
+      title: "Address",
+      dataIndex: "personalAddress",
+      key: "personalAddress",
+      width: 220,
+      ellipsis: true,
+      render: (value: string | null) => value || "N/A",
+    },
+    {
+      title: "Role",
+      dataIndex: "role",
+      key: "role",
+      width: 120,
+      render: (role: string) => <Tag color="blue">{role}</Tag>,
+    },
+    {
+      title: "Access",
+      key: "access",
+      width: 130,
+      render: (_, record) => getAccessTag(record),
+    },
+    {
+      title: "Created By",
+      key: "createdBy",
+      width: 170,
+      render: (_, record) => record.createdBy?.name || "System",
+    },
+    {
+      title: "Created At",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      width: 160,
+      render: (value: string) => new Date(value).toLocaleDateString(),
+    },
+    {
+      title: "Actions",
+      key: "actions",
+      width: 90,
+      align: "right",
+      render: (_, record) => (
+        <div className="flex justify-end">
+          <TableActionMenu
+            items={[
+              {
+                key: "view",
+                label: "View Details",
+                icon: <EyeOutlined />,
+                onClick: () => {
+                  setSelectedAdmin(record);
+                  setIsViewDetailsModalOpen(true);
+                },
+              },
+              {
+                key: "edit",
+                label: "Edit Admin",
+                icon: <EditOutlined />,
+                hidden: Boolean(record.archivedAt),
+                onClick: () => {
+                  setSelectedAdmin(record);
+                  setIsEditModalOpen(true);
+                },
+              },
+              {
+                key: "deactivate",
+                label: "Deactivate",
+                icon: <PauseCircleOutlined />,
+                hidden: Boolean(record.archivedAt) || !record.isActive,
+                disabled: isMutating,
+                onClick: () => handleActiveToggle(record),
+                confirm: {
+                  title: "Deactivate Admin",
+                  description:
+                    "This admin will lose access until the account is activated again.",
+                },
+              },
+              {
+                key: "activate",
+                label: "Activate",
+                icon: <PlayCircleOutlined />,
+                hidden: Boolean(record.archivedAt) || record.isActive,
+                disabled: isMutating,
+                onClick: () => handleActiveToggle(record),
+                confirm: {
+                  title: "Activate Admin",
+                  description:
+                    "This admin will regain access immediately.",
+                },
+              },
+              {
+                key: "archive",
+                label: "Archive",
+                icon: <StopOutlined />,
+                danger: true,
+                hidden: Boolean(record.archivedAt),
+                disabled: isMutating,
+                onClick: () => handleArchive(record),
+                confirm: {
+                  title: "Archive Admin",
+                  description:
+                    "This admin will be archived and removed from active access.",
+                },
+              },
+              {
+                key: "restore",
+                label: "Restore",
+                icon: <RollbackOutlined />,
+                hidden: !record.archivedAt,
+                disabled: isMutating,
+                onClick: () => handleRestore(record),
+                confirm: {
+                  title: "Restore Admin",
+                  description:
+                    "This archived admin will be restored and activated.",
+                },
+              },
+            ]}
+          />
+        </div>
+      ),
+    },
+  ];
+
   return (
     <DashboardLayout role="super-admin">
-      <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold">Admin Management</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Add admins, edit access profile details, and inspect each admin from one place.
-            </p>
-          </div>
-          <Button variant="hero" onClick={openAddDialog}><Plus className="mr-2 h-4 w-4" /> Add Admin</Button>
-        </div>
-
-        <div className="grid gap-4">
-          {admins.map((admin) => (
-            <div key={admin.id} className="flex items-center gap-4 p-4 rounded-xl border bg-card">
-              <div className="h-10 w-10 rounded-full gradient-primary flex items-center justify-center text-primary-foreground font-bold">
-                {admin.fullName[0]}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="font-semibold">{admin.fullName}</div>
-                <div className="text-sm text-muted-foreground">{admin.email}</div>
-                <div className="text-xs text-muted-foreground mt-1">{admin.department} · {admin.phone}</div>
-              </div>
-              <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">{admin.role}</span>
-              <div className="flex gap-1">
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSelectedAdmin(admin)}><Eye className="h-4 w-4" /></Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEditDialog(admin)}><Edit className="h-4 w-4" /></Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDelete(admin.id)}><Trash2 className="h-4 w-4" /></Button>
-              </div>
+      <div className="w-full space-y-5 lg:space-y-6">
+        <Card bordered={false} className="shadow-sm">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="min-w-0">
+              <Title level={3} className="!mb-1">
+                Admin Management
+              </Title>
+              <Paragraph className="!mb-0 text-muted-foreground">
+                Super admin can create admins, manage their access, archive
+                accounts, and restore them from one table.
+              </Paragraph>
             </div>
-          ))}
-        </div>
+
+            <div className="w-full lg:w-auto">
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => setIsCreateModalOpen(true)}
+                className="w-full lg:w-auto"
+              >
+                Add Admin
+              </Button>
+            </div>
+          </div>
+        </Card>
+
+        <Card bordered={false} className="shadow-sm">
+          <div className="flex flex-col gap-3 lg:flex-row xl:items-center">
+            <div className="w-full">
+              <TableSearch setQuery={setQuery} placeholder="Search admins..." />
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:flex xl:items-center">
+              <Select
+                className="w-full"
+                value={query.archived}
+                onChange={handleArchivedChange}
+                options={[
+                  { label: "Active List", value: "false" },
+                  { label: "Archived List", value: "true" },
+                ]}
+              />
+
+              <Select
+                allowClear
+                className="w-full"
+                placeholder="Filter by access"
+                value={query.isActive}
+                onChange={handleAccessFilterChange}
+                options={[
+                  { label: "ACTIVE", value: "true" },
+                  { label: "INACTIVE", value: "false" },
+                ]}
+              />
+
+              {hasActiveFilters && (
+                <Button onClick={handleResetFilters} className="w-full xl:w-auto">
+                  Clear Filters
+                </Button>
+              )}
+            </div>
+          </div>
+        </Card>
+
+        <Card bordered={false} className="shadow-sm">
+          <div className="mb-3 flex items-center justify-end gap-2">
+            <RefreshButton
+              refetch={refetch}
+              isLoading={isLoading || isFetching}
+            />
+          </div>
+
+          <div className="overflow-hidden">
+            <CustomTable<AdminRecord>
+              loading={isLoading || isFetching}
+              columns={columns}
+              dataSource={admins}
+              rowKey="id"
+              currentPage={meta?.page || query.page}
+              pageSize={meta?.limit || query.limit}
+              totaldata={meta?.total || 0}
+              setPagination={(updater) => {
+                setQuery((prev) => {
+                  const next =
+                    typeof updater === "function"
+                      ? updater({
+                          page: prev.page,
+                          per_page: prev.limit,
+                        })
+                      : updater;
+
+                  return {
+                    ...prev,
+                    page: next.page,
+                    limit: next.per_page,
+                  };
+                });
+              }}
+              isPagination
+              locale={{
+                emptyText: (
+                  <div className="py-6 text-sm text-muted-foreground">
+                    No admins found for the current filter.
+                  </div>
+                ),
+              }}
+            />
+          </div>
+        </Card>
       </div>
 
-      <AdminFormDialog
-        open={formOpen}
-        onOpenChange={setFormOpen}
-        title={editingAdmin ? "Edit Admin" : "Add Admin"}
-        description={editingAdmin ? "Update the admin profile and access details below." : "Create a new admin profile with the required access information."}
-        initialValues={editingAdmin ?? undefined}
-        onSubmit={handleSubmit}
+      <CreateAdminModal
+        isModalOpen={isCreateModalOpen}
+        closeModal={() => setIsCreateModalOpen(false)}
       />
-      <AdminDetailsDialog
-        open={Boolean(selectedAdmin)}
-        onOpenChange={(open) => !open && setSelectedAdmin(null)}
+
+      <AdminDetailsModal
+        isModalOpen={isViewDetailsModalOpen}
+        closeModal={() => setIsViewDetailsModalOpen(false)}
+        data={selectedAdmin}
+      />
+
+      <EditAdminModal
+        isModalOpen={isEditModalOpen}
+        closeModal={() => setIsEditModalOpen(false)}
         admin={selectedAdmin}
       />
     </DashboardLayout>
