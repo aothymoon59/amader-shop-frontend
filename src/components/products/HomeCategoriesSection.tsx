@@ -1,0 +1,156 @@
+import { Link } from "react-router-dom";
+import { Candy, CupSoda, Package, Sandwich, ShoppingBasket, Store } from "lucide-react";
+import { Empty, Skeleton } from "antd";
+
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import { Button } from "@/components/ui/button";
+import { useGetCategoriesQuery } from "@/redux/features/generalApi/categoriesApi";
+
+const getCategoryVisual = (name: string) => {
+  const normalized = name.trim().toLowerCase();
+
+  if (normalized.includes("beverage") || normalized.includes("drink")) {
+    return {
+      icon: CupSoda,
+      color: "bg-primary/10 text-primary",
+    };
+  }
+
+  if (normalized.includes("snack")) {
+    return {
+      icon: Candy,
+      color: "bg-accent/10 text-accent",
+    };
+  }
+
+  if (
+    normalized.includes("rice") ||
+    normalized.includes("oil") ||
+    normalized.includes("grocer")
+  ) {
+    return {
+      icon: ShoppingBasket,
+      color: "bg-primary/15 text-primary",
+    };
+  }
+
+  if (normalized.includes("bakery")) {
+    return {
+      icon: Sandwich,
+      color: "bg-accent/15 text-accent",
+    };
+  }
+
+  return {
+    icon: Package,
+    color: "bg-primary/10 text-primary",
+  };
+};
+
+const HomeCategoriesSection = () => {
+  const { data, isLoading, isError } = useGetCategoriesQuery();
+  const categories = data?.data ?? [];
+
+  return (
+    <section className="bg-secondary/40 py-16 lg:py-24">
+      <div className="container">
+        <div className="mb-12 text-center">
+          <h2 className="text-3xl font-bold md:text-4xl">
+            Shop by category
+          </h2>
+          <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
+            Explore marketplace categories from local vendors in a quick,
+            scrollable carousel.
+          </p>
+        </div>
+
+        {isLoading ? (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <div key={index} className="rounded-2xl border bg-card p-5 shadow-sm">
+                <Skeleton.Avatar active size={56} shape="circle" />
+                <Skeleton active paragraph={{ rows: 2 }} className="mt-4" />
+              </div>
+            ))}
+          </div>
+        ) : isError ? (
+          <div className="rounded-2xl border border-destructive/20 bg-destructive/5 px-6 py-10 text-center">
+            <p className="font-semibold text-destructive">
+              Failed to load categories.
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Please try again in a moment.
+            </p>
+          </div>
+        ) : categories.length === 0 ? (
+          <div className="rounded-2xl border bg-card px-6 py-16">
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description="No categories available right now."
+            />
+          </div>
+        ) : (
+          <div className="px-4 md:px-10">
+            <Carousel
+              opts={{
+                align: "start",
+                loop: categories.length > 4,
+              }}
+              className="w-full"
+            >
+              <CarouselContent>
+                {categories.map((category) => {
+                  const visual = getCategoryVisual(category.name);
+                  const Icon = visual.icon;
+
+                  return (
+                    <CarouselItem
+                      key={category.id}
+                      className="basis-[85%] sm:basis-1/2 lg:basis-1/3 xl:basis-1/4"
+                    >
+                      <Link
+                        to={`/products?categoryId=${category.id}`}
+                        className="group block rounded-2xl border bg-card p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
+                      >
+                        <div
+                          className={`mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl ${visual.color}`}
+                        >
+                          <Icon className="h-7 w-7" />
+                        </div>
+                        <h3 className="text-center font-semibold">
+                          {category.name}
+                        </h3>
+                        <p className="mt-1 text-center text-sm text-muted-foreground">
+                          Browse products
+                        </p>
+                      </Link>
+                    </CarouselItem>
+                  );
+                })}
+              </CarouselContent>
+              <CarouselPrevious className="left-0 top-1/2 border-border bg-background/95" />
+              <CarouselNext className="right-0 top-1/2 border-border bg-background/95" />
+            </Carousel>
+          </div>
+        )}
+
+        <div className="mt-10 flex justify-center">
+          <Link to="/products">
+            <Button variant="outline">
+              <Store className="mr-2 h-4 w-4" />
+              Explore All Categories
+            </Button>
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default HomeCategoriesSection;

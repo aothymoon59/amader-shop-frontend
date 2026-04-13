@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Empty, Pagination, Skeleton } from "antd";
 
 import PublicLayout from "@/components/layouts/PublicLayout";
@@ -15,8 +16,12 @@ type CategoryOption = {
 const PAGE_SIZE_OPTIONS = ["8", "10", "12", "16", "24"];
 
 const Products = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const categoryIdFromUrl = searchParams.get("categoryId") || undefined;
   const [search, setSearch] = useState("");
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>();
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | undefined>(
+    categoryIdFromUrl,
+  );
   const [isFeatured, setIsFeatured] = useState<boolean | undefined>(undefined);
   const [isDiscount, setIsDiscount] = useState<boolean | undefined>(undefined);
   const [priceSort, setPriceSort] = useState<
@@ -34,6 +39,11 @@ const Products = () => {
     () => (categoriesResponse?.data ?? []) as CategoryOption[],
     [categoriesResponse],
   );
+
+  useEffect(() => {
+    setSelectedCategoryId(categoryIdFromUrl);
+    setPage(1);
+  }, [categoryIdFromUrl]);
 
   const {
     data: productsResponse,
@@ -71,6 +81,7 @@ const Products = () => {
     setDateSort("new-to-old");
     setPage(1);
     setLimit(8);
+    setSearchParams({});
   };
 
   const handleSearchChange = (value: string) => {
@@ -81,6 +92,13 @@ const Products = () => {
   const handleCategoryChange = (value?: string) => {
     setSelectedCategoryId(value);
     setPage(1);
+
+    if (value) {
+      setSearchParams({ categoryId: value });
+      return;
+    }
+
+    setSearchParams({});
   };
 
   const handlePageSizeChange = (value: string) => {

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import PublicLayout from "@/components/layouts/PublicLayout";
 import FeaturedProductsSection from "@/components/products/FeaturedProductsSection";
+import HomeCategoriesSection from "@/components/products/HomeCategoriesSection";
 import { Button } from "@/components/ui/button";
 import {
   ArrowRight,
@@ -11,55 +12,10 @@ import {
   Store,
   Clock3,
   BadgePercent,
-  Apple,
-  Fish,
-  Beef,
-  Milk,
-  Sandwich,
-  Candy,
   MapPin,
   Smartphone,
   CheckCircle2,
 } from "lucide-react";
-
-const groceryCategories = [
-  {
-    name: "Fruits",
-    icon: Apple,
-    count: "120+ items",
-    color: "bg-primary/10 text-primary",
-  },
-  {
-    name: "Meat & Fish",
-    icon: Fish,
-    count: "85+ items",
-    color: "bg-accent/10 text-accent",
-  },
-  {
-    name: "Dairy",
-    icon: Milk,
-    count: "60+ items",
-    color: "bg-primary/15 text-primary",
-  },
-  {
-    name: "Snacks",
-    icon: Candy,
-    count: "140+ items",
-    color: "bg-accent/15 text-accent",
-  },
-  {
-    name: "Bakery",
-    icon: Sandwich,
-    count: "45+ items",
-    color: "bg-primary/10 text-primary",
-  },
-  {
-    name: "Frozen",
-    icon: Beef,
-    count: "70+ items",
-    color: "bg-accent/10 text-accent",
-  },
-];
 
 const highlights = [
   {
@@ -344,39 +300,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Categories */}
-      <section className="bg-secondary/40 py-16 lg:py-24">
-        <div className="container">
-          <div className="mb-12 text-center">
-            <h2 className="text-3xl font-bold md:text-4xl">
-              Shop by grocery category
-            </h2>
-            <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
-              Everything you need for daily household shopping in one place.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
-            {groceryCategories.map((category) => (
-              <Link
-                key={category.name}
-                to="/products"
-                className="group rounded-2xl border bg-card p-5 text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
-              >
-                <div
-                  className={`mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl ${category.color}`}
-                >
-                  <category.icon className="h-7 w-7" />
-                </div>
-                <h3 className="font-semibold">{category.name}</h3>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {category.count}
-                </p>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
+      <HomeCategoriesSection />
 
       {/* Popular Items */}
       <section className="py-16 lg:py-24">
