@@ -8,6 +8,9 @@ import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
 import { useCart } from "@/context/CartContext";
 
+const isImageUrl = (value: string) =>
+  value.startsWith("http://") || value.startsWith("https://");
+
 const CheckoutPage = () => {
   const { items, subtotal, shipping, total, placeOrder, lastOrder } = useCart();
   const [formData, setFormData] = useState({
@@ -105,7 +108,15 @@ const CheckoutPage = () => {
                   {items.map((item) => (
                     <div key={item.id} className="flex items-center gap-4 border-b pb-4 last:border-0 last:pb-0">
                       <div className="h-14 w-14 rounded-lg bg-secondary flex items-center justify-center text-2xl shrink-0">
-                        {item.image}
+                        {isImageUrl(item.image) ? (
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="h-full w-full rounded-lg object-cover"
+                          />
+                        ) : (
+                          item.image
+                        )}
                       </div>
                       <div className="flex-1">
                         <div className="font-medium">{item.name}</div>
