@@ -88,7 +88,21 @@ export type ManagedProductQuery = {
 
 export const productApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getManagedProducts: builder.query<ManagedProductsResponse, ManagedProductQuery | void>({
+    getAllProducts: builder.query<
+      ManagedProductsResponse,
+      ManagedProductQuery | void
+    >({
+      query: (args) => ({
+        url: "/products",
+        method: "GET",
+        params: cleanObject(args || {}),
+      }),
+      providesTags: [tagTypes.PRODUCTS],
+    }),
+    getManagedProducts: builder.query<
+      ManagedProductsResponse,
+      ManagedProductQuery | void
+    >({
       query: (args) => ({
         url: "/products/manage",
         method: "GET",
@@ -128,7 +142,10 @@ export const productApi = baseApi.injectEndpoints({
         `${tagTypes.PRODUCTS}-${id}`,
       ],
     }),
-    deleteProduct: builder.mutation<{ success: boolean; message?: string }, string>({
+    deleteProduct: builder.mutation<
+      { success: boolean; message?: string },
+      string
+    >({
       query: (id) => ({
         url: `/products/${id}`,
         method: "DELETE",
@@ -146,6 +163,7 @@ export const productApi = baseApi.injectEndpoints({
 });
 
 export const {
+  useGetAllProductsQuery,
   useGetManagedProductsQuery,
   useGetManagedProductQuery,
   useCreateProductMutation,
