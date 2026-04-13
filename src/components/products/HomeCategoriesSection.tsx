@@ -1,5 +1,12 @@
 import { Link } from "react-router-dom";
-import { Candy, CupSoda, Package, Sandwich, ShoppingBasket, Store } from "lucide-react";
+import {
+  Candy,
+  CupSoda,
+  Package,
+  Sandwich,
+  ShoppingBasket,
+  Store,
+} from "lucide-react";
 import { Empty, Skeleton } from "antd";
 
 import {
@@ -61,9 +68,7 @@ const HomeCategoriesSection = () => {
     <section className="bg-secondary/40 py-16 lg:py-24">
       <div className="container">
         <div className="mb-12 text-center">
-          <h2 className="text-3xl font-bold md:text-4xl">
-            Shop by category
-          </h2>
+          <h2 className="text-3xl font-bold md:text-4xl">Shop by category</h2>
           <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
             Explore marketplace categories from local vendors in a quick,
             scrollable carousel.
@@ -73,7 +78,10 @@ const HomeCategoriesSection = () => {
         {isLoading ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {Array.from({ length: 4 }).map((_, index) => (
-              <div key={index} className="rounded-2xl border bg-card p-5 shadow-sm">
+              <div
+                key={index}
+                className="rounded-2xl border bg-card p-5 shadow-sm"
+              >
                 <Skeleton.Avatar active size={56} shape="circle" />
                 <Skeleton active paragraph={{ rows: 2 }} className="mt-4" />
               </div>
@@ -96,7 +104,7 @@ const HomeCategoriesSection = () => {
             />
           </div>
         ) : (
-          <div className="px-4 md:px-10">
+          <div className="">
             <Carousel
               opts={{
                 align: "start",
@@ -112,7 +120,7 @@ const HomeCategoriesSection = () => {
                   return (
                     <CarouselItem
                       key={category.id}
-                      className="basis-[85%] sm:basis-1/2 lg:basis-1/3 xl:basis-1/4"
+                      className="basis-[85%] sm:basis-1/2 lg:basis-1/3 xl:basis-1/5"
                     >
                       <Link
                         to={`/products?categoryId=${category.id}`}
