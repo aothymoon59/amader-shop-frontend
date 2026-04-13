@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { PackageOpen, Store } from "lucide-react";
 
 import type { Product } from "@/redux/features/products/productApi";
+import { getDiscountedPrice } from "@/utils/getDiscountedPrice";
 
 type MarketplaceProductCardProps = {
   product: Product;
@@ -11,24 +12,7 @@ const getProductImage = (product: Product) =>
   product.images?.[0]?.url ||
   "https://placehold.co/800x600/e5e7eb/6b7280?text=No+Image";
 
-const getDiscountedPrice = (product: Product) => {
-  const price = Number(product.price || 0);
-  const discountValue = Number(product.discountValue || 0);
-
-  if (!product.discountType || discountValue <= 0) {
-    return price;
-  }
-
-  if (product.discountType === "PERCENTAGE") {
-    return Math.max(price - (price * discountValue) / 100, 0);
-  }
-
-  return Math.max(price - discountValue, 0);
-};
-
-const MarketplaceProductCard = ({
-  product,
-}: MarketplaceProductCardProps) => {
+const MarketplaceProductCard = ({ product }: MarketplaceProductCardProps) => {
   const productImage = getProductImage(product);
   const discountedPrice = getDiscountedPrice(product);
   const hasDiscount = discountedPrice < product.price;
@@ -60,7 +44,8 @@ const MarketplaceProductCard = ({
         <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
           <Store className="h-3.5 w-3.5" />
           <span className="truncate">
-            {product.provider?.providerProfile?.shopName || product.provider?.name}
+            {product.provider?.providerProfile?.shopName ||
+              product.provider?.name}
           </span>
         </div>
 
