@@ -42,7 +42,7 @@ const MarketplaceProductCard = ({ product }: MarketplaceProductCardProps) => {
 
   return (
     <div className="group overflow-hidden rounded-2xl border bg-card transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-      <Link to={`/products/${product.id}`} className="block">
+      <Link to={`/products/${product.slug}`} className="block">
         <div className="relative h-52 overflow-hidden bg-secondary">
           <img
             src={productImage}
@@ -71,7 +71,7 @@ const MarketplaceProductCard = ({ product }: MarketplaceProductCardProps) => {
           </span>
         </div>
 
-        <Link to={`/products/${product.id}`} className="block">
+        <Link to={`/products/${product.slug}`} className="block">
           <h3 className="mb-2 line-clamp-1 text-base font-semibold transition-colors group-hover:text-primary">
             {product.name}
           </h3>

@@ -97,8 +97,25 @@ export const productApi = baseApi.injectEndpoints({
         method: "GET",
         params: cleanObject(args || {}),
       }),
-      providesTags: [tagTypes.PRODUCTS],
+      providesTags: (result) => [
+        { type: tagTypes.PRODUCT, id: "LIST" },
+        ...(result?.data?.map((product) => ({
+          type: tagTypes.PRODUCT,
+          id: product.id,
+        })) || []),
+      ],
     }),
+
+    getSingleProduct: builder.query<ManagedProductResponse, string>({
+      query: (slugOrId) => ({
+        url: `/products/${slugOrId}`,
+        method: "GET",
+      }),
+      providesTags: (result, error, slugOrId) => [
+        { type: tagTypes.PRODUCT, id: result?.data?.id || slugOrId },
+      ],
+    }),
+
     getManagedProducts: builder.query<
       ManagedProductsResponse,
       ManagedProductQuery | void
@@ -108,26 +125,32 @@ export const productApi = baseApi.injectEndpoints({
         method: "GET",
         params: cleanObject(args || {}),
       }),
-      providesTags: [tagTypes.PRODUCTS],
+      providesTags: (result) => [
+        { type: tagTypes.PRODUCT, id: "LIST" },
+        ...(result?.data?.map((product) => ({
+          type: tagTypes.PRODUCT,
+          id: product.id,
+        })) || []),
+      ],
     }),
+
     getManagedProduct: builder.query<ManagedProductResponse, string>({
       query: (id) => ({
         url: `/products/manage/${id}`,
         method: "GET",
       }),
-      providesTags: (_result, _error, id) => [
-        tagTypes.PRODUCTS,
-        `${tagTypes.PRODUCTS}-${id}`,
-      ],
+      providesTags: (result, error, id) => [{ type: tagTypes.PRODUCT, id }],
     }),
+
     createProduct: builder.mutation<ManagedProductResponse, FormData>({
       query: (payload) => ({
         url: "/products",
         method: "POST",
         body: payload,
       }),
-      invalidatesTags: [tagTypes.PRODUCTS],
+      invalidatesTags: [{ type: tagTypes.PRODUCT, id: "LIST" }],
     }),
+
     updateProduct: builder.mutation<
       ManagedProductResponse,
       { id: string; payload: FormData }
@@ -137,11 +160,12 @@ export const productApi = baseApi.injectEndpoints({
         method: "PATCH",
         body: payload,
       }),
-      invalidatesTags: (_result, _error, { id }) => [
-        tagTypes.PRODUCTS,
-        `${tagTypes.PRODUCTS}-${id}`,
+      invalidatesTags: (result, error, { id }) => [
+        { type: tagTypes.PRODUCT, id },
+        { type: tagTypes.PRODUCT, id: "LIST" },
       ],
     }),
+
     deleteProduct: builder.mutation<
       { success: boolean; message?: string },
       string
@@ -150,20 +174,28 @@ export const productApi = baseApi.injectEndpoints({
         url: `/products/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: [tagTypes.PRODUCTS],
+      invalidatesTags: (result, error, id) => [
+        { type: tagTypes.PRODUCT, id },
+        { type: tagTypes.PRODUCT, id: "LIST" },
+      ],
     }),
+
     restoreProduct: builder.mutation<ManagedProductResponse, string>({
       query: (id) => ({
         url: `/products/${id}/restore`,
         method: "PATCH",
       }),
-      invalidatesTags: [tagTypes.PRODUCTS],
+      invalidatesTags: (result, error, id) => [
+        { type: tagTypes.PRODUCT, id },
+        { type: tagTypes.PRODUCT, id: "LIST" },
+      ],
     }),
   }),
 });
 
 export const {
   useGetAllProductsQuery,
+  useGetSingleProductQuery,
   useGetManagedProductsQuery,
   useGetManagedProductQuery,
   useCreateProductMutation,
