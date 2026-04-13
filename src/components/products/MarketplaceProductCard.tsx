@@ -1,6 +1,10 @@
-import { Link } from "react-router-dom";
-import { PackageOpen, Store } from "lucide-react";
+import type { MouseEvent } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { PackageOpen, ShoppingCart, Store } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/use-toast";
+import { useCart } from "@/context/CartContext";
 import type { Product } from "@/redux/features/products/productApi";
 import { getDiscountedPrice } from "@/utils/getDiscountedPrice";
 
@@ -13,32 +17,50 @@ const getProductImage = (product: Product) =>
   "https://placehold.co/800x600/e5e7eb/6b7280?text=No+Image";
 
 const MarketplaceProductCard = ({ product }: MarketplaceProductCardProps) => {
+  const navigate = useNavigate();
+  const { addToCart } = useCart();
   const productImage = getProductImage(product);
   const discountedPrice = getDiscountedPrice(product);
   const hasDiscount = discountedPrice < product.price;
 
+  const handleAddToCart = (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    addToCart(product);
+    toast({
+      title: "Added to cart",
+      description: `${product.name} has been added to your cart.`,
+    });
+  };
+
+  const handleBuyNow = (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    addToCart(product);
+    navigate("/checkout");
+  };
+
   return (
-    <Link
-      to={`/products/${product.id}`}
-      className="group overflow-hidden rounded-2xl border bg-card transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
-    >
-      <div className="relative h-52 overflow-hidden bg-secondary">
-        <img
-          src={productImage}
-          alt={product.name}
-          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-        />
-        <div className="absolute left-3 top-3 flex flex-wrap gap-2">
-          <span className="rounded-full bg-background/90 px-3 py-1 text-xs font-medium text-foreground shadow-sm">
-            {product.category?.name}
-          </span>
-          {product.isFeatured ? (
-            <span className="rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">
-              Featured
+    <div className="group overflow-hidden rounded-2xl border bg-card transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+      <Link to={`/products/${product.id}`} className="block">
+        <div className="relative h-52 overflow-hidden bg-secondary">
+          <img
+            src={productImage}
+            alt={product.name}
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+          <div className="absolute left-3 top-3 flex flex-wrap gap-2">
+            <span className="rounded-full bg-background/90 px-3 py-1 text-xs font-medium text-foreground shadow-sm">
+              {product.category?.name}
             </span>
-          ) : null}
+            {product.isFeatured ? (
+              <span className="rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">
+                Featured
+              </span>
+            ) : null}
+          </div>
         </div>
-      </div>
+      </Link>
 
       <div className="p-4">
         <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
@@ -49,9 +71,11 @@ const MarketplaceProductCard = ({ product }: MarketplaceProductCardProps) => {
           </span>
         </div>
 
-        <h3 className="mb-2 line-clamp-1 text-base font-semibold transition-colors group-hover:text-primary">
-          {product.name}
-        </h3>
+        <Link to={`/products/${product.id}`} className="block">
+          <h3 className="mb-2 line-clamp-1 text-base font-semibold transition-colors group-hover:text-primary">
+            {product.name}
+          </h3>
+        </Link>
 
         <p className="mb-4 line-clamp-2 min-h-10 text-sm text-muted-foreground">
           {product.shortDescription ||
@@ -85,8 +109,18 @@ const MarketplaceProductCard = ({ product }: MarketplaceProductCardProps) => {
             <span>No discount</span>
           )}
         </div>
+
+        <div className="mt-4 flex gap-2">
+          <Button className="flex-1" onClick={handleAddToCart}>
+            <ShoppingCart className="mr-2 h-4 w-4" />
+            Add to cart
+          </Button>
+          <Button variant="outline" className="flex-1" onClick={handleBuyNow}>
+            Buy Now
+          </Button>
+        </div>
       </div>
-    </Link>
+    </div>
   );
 };
 
