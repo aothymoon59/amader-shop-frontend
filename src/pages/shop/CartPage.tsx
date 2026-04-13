@@ -5,6 +5,9 @@ import PublicLayout from "@/components/layouts/PublicLayout";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
 
+const isImageUrl = (value: string) =>
+  value.startsWith("http://") || value.startsWith("https://");
+
 const CartPage = () => {
   const { items, subtotal, shipping, total, removeFromCart, updateQuantity } = useCart();
 
@@ -29,7 +32,15 @@ const CartPage = () => {
             {items.map((item) => (
               <div key={item.id} className="flex items-center gap-4 p-4 rounded-xl border bg-card">
                 <div className="h-20 w-20 rounded-lg bg-secondary flex items-center justify-center text-3xl shrink-0">
-                  {item.image}
+                  {isImageUrl(item.image) ? (
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="h-full w-full rounded-lg object-cover"
+                    />
+                  ) : (
+                    item.image
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold truncate">{item.name}</h3>

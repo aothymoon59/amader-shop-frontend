@@ -8,10 +8,10 @@ import CmsContentPage from "../pages/CmsContentPage";
 import Index from "../pages/Index";
 import OrderHistory from "../pages/OrderHistory";
 import PaymentHistory from "../pages/PaymentHistory";
-import Products from "../pages/Products";
+import Products from "../pages/Products.new";
 import CartPage from "../pages/shop/CartPage";
 import CheckoutPage from "../pages/shop/CheckoutPage";
-import ProductDetailPage from "../pages/shop/ProductDetailPage";
+import ProductDetailPage from "../pages/shop/ProductDetailPage.new";
 
 export const publicRoutes: RouteObject[] = [
   {
@@ -23,7 +23,7 @@ export const publicRoutes: RouteObject[] = [
     element: <Products />,
   },
   {
-    path: "products/:id",
+    path: "products/:slug",
     element: <ProductDetailPage />,
   },
   {

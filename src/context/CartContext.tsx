@@ -7,7 +7,23 @@ import {
   type ReactNode,
 } from "react";
 
-import { getProductById, type Product } from "@/data/products";
+import {
+  getProductById,
+  type Product as LegacyProduct,
+} from "@/data/products";
+import type { Product as ApiProduct } from "@/redux/features/products/productApi";
+
+type CartProduct = {
+  id: string | number;
+  name: string;
+  price: number;
+  vendor: string;
+  image: string;
+  category: string;
+  description: string;
+  rating?: number;
+  reviews?: number;
+};
 
 export type CheckoutFormData = {
   firstName: string;
@@ -19,15 +35,15 @@ export type CheckoutFormData = {
   email: string;
 };
 
-type CartItem = Product & {
+type CartItem = CartProduct & {
   quantity: number;
 };
 
 type CartContextValue = {
   items: CartItem[];
-  addToCart: (product: Product, quantity?: number) => void;
-  removeFromCart: (productId: number) => void;
-  updateQuantity: (productId: number, quantity: number) => void;
+  addToCart: (product: LegacyProduct | ApiProduct | CartProduct, quantity?: number) => void;
+  removeFromCart: (productId: string | number) => void;
+  updateQuantity: (productId: string | number, quantity: number) => void;
   clearCart: () => void;
   subtotal: number;
   shipping: number;
@@ -42,8 +58,16 @@ type CartContextValue = {
 };
 
 type StoredCartItem = {
-  id: number;
+  id: string | number;
   quantity: number;
+  name?: string;
+  price?: number;
+  vendor?: string;
+  image?: string;
+  category?: string;
+  description?: string;
+  rating?: number;
+  reviews?: number;
 };
 
 const STORAGE_KEY = "smallshop-cart";
@@ -51,6 +75,39 @@ const FREE_SHIPPING_THRESHOLD = 50;
 const SHIPPING_COST = 9.99;
 
 const CartContext = createContext<CartContextValue | null>(null);
+
+const getApiProductImage = (product: ApiProduct) =>
+  product.images?.[0]?.url ||
+  "https://placehold.co/600x400/e5e7eb/6b7280?text=No+Image";
+
+const normalizeProduct = (
+  product: LegacyProduct | ApiProduct | CartProduct,
+): CartProduct => {
+  if ("provider" in product) {
+    return {
+      id: product.id,
+      name: product.name,
+      price: Number(product.price || 0),
+      vendor: product.provider?.providerProfile?.shopName || product.provider?.name,
+      image: getApiProductImage(product),
+      category: product.category?.name || "",
+      description:
+        product.shortDescription || product.description || "No description available.",
+    };
+  }
+
+  return {
+    id: product.id,
+    name: product.name,
+    price: Number(product.price || 0),
+    vendor: product.vendor,
+    image: product.image,
+    category: product.category,
+    description: product.description,
+    rating: product.rating,
+    reviews: product.reviews,
+  };
+};
 
 const getInitialItems = (): CartItem[] => {
   if (typeof window === "undefined") {
@@ -65,15 +122,41 @@ const getInitialItems = (): CartItem[] => {
 
     const parsed: StoredCartItem[] = JSON.parse(stored);
     return parsed
-      .map(({ id, quantity }) => {
-        const product = getProductById(id);
+      .map((item) => {
+        if (
+          item.name &&
+          item.vendor &&
+          item.image &&
+          item.category &&
+          item.description &&
+          typeof item.price === "number"
+        ) {
+          return {
+            id: item.id,
+            quantity: item.quantity,
+            name: item.name,
+            price: item.price,
+            vendor: item.vendor,
+            image: item.image,
+            category: item.category,
+            description: item.description,
+            rating: item.rating,
+            reviews: item.reviews,
+          };
+        }
+
+        if (typeof item.id !== "number") {
+          return null;
+        }
+
+        const product = getProductById(item.id);
         if (!product) {
           return null;
         }
 
         return {
-          ...product,
-          quantity,
+          ...normalizeProduct(product),
+          quantity: item.quantity,
         };
       })
       .filter((item): item is CartItem => Boolean(item));
@@ -89,33 +172,40 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     window.localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify(items.map(({ id, quantity }) => ({ id, quantity }))),
+      JSON.stringify(items),
     );
   }, [items]);
 
-  const addToCart = (product: Product, quantity = 1) => {
+  const addToCart = (
+    product: LegacyProduct | ApiProduct | CartProduct,
+    quantity = 1,
+  ) => {
+    const normalizedProduct = normalizeProduct(product);
+
     setItems((currentItems) => {
-      const existingItem = currentItems.find((item) => item.id === product.id);
+      const existingItem = currentItems.find(
+        (item) => item.id === normalizedProduct.id,
+      );
 
       if (existingItem) {
         return currentItems.map((item) =>
-          item.id === product.id
+          item.id === normalizedProduct.id
             ? { ...item, quantity: item.quantity + quantity }
             : item,
         );
       }
 
-      return [...currentItems, { ...product, quantity }];
+      return [...currentItems, { ...normalizedProduct, quantity }];
     });
   };
 
-  const removeFromCart = (productId: number) => {
+  const removeFromCart = (productId: string | number) => {
     setItems((currentItems) =>
       currentItems.filter((item) => item.id !== productId),
     );
   };
 
-  const updateQuantity = (productId: number, quantity: number) => {
+  const updateQuantity = (productId: string | number, quantity: number) => {
     if (quantity <= 0) {
       removeFromCart(productId);
       return;
