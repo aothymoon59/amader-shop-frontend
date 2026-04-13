@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import PublicLayout from "@/components/layouts/PublicLayout";
+import FeaturedProductsSection from "@/components/products/FeaturedProductsSection";
 import {
   ShoppingBag, Truck, Shield, Star, ArrowRight,
   Store, Zap, Users
@@ -108,43 +109,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Featured products */}
-      <section className="py-16 lg:py-24 bg-secondary/50">
-        <div className="container">
-          <div className="flex items-end justify-between mb-12">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold mb-2">Featured Products</h2>
-              <p className="text-muted-foreground">Top picks from our best vendors</p>
-            </div>
-            <Link to="/products">
-              <Button variant="outline">View All <ArrowRight className="ml-1 h-4 w-4" /></Button>
-            </Link>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredProducts.map((product, i) => (
-              <Link
-                key={product.id}
-                to={`/products/${product.id}`}
-                className="group rounded-xl border bg-card overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 animate-fade-up"
-                style={{ animationDelay: `${i * 80}ms` }}
-              >
-                <div className="h-48 bg-secondary flex items-center justify-center text-6xl group-hover:scale-105 transition-transform duration-300">
-                  {product.image}
-                </div>
-                <div className="p-5">
-                  <div className="flex items-center gap-1 mb-2">
-                    <Star className="h-4 w-4 fill-warning text-warning" />
-                    <span className="text-sm font-medium">{product.rating}</span>
-                    <span className="text-xs text-muted-foreground ml-auto">by {product.vendor}</span>
-                  </div>
-                  <h3 className="font-semibold mb-2 group-hover:text-primary transition-colors">{product.name}</h3>
-                  <div className="text-xl font-bold text-primary">${product.price}</div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
+      <FeaturedProductsSection />
 
       {/* Features */}
       <section className="py-16 lg:py-24">
