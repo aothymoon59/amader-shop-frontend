@@ -1,80 +1,343 @@
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import PublicLayout from "@/components/layouts/PublicLayout";
 import FeaturedProductsSection from "@/components/products/FeaturedProductsSection";
+import { Button } from "@/components/ui/button";
 import {
-  ShoppingBag, Truck, Shield, Star, ArrowRight,
-  Store, Zap, Users
+  ArrowRight,
+  ShoppingCart,
+  Truck,
+  ShieldCheck,
+  Star,
+  Store,
+  Clock3,
+  BadgePercent,
+  Apple,
+  Fish,
+  Beef,
+  Milk,
+  Sandwich,
+  Candy,
+  MapPin,
+  Smartphone,
+  CheckCircle2,
 } from "lucide-react";
 
-const categories = [
-  { name: "Electronics", icon: Zap, count: 240 },
-  { name: "Fashion", icon: ShoppingBag, count: 180 },
-  { name: "Home & Living", icon: Store, count: 320 },
-  { name: "Sports", icon: Users, count: 150 },
+const groceryCategories = [
+  {
+    name: "Fruits",
+    icon: Apple,
+    count: "120+ items",
+    color: "bg-primary/10 text-primary",
+  },
+  {
+    name: "Meat & Fish",
+    icon: Fish,
+    count: "85+ items",
+    color: "bg-accent/10 text-accent",
+  },
+  {
+    name: "Dairy",
+    icon: Milk,
+    count: "60+ items",
+    color: "bg-primary/15 text-primary",
+  },
+  {
+    name: "Snacks",
+    icon: Candy,
+    count: "140+ items",
+    color: "bg-accent/15 text-accent",
+  },
+  {
+    name: "Bakery",
+    icon: Sandwich,
+    count: "45+ items",
+    color: "bg-primary/10 text-primary",
+  },
+  {
+    name: "Frozen",
+    icon: Beef,
+    count: "70+ items",
+    color: "bg-accent/10 text-accent",
+  },
 ];
 
-const featuredProducts = [
-  { id: 1, name: "Wireless Headphones Pro", price: 89.99, rating: 4.8, vendor: "TechStore", image: "🎧" },
-  { id: 2, name: "Organic Cotton Tee", price: 34.99, rating: 4.6, vendor: "EcoWear", image: "👕" },
-  { id: 3, name: "Smart Home Speaker", price: 129.99, rating: 4.9, vendor: "SmartLife", image: "🔊" },
-  { id: 4, name: "Running Shoes X1", price: 119.99, rating: 4.7, vendor: "FitGear", image: "👟" },
-  { id: 5, name: "Ceramic Vase Set", price: 49.99, rating: 4.5, vendor: "HomeArt", image: "🏺" },
-  { id: 6, name: "Leather Backpack", price: 79.99, rating: 4.8, vendor: "UrbanBags", image: "🎒" },
+const highlights = [
+  {
+    title: "Fresh Vegetables",
+    subtitle: "Direct from local markets",
+    image: "🥦",
+    bg: "from-primary/20 via-primary/10 to-accent/10",
+  },
+  {
+    title: "Daily Grocery Deals",
+    subtitle: "Save more on essentials",
+    image: "🛒",
+    bg: "from-accent/20 via-accent/10 to-primary/10",
+  },
+  {
+    title: "Fast Delivery",
+    subtitle: "Get it in as little as 30 mins",
+    image: "🚚",
+    bg: "from-primary/20 via-background to-accent/10",
+  },
+];
+
+const popularProducts = [
+  {
+    id: 1,
+    name: "Fresh Red Apples",
+    price: "$2.99/kg",
+    rating: 4.8,
+    shop: "Green Basket",
+    image: "🍎",
+  },
+  {
+    id: 2,
+    name: "Farm Eggs (12 pcs)",
+    price: "$3.49",
+    rating: 4.7,
+    shop: "Daily Mart",
+    image: "🥚",
+  },
+  {
+    id: 3,
+    name: "Fresh Milk 1L",
+    price: "$1.99",
+    rating: 4.9,
+    shop: "Milk House",
+    image: "🥛",
+  },
+  {
+    id: 4,
+    name: "Chicken Breast",
+    price: "$5.99/kg",
+    rating: 4.6,
+    shop: "Fresh Protein",
+    image: "🍗",
+  },
 ];
 
 const stats = [
-  { label: "Active Vendors", value: "500+" },
-  { label: "Products", value: "10K+" },
-  { label: "Happy Customers", value: "50K+" },
-  { label: "Orders Delivered", value: "100K+" },
+  { label: "Local Shops", value: "300+" },
+  { label: "Daily Orders", value: "8K+" },
+  { label: "Products", value: "15K+" },
+  { label: "Cities Served", value: "25+" },
+];
+
+const features = [
+  {
+    icon: Truck,
+    title: "Express Delivery",
+    desc: "Get groceries delivered to your doorstep quickly and safely.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Trusted Sellers",
+    desc: "Verified grocery vendors and local stores you can rely on.",
+  },
+  {
+    icon: BadgePercent,
+    title: "Daily Offers",
+    desc: "Enjoy flash deals, combo bundles, and seasonal discounts.",
+  },
+  {
+    icon: Clock3,
+    title: "Same-Day Fulfillment",
+    desc: "Perfect for urgent household needs and repeat grocery shopping.",
+  },
+];
+
+const steps = [
+  {
+    title: "Choose your essentials",
+    desc: "Browse vegetables, meat, snacks, dairy, bakery, and household needs.",
+  },
+  {
+    title: "Add to cart",
+    desc: "Pick items from trusted local vendors with clear prices and reviews.",
+  },
+  {
+    title: "Receive fast delivery",
+    desc: "Sit back while your groceries arrive fresh at your doorstep.",
+  },
+];
+
+const testimonials = [
+  {
+    name: "Nusrat Jahan",
+    text: "This feels like a real neighborhood grocery app. Ordering vegetables and milk is super easy.",
+  },
+  {
+    name: "Rahim Ahmed",
+    text: "I like the fast delivery and the clean product sections. Very practical for daily shopping.",
+  },
+  {
+    name: "Tanvir Hasan",
+    text: "The local vendor concept is excellent. It gives both trust and variety in one place.",
+  },
 ];
 
 const Index = () => {
   return (
     <PublicLayout>
-      {/* Hero Section */}
-      <section className="relative overflow-hidden gradient-hero py-20 lg:py-32">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-20 left-10 w-72 h-72 rounded-full bg-primary blur-[120px]" />
-          <div className="absolute bottom-20 right-10 w-96 h-96 rounded-full bg-accent blur-[120px]" />
-        </div>
-        <div className="container relative">
-          <div className="max-w-3xl mx-auto text-center animate-fade-up">
-            <span className="inline-block gradient-primary text-primary-foreground text-xs font-semibold px-4 py-1.5 rounded-full mb-6 tracking-wide uppercase">
-              Multi-Vendor Marketplace
-            </span>
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6" style={{ color: 'hsl(0, 0%, 100%)' }}>
-              Discover Products from{" "}
-              <span className="text-gradient">Trusted Vendors</span>
-            </h1>
-            <p className="text-lg md:text-xl mb-10 max-w-2xl mx-auto" style={{ color: 'hsl(220, 14%, 70%)' }}>
-              Shop from hundreds of verified sellers. Quality products, fast delivery, and seamless shopping experience.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/products">
-                <Button variant="hero" size="lg" className="text-base px-8 py-6">
-                  Shop Now <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-              </Link>
-              <Link to="/provider/apply">
-                <Button variant="outline" size="lg" className="text-base px-8 py-6 border-muted-foreground/30 hover:bg-muted/10" style={{ color: 'hsl(220, 14%, 80%)' }}>
-                  Become a Vendor
-                </Button>
-              </Link>
+      {/* Top Promo Bar */}
+      <section className="border-b bg-primary/5">
+        <div className="container py-3">
+          <div className="flex flex-col gap-2 text-center text-sm font-medium text-muted-foreground md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center justify-center gap-2">
+              <BadgePercent className="h-4 w-4 text-primary" />
+              <span>Free delivery on orders above $30</span>
+            </div>
+            <div className="flex items-center justify-center gap-2">
+              <Clock3 className="h-4 w-4 text-primary" />
+              <span>Delivery in 30–60 minutes in selected areas</span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Stats bar */}
-      <section className="border-b bg-card">
+      {/* Hero */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-accent/10 py-14 lg:py-24">
+        <div className="absolute inset-0 opacity-40">
+          <div className="absolute left-0 top-10 h-72 w-72 rounded-full bg-primary/20 blur-[120px]" />
+          <div className="absolute bottom-0 right-0 h-80 w-80 rounded-full bg-accent/20 blur-[120px]" />
+        </div>
+
+        <div className="container relative">
+          <div className="grid items-center gap-10 lg:grid-cols-2">
+            <div>
+              <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary/15 bg-card/90 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-primary shadow-sm">
+                Fresh groceries • local stores • fast delivery
+              </span>
+
+              <h1 className="mb-5 text-4xl font-bold leading-tight md:text-5xl lg:text-6xl">
+                Your everyday grocery shopping,
+                <span className="block text-primary">
+                  delivered fresh & fast
+                </span>
+              </h1>
+
+              <p className="mb-8 max-w-xl text-base text-muted-foreground md:text-lg">
+                Shop fruits, vegetables, meat, dairy, snacks, and household
+                essentials from trusted local vendors — all in one convenient
+                marketplace.
+              </p>
+
+              <div className="flex flex-col gap-4 sm:flex-row">
+                <Link to="/products">
+                  <Button size="lg" className="px-8 py-6 text-base">
+                    Start Shopping <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </Link>
+
+                <Link to="/provider/apply">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="px-8 py-6 text-base"
+                  >
+                    Become a Grocery Vendor
+                  </Button>
+                </Link>
+              </div>
+
+              <div className="mt-8 flex flex-wrap items-center gap-5 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-primary" />
+                  Fresh stock daily
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-primary" />
+                  Verified sellers
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-primary" />
+                  Easy returns on eligible items
+                </div>
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="rounded-3xl border bg-card/95 p-6 shadow-sm sm:col-span-2">
+                <div className="mb-4 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">
+                      Today’s essentials
+                    </p>
+                    <h3 className="text-xl font-bold">Up to 25% off</h3>
+                  </div>
+                  <div className="text-5xl">🛍️</div>
+                </div>
+                <div className="grid grid-cols-3 gap-3 text-center">
+                  {["🥬", "🍅", "🥛"].map((item) => (
+                    <div
+                      key={item}
+                      className="rounded-2xl bg-muted/50 p-4 text-3xl"
+                    >
+                      {item}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="rounded-3xl border bg-card/95 p-6 shadow-sm">
+                <p className="text-sm text-muted-foreground">Delivery</p>
+                <h4 className="mt-1 text-lg font-bold">30–60 min</h4>
+                <div className="mt-4 text-4xl">🚚</div>
+              </div>
+
+              <div className="rounded-3xl border bg-card/95 p-6 shadow-sm">
+                <p className="text-sm text-muted-foreground">Trusted by</p>
+                <h4 className="mt-1 text-lg font-bold">10K+ families</h4>
+                <div className="mt-4 text-4xl">🏠</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats */}
+      <section className="border-y bg-card">
         <div className="container py-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
             {stats.map((stat) => (
               <div key={stat.label} className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-primary">{stat.value}</div>
-                <div className="text-sm text-muted-foreground mt-1">{stat.label}</div>
+                <div className="text-2xl font-bold text-primary md:text-3xl">
+                  {stat.value}
+                </div>
+                <div className="mt-1 text-sm text-muted-foreground">
+                  {stat.label}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Promo Cards */}
+      <section className="py-14 lg:py-20">
+        <div className="container">
+          <div className="mb-10 flex items-end justify-between gap-4">
+            <div>
+              <h2 className="text-3xl font-bold md:text-4xl">
+                What makes us better
+              </h2>
+              <p className="mt-2 max-w-xl text-muted-foreground">
+                Built for real grocery shopping habits, not just generic product
+                browsing.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-3">
+            {highlights.map((item) => (
+              <div
+                key={item.title}
+                className={`rounded-3xl border bg-gradient-to-br ${item.bg} p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md`}
+              >
+                <div className="mb-6 text-5xl">{item.image}</div>
+                <h3 className="mb-2 text-xl font-bold">{item.title}</h3>
+                <p className="text-muted-foreground">{item.subtitle}</p>
               </div>
             ))}
           </div>
@@ -82,77 +345,268 @@ const Index = () => {
       </section>
 
       {/* Categories */}
-      <section className="py-16 lg:py-24">
+      <section className="bg-secondary/40 py-16 lg:py-24">
         <div className="container">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Shop by Category</h2>
-            <p className="text-muted-foreground max-w-lg mx-auto">
-              Browse our curated collections from top vendors worldwide
+          <div className="mb-12 text-center">
+            <h2 className="text-3xl font-bold md:text-4xl">
+              Shop by grocery category
+            </h2>
+            <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
+              Everything you need for daily household shopping in one place.
             </p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            {categories.map((cat, i) => (
+
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
+            {groceryCategories.map((category) => (
               <Link
+                key={category.name}
                 to="/products"
-                key={cat.name}
-                className="group rounded-xl border bg-card p-6 text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1 animate-fade-up"
-                style={{ animationDelay: `${i * 100}ms` }}
+                className="group rounded-2xl border bg-card p-5 text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
               >
-                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl gradient-primary transition-transform group-hover:scale-110">
-                  <cat.icon className="h-7 w-7 text-primary-foreground" />
+                <div
+                  className={`mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl ${category.color}`}
+                >
+                  <category.icon className="h-7 w-7" />
                 </div>
-                <h3 className="font-semibold mb-1">{cat.name}</h3>
-                <p className="text-sm text-muted-foreground">{cat.count} products</p>
+                <h3 className="font-semibold">{category.name}</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {category.count}
+                </p>
               </Link>
             ))}
           </div>
         </div>
       </section>
 
-      <FeaturedProductsSection />
-
-      {/* Features */}
+      {/* Popular Items */}
       <section className="py-16 lg:py-24">
         <div className="container">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Why Choose SmallShop?</h2>
+          <div className="mb-10 flex items-end justify-between gap-4">
+            <div>
+              <h2 className="text-3xl font-bold md:text-4xl">
+                Popular daily essentials
+              </h2>
+              <p className="mt-2 text-muted-foreground">
+                Frequently bought grocery items from trusted shops.
+              </p>
+            </div>
+            <Link to="/products" className="hidden md:inline-flex">
+              <Button variant="outline">View all products</Button>
+            </Link>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              { icon: Shield, title: "Verified Vendors", desc: "Every seller goes through a rigorous verification process to ensure quality and trust." },
-              { icon: Truck, title: "Fast Delivery", desc: "Get your orders delivered quickly with our reliable logistics network." },
-              { icon: Star, title: "Quality Guaranteed", desc: "We stand behind every product sold on our platform with quality assurance." },
-            ].map((feature, i) => (
+
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {popularProducts.map((product) => (
               <div
-                key={feature.title}
-                className="text-center p-8 rounded-xl border bg-card transition-all duration-300 hover:shadow-lg animate-fade-up"
-                style={{ animationDelay: `${i * 100}ms` }}
+                key={product.id}
+                className="group rounded-3xl border bg-card p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
               >
-                <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl gradient-accent">
-                  <feature.icon className="h-8 w-8 text-accent-foreground" />
+                <div className="mb-4 flex h-40 items-center justify-center rounded-2xl bg-muted/40 text-6xl">
+                  {product.image}
                 </div>
-                <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
-                <p className="text-muted-foreground">{feature.desc}</p>
+
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <h3 className="font-semibold">{product.name}</h3>
+                  <span className="text-sm font-bold text-primary">
+                    {product.price}
+                  </span>
+                </div>
+
+                <div className="mb-4 flex items-center justify-between text-sm text-muted-foreground">
+                  <span>{product.shop}</span>
+                  <span className="flex items-center gap-1">
+                    <Star className="h-4 w-4 fill-current text-yellow-500" />
+                    {product.rating}
+                  </span>
+                </div>
+
+                <Button className="w-full">
+                  <ShoppingCart className="mr-2 h-4 w-4" />
+                  Add to Cart
+                </Button>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-20 gradient-hero">
-        <div className="container text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ color: 'hsl(0, 0%, 100%)' }}>
-            Ready to Start Selling?
-          </h2>
-          <p className="text-lg mb-8 max-w-lg mx-auto" style={{ color: 'hsl(220, 14%, 70%)' }}>
-            Join hundreds of vendors and grow your business with SmallShop.
-          </p>
-          <Link to="/provider/apply">
-            <Button variant="hero" size="lg" className="text-base px-10 py-6">
-              Apply as Vendor <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </Link>
+      {/* Existing featured products component */}
+      <FeaturedProductsSection />
+
+      {/* Why choose us */}
+      <section className="bg-secondary/40 py-16 lg:py-24">
+        <div className="container">
+          <div className="mb-12 text-center">
+            <h2 className="text-3xl font-bold md:text-4xl">
+              Why customers choose us
+            </h2>
+            <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
+              Built to serve both customers and local grocery providers.
+            </p>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {features.map((feature) => (
+              <div
+                key={feature.title}
+                className="rounded-3xl border bg-card p-6 text-center shadow-sm transition-all duration-300 hover:shadow-md"
+              >
+                <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                  <feature.icon className="h-7 w-7" />
+                </div>
+                <h3 className="mb-2 text-lg font-bold">{feature.title}</h3>
+                <p className="text-sm text-muted-foreground">{feature.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* How it works */}
+      <section className="py-16 lg:py-24">
+        <div className="container">
+          <div className="mb-12 text-center">
+            <h2 className="text-3xl font-bold md:text-4xl">How it works</h2>
+            <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
+              Grocery shopping made simple in three steps.
+            </p>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-3">
+            {steps.map((step, index) => (
+              <div
+                key={step.title}
+                className="rounded-3xl border bg-card p-8 shadow-sm"
+              >
+                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-lg font-bold text-primary-foreground">
+                  {index + 1}
+                </div>
+                <h3 className="mb-2 text-xl font-bold">{step.title}</h3>
+                <p className="text-muted-foreground">{step.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* App + area coverage */}
+      <section className="py-16 lg:py-24">
+        <div className="container">
+          <div className="grid gap-8 lg:grid-cols-2">
+            <div className="rounded-3xl border bg-gradient-to-br from-primary/12 via-background to-accent/10 p-8">
+              <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
+                <Smartphone className="h-7 w-7" />
+              </div>
+              <h3 className="mb-3 text-2xl font-bold">
+                Shop anytime, anywhere
+              </h3>
+              <p className="mb-6 text-muted-foreground">
+                A mobile-first shopping experience designed for quick repeat
+                orders, daily needs, and easy checkout.
+              </p>
+              <div className="flex gap-3">
+                <Button>Download App</Button>
+                <Button variant="outline">Learn More</Button>
+              </div>
+            </div>
+
+            <div className="rounded-3xl border bg-card p-8">
+              <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-accent/10 text-accent">
+                <MapPin className="h-7 w-7" />
+              </div>
+              <h3 className="mb-3 text-2xl font-bold">
+                Coverage & local vendors
+              </h3>
+              <p className="mb-6 text-muted-foreground">
+                We partner with neighborhood grocery shops, fresh markets, and
+                specialty food sellers to ensure variety and freshness.
+              </p>
+              <ul className="space-y-3 text-sm text-muted-foreground">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-primary" />
+                  City-based delivery zones
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-primary" />
+                  Vendor onboarding & approval
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-primary" />
+                  Better local product availability
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="bg-secondary/40 py-16 lg:py-24">
+        <div className="container">
+          <div className="mb-12 text-center">
+            <h2 className="text-3xl font-bold md:text-4xl">
+              What customers are saying
+            </h2>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-3">
+            {testimonials.map((item) => (
+              <div
+                key={item.name}
+                className="rounded-3xl border bg-card p-6 shadow-sm"
+              >
+                <div className="mb-4 flex items-center gap-1 text-yellow-500">
+                  <Star className="h-4 w-4 fill-current" />
+                  <Star className="h-4 w-4 fill-current" />
+                  <Star className="h-4 w-4 fill-current" />
+                  <Star className="h-4 w-4 fill-current" />
+                  <Star className="h-4 w-4 fill-current" />
+                </div>
+                <p className="mb-5 text-muted-foreground">“{item.text}”</p>
+                <h4 className="font-semibold">{item.name}</h4>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Vendor CTA */}
+      <section className="py-20">
+        <div className="container">
+          <div className="rounded-[2rem] gradient-primary px-6 py-12 text-center text-primary-foreground shadow-lg md:px-12">
+            <div className="mx-auto max-w-2xl">
+              <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-white/15">
+                <Store className="h-8 w-8" />
+              </div>
+              <h2 className="mb-4 text-3xl font-bold md:text-4xl">
+                Own a grocery shop or local store?
+              </h2>
+              <p className="mb-8 text-base text-primary-foreground/85 md:text-lg">
+                Join our marketplace, list your products, manage orders, and
+                grow your business with more local customers.
+              </p>
+              <div className="flex flex-col justify-center gap-4 sm:flex-row">
+                <Link to="/provider/apply">
+                  <Button
+                    size="lg"
+                    variant="secondary"
+                    className="px-8 py-6 text-base"
+                  >
+                    Apply as Vendor <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </Link>
+                <Link to="/products">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="border-white/30 bg-transparent px-8 py-6 text-base text-white hover:bg-white/10"
+                  >
+                    Explore Marketplace
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     </PublicLayout>
