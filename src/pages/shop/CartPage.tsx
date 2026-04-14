@@ -1,15 +1,26 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
 
 import PublicLayout from "@/components/layouts/PublicLayout";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/hooks/useAuth";
 
 const isImageUrl = (value: string) =>
   value.startsWith("http://") || value.startsWith("https://");
 
 const CartPage = () => {
+  const location = useLocation();
   const { items, subtotal, shipping, total, removeFromCart, updateQuantity } = useCart();
+  const { isAuthenticated, user } = useAuth();
+  const isPurchaseDisabled =
+    user?.role === "admin" ||
+    user?.role === "super-admin" ||
+    user?.role === "provider";
+  const checkoutPath = isAuthenticated ? "/checkout" : "/login";
+  const checkoutState = isAuthenticated
+    ? undefined
+    : { from: { pathname: location.pathname === "/cart" ? "/checkout" : location.pathname } };
 
   return (
     <PublicLayout>
@@ -73,11 +84,32 @@ const CartPage = () => {
                 <span>Total</span><span className="text-primary">${total.toFixed(2)}</span>
               </div>
             </div>
-            <Link to="/checkout">
-              <Button variant="hero" className="w-full mt-6" size="lg" disabled={items.length === 0}>
+            {isPurchaseDisabled ? (
+              <Button
+                variant="hero"
+                className="mt-6 w-full"
+                size="lg"
+                disabled
+              >
                 <ShoppingBag className="mr-2 h-5 w-5" /> Checkout
               </Button>
-            </Link>
+            ) : (
+              <Link to={checkoutPath} state={checkoutState}>
+                <Button
+                  variant="hero"
+                  className="mt-6 w-full"
+                  size="lg"
+                  disabled={items.length === 0}
+                >
+                  <ShoppingBag className="mr-2 h-5 w-5" /> Checkout
+                </Button>
+              </Link>
+            )}
+            {!isAuthenticated && items.length > 0 ? (
+              <p className="mt-3 text-xs text-muted-foreground">
+                You can add items to cart as a guest. Login is required only when you continue to checkout.
+              </p>
+            ) : null}
           </div>
         </div>
       </div>

@@ -1,5 +1,5 @@
-import { useState, type FormEvent } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState, type FormEvent } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import PublicLayout from "@/components/layouts/PublicLayout";
 import { Button } from "@/components/ui/button";
@@ -7,12 +7,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/hooks/useAuth";
 
 const isImageUrl = (value: string) =>
   value.startsWith("http://") || value.startsWith("https://");
 
 const CheckoutPage = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const { items, subtotal, shipping, total, placeOrder, lastOrder } = useCart();
+  const { isAuthenticated, user } = useAuth();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -22,6 +26,33 @@ const CheckoutPage = () => {
     phone: "",
     email: "",
   });
+  const isPurchaseDisabled =
+    user?.role === "admin" ||
+    user?.role === "super-admin" ||
+    user?.role === "provider";
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/login", {
+        replace: true,
+        state: { from: { pathname: location.pathname } },
+      });
+      return;
+    }
+
+    if (isPurchaseDisabled) {
+      toast({
+        title: "Checkout unavailable",
+        description: "Admin, super admin, and provider accounts cannot place customer orders.",
+        variant: "destructive",
+      });
+      navigate("/products", { replace: true });
+    }
+  }, [isAuthenticated, isPurchaseDisabled, location.pathname, navigate]);
+
+  if (!isAuthenticated || isPurchaseDisabled) {
+    return null;
+  }
 
   const handleChange = (field: keyof typeof formData, value: string) => {
     setFormData((current) => ({ ...current, [field]: value }));

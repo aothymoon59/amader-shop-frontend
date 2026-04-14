@@ -5,6 +5,7 @@ import { PackageOpen, ShoppingCart, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/hooks/useAuth";
 import type { Product } from "@/redux/features/products/productApi";
 import { getDiscountedPrice } from "@/utils/getDiscountedPrice";
 
@@ -19,9 +20,14 @@ const getProductImage = (product: Product) =>
 const MarketplaceProductCard = ({ product }: MarketplaceProductCardProps) => {
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  const { user } = useAuth();
   const productImage = getProductImage(product);
   const discountedPrice = getDiscountedPrice(product);
   const hasDiscount = discountedPrice < product.price;
+  const isPurchaseDisabled =
+    user?.role === "admin" ||
+    user?.role === "super-admin" ||
+    user?.role === "provider";
 
   const handleAddToCart = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -111,11 +117,20 @@ const MarketplaceProductCard = ({ product }: MarketplaceProductCardProps) => {
         </div>
 
         <div className="mt-4 flex gap-2">
-          <Button className="flex-1" onClick={handleAddToCart}>
+          <Button
+            className="flex-1"
+            onClick={handleAddToCart}
+            disabled={isPurchaseDisabled}
+          >
             <ShoppingCart className="mr-2 h-4 w-4" />
             Add to cart
           </Button>
-          <Button variant="outline" className="flex-1" onClick={handleBuyNow}>
+          <Button
+            variant="outline"
+            className="flex-1"
+            onClick={handleBuyNow}
+            disabled={isPurchaseDisabled}
+          >
             Buy Now
           </Button>
         </div>
