@@ -11,6 +11,7 @@ import PaymentHistory from "../pages/PaymentHistory";
 import Products from "../pages/Products.new";
 import CartPage from "../pages/shop/CartPage";
 import CheckoutPage from "../pages/shop/CheckoutPage";
+import CheckoutPaymentStatusPage from "../pages/shop/CheckoutPaymentStatusPage";
 import ProductDetailPage from "../pages/shop/ProductDetailPage.new";
 
 export const publicRoutes: RouteObject[] = [
@@ -33,6 +34,10 @@ export const publicRoutes: RouteObject[] = [
   {
     path: "checkout",
     element: <CheckoutPage />,
+  },
+  {
+    path: "checkout/payment-status",
+    element: <CheckoutPaymentStatusPage />,
   },
   {
     path: "about",

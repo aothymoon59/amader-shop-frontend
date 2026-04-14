@@ -1,5 +1,6 @@
 import { Button, Form } from "antd";
-import { useEffect } from "react";
+import type { UploadFile } from "antd/es/upload/interface";
+import { useEffect, useState } from "react";
 
 import AntdModal from "@/components/shared/modal/AntdModal";
 import ProductFormFields from "@/components/products/ProductFormFields";
@@ -31,14 +32,17 @@ const ProductCreateModal = ({
   providerOptions,
 }: ProductCreateModalProps) => {
   const [form] = Form.useForm<ProductFormValues>();
+  const [imageFileList, setImageFileList] = useState<UploadFile[]>([]);
   const [createProduct, { isLoading }] = useCreateProductMutation();
 
   useEffect(() => {
     if (!isModalOpen) {
       form.resetFields();
+      setImageFileList([]);
       return;
     }
 
+    setImageFileList([]);
     form.setFieldsValue({
       isPublished: false,
       isFeatured: false,
@@ -51,6 +55,7 @@ const ProductCreateModal = ({
 
   const handleClose = () => {
     form.resetFields();
+    setImageFileList([]);
     closeModal();
   };
 
@@ -58,7 +63,10 @@ const ProductCreateModal = ({
     try {
       const payload = buildProductPayload({
         role,
-        values,
+        values: {
+          ...values,
+          images: imageFileList,
+        },
       });
 
       await createProduct(payload).unwrap();
@@ -105,6 +113,8 @@ const ProductCreateModal = ({
           role={role}
           categoryOptions={categoryOptions}
           providerOptions={providerOptions}
+          imageFileList={imageFileList}
+          onImageFileListChange={setImageFileList}
         />
 
         <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
