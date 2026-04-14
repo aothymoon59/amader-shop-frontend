@@ -1,5 +1,5 @@
-import { useState, type FormEvent } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import PublicLayout from "@/components/layouts/PublicLayout";
 import { Button } from "@/components/ui/button";
@@ -7,27 +7,98 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  useCheckoutMutation,
+  type CheckoutPaymentMethod,
+} from "@/redux/features/orders/orderApi";
 
 const isImageUrl = (value: string) =>
   value.startsWith("http://") || value.startsWith("https://");
 
 const CheckoutPage = () => {
-  const { items, subtotal, shipping, total, placeOrder, lastOrder } = useCart();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { items, subtotal, shipping, total } = useCart();
+  const { isAuthenticated, user } = useAuth();
+  const [checkout, { isLoading }] = useCheckoutMutation();
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    address: "",
-    city: "",
-    zipCode: "",
-    phone: "",
-    email: "",
+    firstName: user?.name?.split(" ")[0] || "",
+    lastName: user?.name?.split(" ").slice(1).join(" ") || "",
+    address: user?.personalAddress || "",
+    city: "Dhaka",
+    zipCode: "1207",
+    phone: user?.personalContact || "",
+    email: user?.email || "",
   });
+  const [paymentMethod, setPaymentMethod] =
+    useState<CheckoutPaymentMethod>("COD");
+  const [idempotencyKey, setIdempotencyKey] = useState(() => crypto.randomUUID());
+
+  const isPurchaseDisabled =
+    user?.role === "admin" ||
+    user?.role === "super-admin" ||
+    user?.role === "provider";
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/login", {
+        replace: true,
+        state: { from: { pathname: location.pathname } },
+      });
+      return;
+    }
+
+    if (isPurchaseDisabled) {
+      toast({
+        title: "Checkout unavailable",
+        description:
+          "Admin, super admin, and provider accounts cannot place customer orders.",
+        variant: "destructive",
+      });
+      navigate("/products", { replace: true });
+    }
+  }, [
+    isAuthenticated,
+    isPurchaseDisabled,
+    location.pathname,
+    navigate,
+  ]);
+
+  const vendorBreakdown = useMemo(() => {
+    const map = new Map<
+      string,
+      { vendor: string; total: number; items: typeof items }
+    >();
+
+    items.forEach((item) => {
+      if (!map.has(item.vendor)) {
+        map.set(item.vendor, {
+          vendor: item.vendor,
+          total: 0,
+          items: [],
+        });
+      }
+
+      const current = map.get(item.vendor);
+      if (!current) return;
+
+      current.total += item.price * item.quantity;
+      current.items.push(item);
+    });
+
+    return Array.from(map.values());
+  }, [items]);
+
+  if (!isAuthenticated || isPurchaseDisabled) {
+    return null;
+  }
 
   const handleChange = (field: keyof typeof formData, value: string) => {
     setFormData((current) => ({ ...current, [field]: value }));
   };
 
-  const handlePlaceOrder = (event: FormEvent<HTMLFormElement>) => {
+  const handlePlaceOrder = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const hasEmptyField = Object.values(formData).some((value) => !value.trim());
@@ -40,92 +111,179 @@ const CheckoutPage = () => {
       return;
     }
 
-    placeOrder(formData);
-    toast({
-      title: "Order placed successfully",
-      description: "Your order has been saved. You can plug in payment later.",
-    });
-    setFormData({
-      firstName: "",
-      lastName: "",
-      address: "",
-      city: "",
-      zipCode: "",
-      phone: "",
-      email: "",
-    });
+    try {
+      const response = await checkout({
+        customerName: `${formData.firstName} ${formData.lastName}`.trim(),
+        customerPhone: formData.phone,
+        customerEmail: formData.email,
+        shippingAddress: formData.address,
+        shippingCity: formData.city,
+        shippingPostalCode: formData.zipCode,
+        shippingCountry: "Bangladesh",
+        paymentMethod,
+        idempotencyKey,
+      }).unwrap();
+
+      if (
+        response.data.nextAction.type === "REDIRECT" &&
+        response.data.payment?.redirectUrl
+      ) {
+        window.location.href = response.data.payment.redirectUrl;
+        return;
+      }
+
+      toast({
+        title: "Order confirmed",
+        description: "Your cash on delivery order has been placed successfully.",
+      });
+      setIdempotencyKey(crypto.randomUUID());
+      navigate("/account/orders", { replace: true });
+    } catch (error: unknown) {
+      const message =
+        typeof error === "object" &&
+        error !== null &&
+        "data" in error &&
+        typeof error.data === "object" &&
+        error.data !== null &&
+        "message" in error.data
+          ? String(error.data.message)
+          : "Something went wrong while placing the order.";
+
+      toast({
+        title: "Checkout failed",
+        description: message,
+        variant: "destructive",
+      });
+      setIdempotencyKey(crypto.randomUUID());
+    }
   };
 
   return (
     <PublicLayout>
-      <div className="container py-8 lg:py-12 max-w-5xl">
-        <h1 className="text-3xl font-bold mb-8">Checkout</h1>
-
-        {lastOrder && items.length === 0 && (
-          <div className="rounded-xl border bg-card p-8 text-center mb-8">
-            <h2 className="text-2xl font-semibold mb-3">Order placed successfully</h2>
-            <p className="text-muted-foreground mb-2">
-              Thank you, {lastOrder.customerName || "Customer"}.
-            </p>
-            <p className="text-muted-foreground mb-6">
-              Your order for {lastOrder.itemCount} item(s) totaling ${lastOrder.total.toFixed(2)} has been recorded.
-            </p>
-            <Link to="/products">
-              <Button variant="hero">Continue Shopping</Button>
-            </Link>
-          </div>
-        )}
+      <div className="container max-w-6xl py-8 lg:py-12">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold">Checkout</h1>
+          <p className="mt-2 text-muted-foreground">
+            Review your address, order summary, and payment method before placing
+            the order.
+          </p>
+        </div>
 
         {items.length === 0 ? (
           <div className="rounded-xl border bg-card p-8 text-center">
-            <h2 className="text-xl font-semibold mb-2">No items ready for checkout</h2>
-            <p className="text-muted-foreground mb-6">
-              Add some products to your cart first, then come back here to place the order.
+            <h2 className="mb-2 text-xl font-semibold">No items ready for checkout</h2>
+            <p className="mb-6 text-muted-foreground">
+              Add some products to your cart first, then come back here to place
+              your order.
             </p>
             <Link to="/products">
               <Button variant="hero">Browse Products</Button>
             </Link>
           </div>
         ) : (
-          <form className="grid grid-cols-1 lg:grid-cols-3 gap-8" onSubmit={handlePlaceOrder}>
-            <div className="lg:col-span-2 space-y-8">
+          <form
+            className="grid grid-cols-1 gap-8 lg:grid-cols-[1.2fr_0.8fr]"
+            onSubmit={handlePlaceOrder}
+          >
+            <div className="space-y-8">
               <div className="rounded-xl border bg-card p-6">
-                <h2 className="text-lg font-semibold mb-4">Shipping Information</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div><Label>First Name</Label><Input value={formData.firstName} onChange={(e) => handleChange("firstName", e.target.value)} placeholder="John" className="mt-1.5" /></div>
-                  <div><Label>Last Name</Label><Input value={formData.lastName} onChange={(e) => handleChange("lastName", e.target.value)} placeholder="Doe" className="mt-1.5" /></div>
-                  <div className="sm:col-span-2"><Label>Address</Label><Input value={formData.address} onChange={(e) => handleChange("address", e.target.value)} placeholder="123 Main St" className="mt-1.5" /></div>
-                  <div><Label>City</Label><Input value={formData.city} onChange={(e) => handleChange("city", e.target.value)} placeholder="Dhaka" className="mt-1.5" /></div>
-                  <div><Label>ZIP Code</Label><Input value={formData.zipCode} onChange={(e) => handleChange("zipCode", e.target.value)} placeholder="1207" className="mt-1.5" /></div>
-                  <div><Label>Phone</Label><Input value={formData.phone} onChange={(e) => handleChange("phone", e.target.value)} placeholder="+8801XXXXXXXXX" className="mt-1.5" /></div>
-                  <div><Label>Email</Label><Input value={formData.email} onChange={(e) => handleChange("email", e.target.value)} placeholder="john@example.com" className="mt-1.5" /></div>
+                <h2 className="mb-4 text-lg font-semibold">Address</h2>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div>
+                    <Label>First Name</Label>
+                    <Input
+                      value={formData.firstName}
+                      onChange={(e) => handleChange("firstName", e.target.value)}
+                      className="mt-1.5"
+                    />
+                  </div>
+                  <div>
+                    <Label>Last Name</Label>
+                    <Input
+                      value={formData.lastName}
+                      onChange={(e) => handleChange("lastName", e.target.value)}
+                      className="mt-1.5"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <Label>Address</Label>
+                    <Input
+                      value={formData.address}
+                      onChange={(e) => handleChange("address", e.target.value)}
+                      className="mt-1.5"
+                    />
+                  </div>
+                  <div>
+                    <Label>City</Label>
+                    <Input
+                      value={formData.city}
+                      onChange={(e) => handleChange("city", e.target.value)}
+                      className="mt-1.5"
+                    />
+                  </div>
+                  <div>
+                    <Label>ZIP Code</Label>
+                    <Input
+                      value={formData.zipCode}
+                      onChange={(e) => handleChange("zipCode", e.target.value)}
+                      className="mt-1.5"
+                    />
+                  </div>
+                  <div>
+                    <Label>Phone</Label>
+                    <Input
+                      value={formData.phone}
+                      onChange={(e) => handleChange("phone", e.target.value)}
+                      className="mt-1.5"
+                    />
+                  </div>
+                  <div>
+                    <Label>Email</Label>
+                    <Input
+                      value={formData.email}
+                      onChange={(e) => handleChange("email", e.target.value)}
+                      className="mt-1.5"
+                    />
+                  </div>
                 </div>
               </div>
 
               <div className="rounded-xl border bg-card p-6">
-                <h2 className="text-lg font-semibold mb-4">Order Items</h2>
-                <div className="space-y-4">
-                  {items.map((item) => (
-                    <div key={item.id} className="flex items-center gap-4 border-b pb-4 last:border-0 last:pb-0">
-                      <div className="h-14 w-14 rounded-lg bg-secondary flex items-center justify-center text-2xl shrink-0">
-                        {isImageUrl(item.image) ? (
-                          <img
-                            src={item.image}
-                            alt={item.name}
-                            className="h-full w-full rounded-lg object-cover"
-                          />
-                        ) : (
-                          item.image
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <div className="font-medium">{item.name}</div>
-                        <div className="text-sm text-muted-foreground">
-                          {item.quantity} x ${item.price.toFixed(2)}
+                <h2 className="mb-4 text-lg font-semibold">Summary</h2>
+                <div className="space-y-6">
+                  {vendorBreakdown.map((vendorGroup) => (
+                    <div key={vendorGroup.vendor} className="rounded-lg border p-4">
+                      <div className="mb-3 flex items-center justify-between">
+                        <div className="font-medium">{vendorGroup.vendor}</div>
+                        <div className="text-sm font-semibold text-primary">
+                          ${vendorGroup.total.toFixed(2)}
                         </div>
                       </div>
-                      <div className="font-semibold text-primary">
-                        ${(item.quantity * item.price).toFixed(2)}
+                      <div className="space-y-3">
+                        {vendorGroup.items.map((item) => (
+                          <div key={item.id} className="flex items-center gap-3">
+                            <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-secondary">
+                              {isImageUrl(item.image) ? (
+                                <img
+                                  src={item.image}
+                                  alt={item.name}
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                item.image
+                              )}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="truncate font-medium">{item.name}</div>
+                              <div className="text-sm text-muted-foreground">
+                                {item.quantity} x ${item.price.toFixed(2)}
+                              </div>
+                            </div>
+                            <div className="font-medium">
+                              ${(item.quantity * item.price).toFixed(2)}
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   ))}
@@ -133,21 +291,73 @@ const CheckoutPage = () => {
               </div>
             </div>
 
-            <div className="rounded-xl border bg-card p-6 h-fit">
-              <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Shipping</span><span>{shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}</span></div>
-                <div className="border-t pt-3 flex justify-between font-bold text-base">
-                  <span>Total</span><span className="text-primary">${total.toFixed(2)}</span>
+            <div className="h-fit rounded-xl border bg-card p-6">
+              <h2 className="mb-4 text-lg font-semibold">Payment Method</h2>
+
+              <div className="space-y-3">
+                <label className="flex cursor-pointer items-start gap-3 rounded-lg border p-4">
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    checked={paymentMethod === "COD"}
+                    onChange={() => setPaymentMethod("COD")}
+                    className="mt-1"
+                  />
+                  <div>
+                    <div className="font-medium">Cash on Delivery</div>
+                    <div className="text-sm text-muted-foreground">
+                      Order is created immediately and confirmed for delivery.
+                    </div>
+                  </div>
+                </label>
+
+                <label className="flex cursor-pointer items-start gap-3 rounded-lg border p-4">
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    checked={paymentMethod === "ONLINE"}
+                    onChange={() => setPaymentMethod("ONLINE")}
+                    className="mt-1"
+                  />
+                  <div className="w-full">
+                  <div className="font-medium">Online Payment</div>
+                  <div className="text-sm text-muted-foreground">
+                    You will be redirected directly to SSLCommerz. Success
+                    confirms the order and failure lets you retry.
+                  </div>
+                  {paymentMethod === "ONLINE" ? (
+                    <div className="mt-4 rounded-md border bg-secondary/30 p-3 text-sm text-muted-foreground">
+                      SSLCommerz will open after you click <span className="font-medium">Place Order</span>.
+                    </div>
+                  ) : null}
+                  </div>
+                </label>
+              </div>
+
+              <div className="mt-6 space-y-3 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Subtotal</span>
+                  <span>${subtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Shipping</span>
+                  <span>{shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}</span>
+                </div>
+                <div className="flex justify-between border-t pt-3 text-base font-bold">
+                  <span>Total</span>
+                  <span className="text-primary">${total.toFixed(2)}</span>
                 </div>
               </div>
-              <Button type="submit" variant="hero" size="lg" className="w-full mt-6">
-                Place Order - ${total.toFixed(2)}
+
+              <Button
+                type="submit"
+                variant="hero"
+                size="lg"
+                className="mt-6 w-full"
+                disabled={isLoading}
+              >
+                {isLoading ? "Processing..." : "Place Order"}
               </Button>
-              <p className="text-xs text-muted-foreground mt-3">
-                Payment gateway integration can be added later. This currently saves the order flow only.
-              </p>
             </div>
           </form>
         )}

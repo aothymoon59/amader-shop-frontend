@@ -1,67 +1,70 @@
 import PublicLayout from "@/components/layouts/PublicLayout";
-import { Button } from "antd";
+import { Button, Empty, Spin } from "antd";
 import { Link } from "react-router-dom";
 
-const orders = [
-  {
-    id: "#ORD-1001",
-    date: "2026-04-06",
-    items: 2,
-    total: "$149.98",
-    status: "Shipped",
-  },
-  {
-    id: "#ORD-0998",
-    date: "2026-04-02",
-    items: 1,
-    total: "$89.99",
-    status: "Delivered",
-  },
-  {
-    id: "#ORD-0991",
-    date: "2026-03-28",
-    items: 3,
-    total: "$214.97",
-    status: "Processing",
-  },
-];
+import { useGetMyOrdersQuery } from "@/redux/features/orders/orderApi";
 
-const OrderHistory = () => (
-  <PublicLayout>
-    <div className="container py-8 lg:py-12 space-y-6">
-      <Button type="link" className="px-0">
-        <Link to="/account/settings" className="flex items-center gap-1">
-          &larr; Back to Account Settings
-        </Link>
-      </Button>
+const OrderHistory = () => {
+  const { data, isLoading } = useGetMyOrdersQuery();
+  const orders = data?.data ?? [];
 
-      <div>
-        <h1 className="text-3xl font-bold">Order History</h1>
-        <p className="text-muted-foreground mt-2">
-          Track your past and current marketplace orders.
-        </p>
-      </div>
+  return (
+    <PublicLayout>
+      <div className="container space-y-6 py-8 lg:py-12">
+        <Button type="link" className="px-0">
+          <Link to="/account/settings" className="flex items-center gap-1">
+            &larr; Back to Account Settings
+          </Link>
+        </Button>
 
-      <div className="grid gap-4">
-        {orders.map((order) => (
-          <div
-            key={order.id}
-            className="rounded-xl border bg-card p-5 flex items-center gap-4"
-          >
-            <div className="flex-1">
-              <div className="font-semibold">{order.id}</div>
-              <div className="text-sm text-muted-foreground">
-                {order.date} · {order.items} items · {order.total}
-              </div>
-            </div>
-            <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
-              {order.status}
-            </span>
+        <div>
+          <h1 className="text-3xl font-bold">Order History</h1>
+          <p className="mt-2 text-muted-foreground">
+            Track your provider-split orders and confirmation status.
+          </p>
+        </div>
+
+        {isLoading ? (
+          <div className="flex min-h-[220px] items-center justify-center">
+            <Spin />
           </div>
-        ))}
+        ) : orders.length === 0 ? (
+          <div className="rounded-xl border bg-card p-8">
+            <Empty description="No orders found yet." />
+          </div>
+        ) : (
+          <div className="grid gap-4">
+            {orders.map((order) => (
+              <div
+                key={order.id}
+                className="flex flex-col gap-4 rounded-xl border bg-card p-5 sm:flex-row sm:items-center"
+              >
+                <div className="flex-1">
+                  <div className="font-semibold">{order.orderNumber}</div>
+                  <div className="mt-1 text-sm text-muted-foreground">
+                    {new Date(order.createdAt).toLocaleDateString()} ·{" "}
+                    {order.items.length} item(s) · ${order.totalAmount.toFixed(2)}
+                  </div>
+                  <div className="mt-1 text-sm text-muted-foreground">
+                    Vendor:{" "}
+                    {order.provider?.providerProfile?.shopName || order.provider?.name}
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+                    {order.status}
+                  </span>
+                  <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground">
+                    {order.paymentStatus}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
-    </div>
-  </PublicLayout>
-);
+    </PublicLayout>
+  );
+};
 
 export default OrderHistory;

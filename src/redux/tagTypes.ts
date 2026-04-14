@@ -1,5 +1,7 @@
 export const tagTypes = {
   USER_INFO: "USER_INFO",
+  USERS: "USERS",
+  CART: "CART",
   PROVIDERS: "PROVIDERS",
   PRODUCTS: "PRODUCTS",
   PRODUCT: "PRODUCT",

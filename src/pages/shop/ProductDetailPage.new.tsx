@@ -7,6 +7,7 @@ import PublicLayout from "@/components/layouts/PublicLayout";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/hooks/useAuth";
 import { useGetSingleProductQuery } from "@/redux/features/products/productApi";
 import { getDiscountedPrice } from "@/utils/getDiscountedPrice";
 
@@ -14,6 +15,7 @@ const ProductDetailPage = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  const { user } = useAuth();
   const [selectedImage, setSelectedImage] = useState("");
 
   const {
@@ -98,6 +100,10 @@ const ProductDetailPage = () => {
     "https://placehold.co/800x600/e5e7eb/6b7280?text=No+Image";
   const providerName =
     product.provider?.providerProfile?.shopName || product.provider?.name;
+  const isPurchaseDisabled =
+    user?.role === "admin" ||
+    user?.role === "super-admin" ||
+    user?.role === "provider";
 
   return (
     <PublicLayout>
@@ -198,10 +204,16 @@ const ProductDetailPage = () => {
                 size="lg"
                 className="flex-1"
                 onClick={handleAddToCart}
+                disabled={isPurchaseDisabled}
               >
                 <ShoppingCart className="mr-2 h-5 w-5" /> Add to Cart
               </Button>
-              <Button variant="outline" size="lg" onClick={handleBuyNow}>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={handleBuyNow}
+                disabled={isPurchaseDisabled}
+              >
                 Buy Now
               </Button>
             </div>

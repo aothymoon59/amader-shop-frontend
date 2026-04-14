@@ -6,12 +6,18 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { useCart } from "@/context/CartContext";
 import { getProductById } from "@/data/products";
+import { useAuth } from "@/hooks/useAuth";
 
 const ProductDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  const { user } = useAuth();
   const product = getProductById(Number(id));
+  const isPurchaseDisabled =
+    user?.role === "admin" ||
+    user?.role === "super-admin" ||
+    user?.role === "provider";
 
   if (!product) {
     return (
@@ -73,10 +79,23 @@ const ProductDetailPage = () => {
               {product.description} Perfect for everyday use from trusted seller {product.vendor}.
             </p>
             <div className="flex gap-3 mb-8">
-              <Button variant="hero" size="lg" className="flex-1" onClick={handleAddToCart}>
+              <Button
+                variant="hero"
+                size="lg"
+                className="flex-1"
+                onClick={handleAddToCart}
+                disabled={isPurchaseDisabled}
+              >
                 <ShoppingCart className="mr-2 h-5 w-5" /> Add to Cart
               </Button>
-              <Button variant="outline" size="lg" onClick={handleBuyNow}>Buy Now</Button>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={handleBuyNow}
+                disabled={isPurchaseDisabled}
+              >
+                Buy Now
+              </Button>
             </div>
             <div className="space-y-3 border-t pt-6">
               <div className="flex items-center gap-3 text-sm text-muted-foreground">

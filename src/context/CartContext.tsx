@@ -1,8 +1,10 @@
 import {
+  useCallback,
   createContext,
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -11,7 +13,16 @@ import {
   getProductById,
   type Product as LegacyProduct,
 } from "@/data/products";
+import { useAppSelector } from "@/redux/hooks";
+import { useCurrentUser } from "@/redux/features/auth/authSlice";
 import type { Product as ApiProduct } from "@/redux/features/products/productApi";
+import {
+  type CartApiCart,
+  useAddCartItemMutation,
+  useGetCartQuery,
+  useRemoveCartItemMutation,
+  useUpdateCartItemMutation,
+} from "@/redux/features/cart/cartApi";
 
 type CartProduct = {
   id: string | number;
@@ -70,6 +81,11 @@ type StoredCartItem = {
   reviews?: number;
 };
 
+type StoredCartState = {
+  items: StoredCartItem[];
+  syncedUserId: string | null;
+};
+
 const STORAGE_KEY = "smallshop-cart";
 const FREE_SHIPPING_THRESHOLD = 50;
 const SHIPPING_COST = 9.99;
@@ -109,20 +125,30 @@ const normalizeProduct = (
   };
 };
 
-const getInitialItems = (): CartItem[] => {
+const getStoredCartState = (): StoredCartState => {
   if (typeof window === "undefined") {
-    return [];
+    return {
+      items: [],
+      syncedUserId: null,
+    };
   }
 
   try {
     const stored = window.localStorage.getItem(STORAGE_KEY);
     if (!stored) {
-      return [];
+      return {
+        items: [],
+        syncedUserId: null,
+      };
     }
 
-    const parsed: StoredCartItem[] = JSON.parse(stored);
-    return parsed
-      .map((item) => {
+    const parsed = JSON.parse(stored) as StoredCartItem[] | StoredCartState;
+    const items = Array.isArray(parsed) ? parsed : parsed.items || [];
+    const syncedUserId = Array.isArray(parsed) ? null : parsed.syncedUserId || null;
+
+    return {
+      items: items
+        .map((item) => {
         if (
           item.name &&
           item.vendor &&
@@ -159,22 +185,132 @@ const getInitialItems = (): CartItem[] => {
           quantity: item.quantity,
         };
       })
-      .filter((item): item is CartItem => Boolean(item));
+        .filter((item): item is CartItem => Boolean(item)),
+      syncedUserId,
+    };
   } catch {
-    return [];
+    return {
+      items: [],
+      syncedUserId: null,
+    };
   }
 };
 
+const normalizeServerCart = (cart: CartApiCart | null | undefined): CartItem[] =>
+  cart?.items?.map((item) => ({
+    ...normalizeProduct(item.product),
+    quantity: item.quantity,
+  })) ?? [];
+
 export const CartProvider = ({ children }: { children: ReactNode }) => {
-  const [items, setItems] = useState<CartItem[]>(getInitialItems);
+  const initialCartState = getStoredCartState();
+  const [items, setItems] = useState<CartItem[]>(initialCartState.items);
+  const [syncedUserId, setSyncedUserId] = useState<string | null>(
+    initialCartState.syncedUserId,
+  );
   const [lastOrder, setLastOrder] = useState<CartContextValue["lastOrder"]>(null);
+  const user = useAppSelector(useCurrentUser);
+  const isCustomerAuthenticated = user?.role === "customer" && Boolean(user?.id);
+  const itemsRef = useRef(items);
+  const syncInProgressRef = useRef(false);
+  const [addCartItemRemote] = useAddCartItemMutation();
+  const [updateCartItemRemote] = useUpdateCartItemMutation();
+  const [removeCartItemRemote] = useRemoveCartItemMutation();
+  const { data: cartResponse, refetch } = useGetCartQuery(undefined, {
+    skip: !isCustomerAuthenticated,
+  });
+
+  const applyServerCart = useCallback(
+    (cart: CartApiCart | null | undefined) => {
+      setItems(normalizeServerCart(cart));
+      setSyncedUserId(user?.id ?? null);
+    },
+    [user?.id],
+  );
+
+  useEffect(() => {
+    itemsRef.current = items;
+  }, [items]);
 
   useEffect(() => {
     window.localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify(items),
+      JSON.stringify({
+        items,
+        syncedUserId,
+      }),
     );
-  }, [items]);
+  }, [items, syncedUserId]);
+
+  useEffect(() => {
+    if (isCustomerAuthenticated) {
+      return;
+    }
+
+    if (syncedUserId !== null) {
+      setItems([]);
+      setSyncedUserId(null);
+    }
+  }, [isCustomerAuthenticated, syncedUserId]);
+
+  useEffect(() => {
+    const syncGuestCartToServer = async () => {
+      if (!isCustomerAuthenticated || !cartResponse?.data || !user?.id) {
+        return;
+      }
+
+      if (syncInProgressRef.current) {
+        return;
+      }
+
+      if (syncedUserId === user.id) {
+        setItems(normalizeServerCart(cartResponse.data));
+        return;
+      }
+
+      syncInProgressRef.current = true;
+
+      try {
+        if (syncedUserId !== null && syncedUserId !== user.id) {
+          applyServerCart(cartResponse.data);
+          return;
+        }
+
+        const guestItems = itemsRef.current.filter(
+          (item) => typeof item.id === "string" && item.quantity > 0,
+        );
+
+        if (!guestItems.length) {
+          applyServerCart(cartResponse.data);
+          return;
+        }
+
+        let latestCart = cartResponse.data;
+
+        for (const item of guestItems) {
+          const response = await addCartItemRemote({
+            productId: item.id,
+            quantity: item.quantity,
+          }).unwrap();
+
+          latestCart = response.data;
+        }
+
+        applyServerCart(latestCart);
+      } finally {
+        syncInProgressRef.current = false;
+      }
+    };
+
+    void syncGuestCartToServer();
+  }, [
+    addCartItemRemote,
+    applyServerCart,
+    cartResponse,
+    isCustomerAuthenticated,
+    syncedUserId,
+    user?.id,
+  ]);
 
   const addToCart = (
     product: LegacyProduct | ApiProduct | CartProduct,
@@ -197,12 +333,51 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
       return [...currentItems, { ...normalizedProduct, quantity }];
     });
+
+    if (!isCustomerAuthenticated || syncedUserId !== user?.id) {
+      setSyncedUserId(null);
+      return;
+    }
+
+    if (typeof normalizedProduct.id !== "string") {
+      return;
+    }
+
+    void addCartItemRemote({
+      productId: normalizedProduct.id,
+      quantity,
+    })
+      .unwrap()
+      .then((response) => {
+        applyServerCart(response.data);
+      })
+      .catch(() => {
+        void refetch();
+      });
   };
 
   const removeFromCart = (productId: string | number) => {
     setItems((currentItems) =>
       currentItems.filter((item) => item.id !== productId),
     );
+
+    if (!isCustomerAuthenticated || syncedUserId !== user?.id) {
+      setSyncedUserId(null);
+      return;
+    }
+
+    if (typeof productId !== "string") {
+      return;
+    }
+
+    void removeCartItemRemote(productId)
+      .unwrap()
+      .then((response) => {
+        applyServerCart(response.data);
+      })
+      .catch(() => {
+        void refetch();
+      });
   };
 
   const updateQuantity = (productId: string | number, quantity: number) => {
@@ -216,10 +391,53 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         item.id === productId ? { ...item, quantity } : item,
       ),
     );
+
+    if (!isCustomerAuthenticated || syncedUserId !== user?.id) {
+      setSyncedUserId(null);
+      return;
+    }
+
+    if (typeof productId !== "string") {
+      return;
+    }
+
+    void updateCartItemRemote({
+      productId,
+      quantity,
+    })
+      .unwrap()
+      .then((response) => {
+        applyServerCart(response.data);
+      })
+      .catch(() => {
+        void refetch();
+      });
   };
 
   const clearCart = () => {
+    const currentItems = [...items];
     setItems([]);
+
+    if (!isCustomerAuthenticated || syncedUserId !== user?.id) {
+      setSyncedUserId(null);
+      return;
+    }
+
+    void Promise.all(
+      currentItems
+        .filter((item) => typeof item.id === "string")
+        .map((item) =>
+          removeCartItemRemote(item.id as string)
+            .unwrap()
+            .catch(() => null),
+        ),
+    ).then(() => {
+      void refetch().then((response) => {
+        if ("data" in response) {
+          applyServerCart(response.data?.data);
+        }
+      });
+    });
   };
 
   const subtotal = useMemo(

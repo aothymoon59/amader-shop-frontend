@@ -1,4 +1,5 @@
 import { tagTypes } from "@/redux/tagTypes";
+import { cleanObject } from "@/utils/cleanObject";
 import { baseApi } from "../../api/baseApi";
 import { setUser, type TUser } from "./authSlice";
 import type { RootState } from "../../store";
@@ -14,8 +15,63 @@ type ChangePasswordPayload = {
   newPassword: string;
 };
 
+export type UserRole = "SUPER_ADMIN" | "ADMIN" | "PROVIDER" | "CUSTOMER";
+
+export type UserRecord = {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  isActive: boolean;
+  archivedAt: string | null;
+  personalContact: string | null;
+  personalAddress: string | null;
+  dateOfBirth: string | null;
+  profileImage: string | null;
+  createdAt: string;
+  providerProfile?: unknown | null;
+};
+
+type UsersListResponse = {
+  success: boolean;
+  message: string;
+  meta?: {
+    paginate?: boolean;
+    page?: number;
+    limit?: number;
+    total?: number;
+    totalPages?: number;
+  };
+  data: UserRecord[];
+};
+
+type GetUsersArgs = {
+  search?: string;
+  role?: UserRole;
+  paginate?: boolean;
+  page?: number;
+  limit?: number;
+};
+
 export const usersApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    getUsers: builder.query<UsersListResponse, GetUsersArgs | void>({
+      query: (args) => ({
+        url: "/users",
+        method: "GET",
+        params: cleanObject({
+          search: args?.search,
+          role: args?.role,
+          paginate:
+            typeof args?.paginate === "boolean"
+              ? String(args.paginate)
+              : undefined,
+          page: args?.page,
+          limit: args?.limit,
+        }),
+      }),
+      providesTags: [tagTypes.USERS],
+    }),
     getMe: builder.query<GetMeResponse, void>({
       query: () => ({
         url: "/users/me",
@@ -80,5 +136,9 @@ export const usersApi = baseApi.injectEndpoints({
   }),
 });
 
-export const { useGetMeQuery, useUpdateMeMutation, useChangePasswordMutation } =
-  usersApi;
+export const {
+  useGetUsersQuery,
+  useGetMeQuery,
+  useUpdateMeMutation,
+  useChangePasswordMutation,
+} = usersApi;
