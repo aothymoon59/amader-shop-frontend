@@ -44,7 +44,7 @@ const menuItems: Record<string, SidebarItem[]> = {
     { title: "Reports", icon: BarChart3, path: "/admin/reports" },
     { title: "Audit Log", icon: FileText, path: "/admin/audit-log" },
     { title: "CMS", icon: FileText, path: "/admin/cms" },
-    { title: "Settings", icon: Settings, path: "/admin/settings" },
+    { title: "Profile Settings", icon: Settings, path: "/admin/settings" },
   ],
   provider: [
     { title: "Dashboard", icon: LayoutDashboard, path: "/provider/dashboard" },
@@ -53,7 +53,7 @@ const menuItems: Record<string, SidebarItem[]> = {
     { title: "POS", icon: CreditCard, path: "/provider/pos" },
     { title: "Receipts", icon: Receipt, path: "/provider/receipts" },
     { title: "Reports", icon: TrendingUp, path: "/provider/reports" },
-    { title: "Settings", icon: Settings, path: "/provider/settings" },
+    { title: "Profile Settings", icon: Settings, path: "/provider/settings" },
   ],
   "super-admin": [
     {
@@ -66,7 +66,11 @@ const menuItems: Record<string, SidebarItem[]> = {
     { title: "Analytics", icon: BarChart3, path: "/super-admin/analytics" },
     { title: "Audit Log", icon: FileText, path: "/super-admin/audit-log" },
     { title: "CMS", icon: FileText, path: "/super-admin/cms" },
-    { title: "Settings", icon: Settings, path: "/super-admin/settings" },
+    {
+      title: "Profile Settings",
+      icon: Settings,
+      path: "/super-admin/settings",
+    },
   ],
 };
 
@@ -201,15 +205,16 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         </header>
 
         <main className="flex-1 overflow-y-auto p-4 lg:p-6">
-          {role === "provider" && userData?.providerProfile?.isActive === false && (
-            <Alert
-              className="mb-4"
-              type="warning"
-              showIcon
-              message="Provider account inactive"
-              description="Your provider account is currently inactive. You can still view your account, but provider actions are blocked until an administrator reactivates it."
-            />
-          )}
+          {role === "provider" &&
+            userData?.providerProfile?.isActive === false && (
+              <Alert
+                className="mb-4"
+                type="warning"
+                showIcon
+                message="Provider account inactive"
+                description="Your provider account is currently inactive. You can still view your account, but provider actions are blocked until an administrator reactivates it."
+              />
+            )}
           {children}
         </main>
       </div>
