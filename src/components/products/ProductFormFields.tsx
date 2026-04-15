@@ -4,10 +4,14 @@ import { Plus } from "lucide-react";
 
 import type {
   CategoryOption,
+  DeliveryZoneOption,
   ProductFormValues,
   ProviderOption,
 } from "@/components/products/productManagement.types";
+import { useSystemCurrency } from "@/hooks/useSystemCurrency";
+import { defaultSystemCurrency } from "@/redux/features/generalApi/systemSettingsApi";
 import type { ProductImage } from "@/redux/features/products/productApi";
+import { formatCurrencyAmount } from "@/utils/currency";
 
 const { TextArea } = Input;
 
@@ -25,6 +29,7 @@ type ProductFormFieldsProps = {
   role: "provider" | "admin";
   categoryOptions: CategoryOption[];
   providerOptions: ProviderOption[];
+  deliveryZoneOptions: DeliveryZoneOption[];
   retainedImages?: ProductImage[];
   onRemoveRetainedImage?: (imageId: string) => void;
   imageFileList?: UploadFile[];
@@ -35,11 +40,14 @@ const ProductFormFields = ({
   role,
   categoryOptions,
   providerOptions,
+  deliveryZoneOptions,
   retainedImages = [],
   onRemoveRetainedImage,
   imageFileList,
   onImageFileListChange,
 }: ProductFormFieldsProps) => {
+  const { currency = defaultSystemCurrency } = useSystemCurrency();
+
   return (
     <div className="overflow-x-hidden">
       <Row gutter={[16, 0]} wrap>
@@ -81,6 +89,31 @@ const ProductFormFields = ({
           </Form.Item>
         </Col>
  
+        <Col xs={24} md={12}>
+          <Form.Item
+            label="Delivery Zones"
+            name="deliveryZoneIds"
+            rules={[
+              {
+                required: true,
+                type: "array",
+                min: 1,
+                message: "Please select at least one delivery zone",
+              },
+            ]}
+          >
+            <Select
+              mode="multiple"
+              optionFilterProp="label"
+              placeholder="Select delivery zones"
+              options={deliveryZoneOptions.map((zone) => ({
+                value: zone.id,
+                label: `${zone.name} | Normal ${formatCurrencyAmount(zone.normalCharge, currency)} | Express ${formatCurrencyAmount(zone.expressCharge, currency)}`,
+              }))}
+            />
+          </Form.Item>
+        </Col>
+
         <Col xs={24} md={12}>
           <Form.Item
             label="Product Name"

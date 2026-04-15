@@ -70,6 +70,9 @@ export const buildProductPayload = ({
   if (values.barcode?.trim()) {
     payload.append("barcode", values.barcode.trim());
   }
+  values.deliveryZoneIds.forEach((deliveryZoneId) => {
+    payload.append("deliveryZoneIds", deliveryZoneId);
+  });
 
   payload.append("isPublished", String(Boolean(values.isPublished)));
 

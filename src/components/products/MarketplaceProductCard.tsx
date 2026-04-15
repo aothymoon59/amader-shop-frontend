@@ -6,7 +6,10 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/hooks/useAuth";
+import { useSystemCurrency } from "@/hooks/useSystemCurrency";
+import { defaultSystemCurrency } from "@/redux/features/generalApi/systemSettingsApi";
 import type { Product } from "@/redux/features/products/productApi";
+import { formatCurrencyAmount } from "@/utils/currency";
 import { getDiscountedPrice } from "@/utils/getDiscountedPrice";
 
 type MarketplaceProductCardProps = {
@@ -21,6 +24,7 @@ const MarketplaceProductCard = ({ product }: MarketplaceProductCardProps) => {
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const { user } = useAuth();
+  const { currency = defaultSystemCurrency } = useSystemCurrency();
   const productImage = getProductImage(product);
   const discountedPrice = getDiscountedPrice(product);
   const hasDiscount = discountedPrice < product.price;
@@ -91,11 +95,11 @@ const MarketplaceProductCard = ({ product }: MarketplaceProductCardProps) => {
 
         <div className="mb-3 flex items-center gap-2">
           <span className="text-lg font-bold text-primary">
-            ${discountedPrice.toFixed(2)}
+            {formatCurrencyAmount(discountedPrice, currency)}
           </span>
           {hasDiscount ? (
             <span className="text-sm text-muted-foreground line-through">
-              ${Number(product.price).toFixed(2)}
+              {formatCurrencyAmount(Number(product.price), currency)}
             </span>
           ) : null}
         </div>
@@ -109,7 +113,7 @@ const MarketplaceProductCard = ({ product }: MarketplaceProductCardProps) => {
             <span>
               {product.discountType === "PERCENTAGE"
                 ? `${product.discountValue}% off`
-                : `$${Number(product.discountValue || 0).toFixed(2)} off`}
+                : `${formatCurrencyAmount(Number(product.discountValue || 0), currency)} off`}
             </span>
           ) : (
             <span>No discount</span>

@@ -22,6 +22,7 @@ import {
   LogOut,
   X,
   ChevronDown,
+  MapPinned,
 } from "lucide-react";
 
 interface SidebarItem {
@@ -40,7 +41,15 @@ const menuItems: Record<string, SidebarItem[]> = {
   admin: [
     { title: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard" },
     { title: "Manage Products", icon: Package, path: "/admin/manage-products" },
-    { title: "Orders", icon: ShoppingCart, path: "/admin/orders" },
+    { title: "Delivery Zones", icon: MapPinned, path: "/admin/delivery-zones" },
+    {
+      title: "Order Management",
+      icon: ShoppingCart,
+      children: [
+        { title: "Orders", icon: ShoppingCart, path: "/admin/orders" },
+        { title: "Payments", icon: CreditCard, path: "/admin/payments" },
+      ],
+    },
     {
       title: "User Management",
       icon: Users,
@@ -57,7 +66,14 @@ const menuItems: Record<string, SidebarItem[]> = {
   provider: [
     { title: "Dashboard", icon: LayoutDashboard, path: "/provider/dashboard" },
     { title: "Products", icon: Package, path: "/provider/products" },
-    { title: "Orders", icon: ShoppingCart, path: "/provider/orders" },
+    {
+      title: "Order Management",
+      icon: ShoppingCart,
+      children: [
+        { title: "Orders", icon: ShoppingCart, path: "/provider/orders" },
+        { title: "Payments", icon: CreditCard, path: "/provider/payments" },
+      ],
+    },
     { title: "POS", icon: CreditCard, path: "/provider/pos" },
     { title: "Receipts", icon: Receipt, path: "/provider/receipts" },
     { title: "Reports", icon: TrendingUp, path: "/provider/reports" },
@@ -77,6 +93,15 @@ const menuItems: Record<string, SidebarItem[]> = {
         { title: "Providers", icon: UserCheck, path: "/super-admin/providers" },
       ],
     },
+    {
+      title: "Order Management",
+      icon: ShoppingCart,
+      children: [
+        { title: "Orders", icon: ShoppingCart, path: "/super-admin/orders" },
+        { title: "Payments", icon: CreditCard, path: "/super-admin/payments" },
+      ],
+    },
+    { title: "Delivery Zones", icon: MapPinned, path: "/super-admin/delivery-zones" },
     { title: "Analytics", icon: BarChart3, path: "/super-admin/analytics" },
     { title: "Audit Log", icon: FileText, path: "/super-admin/audit-log" },
     { title: "CMS", icon: FileText, path: "/super-admin/cms" },

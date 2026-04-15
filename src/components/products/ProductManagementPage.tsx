@@ -36,20 +36,25 @@ import { getErrorMessage } from "@/components/products/productForm.helpers";
 import ProductGridView from "@/components/products/ProductGridView";
 import type {
   CategoryOption,
+  DeliveryZoneOption,
   FilterState,
   PaginationState,
   ProviderOption,
   ViewMode,
 } from "@/components/products/productManagement.types";
+import { useSystemCurrency } from "@/hooks/useSystemCurrency";
 import { toast } from "@/hooks/use-toast";
 import { useGetAllProvidersQuery } from "@/redux/features/admin/providerManagementApi";
 import { useGetCategoriesQuery } from "@/redux/features/generalApi/categoriesApi";
+import { useGetDeliveryZonesQuery } from "@/redux/features/generalApi/deliveryZonesApi";
+import { defaultSystemCurrency } from "@/redux/features/generalApi/systemSettingsApi";
 import {
   type Product,
   useDeleteProductMutation,
   useGetManagedProductsQuery,
   useRestoreProductMutation,
 } from "@/redux/features/products/productApi";
+import { formatCurrencyAmount } from "@/utils/currency";
 import TableSearch from "../shared/table/TableSearch";
 
 const { Title, Paragraph } = Typography;
@@ -84,6 +89,7 @@ const ProductManagementPage = ({ role }: ProductManagementPageProps) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [detailsProduct, setDetailsProduct] = useState<Product | null>(null);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const { currency = defaultSystemCurrency } = useSystemCurrency();
 
   const { data: categoryResponse, isLoading: isCategoriesLoading } =
     useGetCategoriesQuery(undefined);
@@ -92,6 +98,7 @@ const ProductManagementPage = ({ role }: ProductManagementPageProps) => {
       role === "admin" ? { status: "APPROVED" } : undefined,
       { skip: role !== "admin" },
     );
+  const { data: deliveryZoneResponse } = useGetDeliveryZonesQuery();
   const {
     data: productResponse,
     isLoading: isProductsLoading,
@@ -123,6 +130,10 @@ const ProductManagementPage = ({ role }: ProductManagementPageProps) => {
   const providerOptions = useMemo<ProviderOption[]>(
     () => (providerResponse?.data ?? []) as ProviderOption[],
     [providerResponse],
+  );
+  const deliveryZoneOptions = useMemo<DeliveryZoneOption[]>(
+    () => (deliveryZoneResponse?.data ?? []) as DeliveryZoneOption[],
+    [deliveryZoneResponse],
   );
 
   const products = useMemo<Product[]>(
@@ -292,12 +303,12 @@ const ProductManagementPage = ({ role }: ProductManagementPageProps) => {
         width: 150,
         render: (_, product) => (
           <div>
-            <div className="font-medium">${product.price.toFixed(2)}</div>
+            <div className="font-medium">{formatCurrencyAmount(product.price, currency)}</div>
             {product.discountType && (product.discountValue || 0) > 0 ? (
               <div className="text-xs text-emerald-600">
                 {product.discountType === "PERCENTAGE"
                   ? `${product.discountValue}% off`
-                  : `$${product.discountValue} off`}
+                  : `${formatCurrencyAmount(Number(product.discountValue || 0), currency)} off`}
               </div>
             ) : null}
           </div>
@@ -377,7 +388,7 @@ const ProductManagementPage = ({ role }: ProductManagementPageProps) => {
         ),
       },
     ],
-    [isDeleting, isRestoring, listMode, role],
+    [currency, isDeleting, isRestoring, listMode, role],
   );
 
   return (
@@ -587,6 +598,7 @@ const ProductManagementPage = ({ role }: ProductManagementPageProps) => {
         closeModal={() => setIsCreateModalOpen(false)}
         categoryOptions={categoryOptions}
         providerOptions={providerOptions}
+        deliveryZoneOptions={deliveryZoneOptions}
       />
 
       <ProductEditModal
@@ -596,6 +608,7 @@ const ProductManagementPage = ({ role }: ProductManagementPageProps) => {
         closeModal={closeEditModal}
         categoryOptions={categoryOptions}
         providerOptions={providerOptions}
+        deliveryZoneOptions={deliveryZoneOptions}
       />
 
       <ProductDetailsDrawer

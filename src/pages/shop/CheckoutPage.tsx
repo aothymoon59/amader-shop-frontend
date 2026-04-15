@@ -8,10 +8,14 @@ import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/hooks/useAuth";
+import { useSystemCurrency } from "@/hooks/useSystemCurrency";
+import { Select } from "antd";
+import { defaultSystemCurrency } from "@/redux/features/generalApi/systemSettingsApi";
 import {
   useCheckoutMutation,
   type CheckoutPaymentMethod,
 } from "@/redux/features/orders/orderApi";
+import { formatCurrencyAmount } from "@/utils/currency";
 
 const isImageUrl = (value: string) =>
   value.startsWith("http://") || value.startsWith("https://");
@@ -19,8 +23,22 @@ const isImageUrl = (value: string) =>
 const CheckoutPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { items, subtotal, shipping, total } = useCart();
+  const {
+    items,
+    subtotal,
+    shipping,
+    total,
+    placeOrder,
+    deliveryZoneId,
+    setDeliveryZoneId,
+    deliveryMode,
+    setDeliveryMode,
+    eligibleDeliveryZones,
+    pricingMessage,
+    canCheckout,
+  } = useCart();
   const { isAuthenticated, user } = useAuth();
+  const { currency = defaultSystemCurrency } = useSystemCurrency();
   const [checkout, { isLoading }] = useCheckoutMutation();
   const [formData, setFormData] = useState({
     firstName: user?.name?.split(" ")[0] || "",
@@ -111,6 +129,16 @@ const CheckoutPage = () => {
       return;
     }
 
+    if (!deliveryZoneId || !canCheckout) {
+      toast({
+        title: "Select delivery settings",
+        description:
+          pricingMessage || "Choose a valid delivery zone before placing the order.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const response = await checkout({
         customerName: `${formData.firstName} ${formData.lastName}`.trim(),
@@ -120,6 +148,8 @@ const CheckoutPage = () => {
         shippingCity: formData.city,
         shippingPostalCode: formData.zipCode,
         shippingCountry: "Bangladesh",
+        deliveryZoneId,
+        deliveryMode,
         paymentMethod,
         idempotencyKey,
       }).unwrap();
@@ -132,12 +162,16 @@ const CheckoutPage = () => {
         return;
       }
 
-      toast({
-        title: "Order confirmed",
-        description: "Your cash on delivery order has been placed successfully.",
+      placeOrder({
+        ...formData,
+        deliveryZoneId,
+        deliveryMode,
       });
       setIdempotencyKey(crypto.randomUUID());
-      navigate("/account/orders", { replace: true });
+      navigate(
+        `/checkout/payment-status?status=success&orderNumber=${encodeURIComponent(response.data.order.orderNumber)}&paymentMethod=${encodeURIComponent(response.data.order.paymentMethod)}&paymentStatus=${encodeURIComponent(response.data.order.paymentStatus)}${response.data.order.receipt?.receiptNumber ? `&receiptNumber=${encodeURIComponent(response.data.order.receipt.receiptNumber)}` : ""}`,
+        { replace: true },
+      );
     } catch (error: unknown) {
       const message =
         typeof error === "object" &&
@@ -155,6 +189,10 @@ const CheckoutPage = () => {
         variant: "destructive",
       });
       setIdempotencyKey(crypto.randomUUID());
+      navigate(
+        `/checkout/payment-status?status=failed&paymentMethod=${encodeURIComponent(paymentMethod)}&message=${encodeURIComponent(message)}`,
+        { replace: true },
+      );
     }
   };
 
@@ -249,6 +287,39 @@ const CheckoutPage = () => {
               </div>
 
               <div className="rounded-xl border bg-card p-6">
+                <h2 className="mb-4 text-lg font-semibold">Delivery</h2>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div>
+                    <Label>Delivery Zone</Label>
+                    <Select
+                      className="mt-1.5 w-full"
+                      value={deliveryZoneId || undefined}
+                      onChange={(value) => setDeliveryZoneId(value)}
+                      options={eligibleDeliveryZones.map((zone) => ({
+                        value: zone.id,
+                        label: zone.name,
+                      }))}
+                    />
+                  </div>
+                  <div>
+                    <Label>Delivery Speed</Label>
+                    <Select
+                      className="mt-1.5 w-full"
+                      value={deliveryMode}
+                      onChange={(value) => setDeliveryMode(value)}
+                      options={[
+                        { value: "NORMAL", label: "Normal delivery" },
+                        { value: "EXPRESS", label: "Express delivery" },
+                      ]}
+                    />
+                  </div>
+                </div>
+                {pricingMessage ? (
+                  <p className="mt-3 text-sm text-muted-foreground">{pricingMessage}</p>
+                ) : null}
+              </div>
+
+              <div className="rounded-xl border bg-card p-6">
                 <h2 className="mb-4 text-lg font-semibold">Summary</h2>
                 <div className="space-y-6">
                   {vendorBreakdown.map((vendorGroup) => (
@@ -256,7 +327,7 @@ const CheckoutPage = () => {
                       <div className="mb-3 flex items-center justify-between">
                         <div className="font-medium">{vendorGroup.vendor}</div>
                         <div className="text-sm font-semibold text-primary">
-                          ${vendorGroup.total.toFixed(2)}
+                          {formatCurrencyAmount(vendorGroup.total, currency)}
                         </div>
                       </div>
                       <div className="space-y-3">
@@ -276,11 +347,11 @@ const CheckoutPage = () => {
                             <div className="min-w-0 flex-1">
                               <div className="truncate font-medium">{item.name}</div>
                               <div className="text-sm text-muted-foreground">
-                                {item.quantity} x ${item.price.toFixed(2)}
+                                {item.quantity} x {formatCurrencyAmount(item.price, currency)}
                               </div>
                             </div>
                             <div className="font-medium">
-                              ${(item.quantity * item.price).toFixed(2)}
+                              {formatCurrencyAmount(item.quantity * item.price, currency)}
                             </div>
                           </div>
                         ))}
@@ -337,15 +408,15 @@ const CheckoutPage = () => {
               <div className="mt-6 space-y-3 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
+                  <span>{formatCurrencyAmount(subtotal, currency)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Shipping</span>
-                  <span>{shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}</span>
+                  <span>{shipping === 0 ? "Free" : formatCurrencyAmount(shipping, currency)}</span>
                 </div>
                 <div className="flex justify-between border-t pt-3 text-base font-bold">
                   <span>Total</span>
-                  <span className="text-primary">${total.toFixed(2)}</span>
+                  <span className="text-primary">{formatCurrencyAmount(total, currency)}</span>
                 </div>
               </div>
 
@@ -354,7 +425,7 @@ const CheckoutPage = () => {
                 variant="hero"
                 size="lg"
                 className="mt-6 w-full"
-                disabled={isLoading}
+                disabled={isLoading || !canCheckout}
               >
                 {isLoading ? "Processing..." : "Place Order"}
               </Button>

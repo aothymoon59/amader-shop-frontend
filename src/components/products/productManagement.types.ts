@@ -18,6 +18,15 @@ export type ProviderOption = {
   };
 };
 
+export type DeliveryZoneOption = {
+  id: string;
+  name: string;
+  normalCharge: number;
+  expressCharge: number;
+  freeDeliveryThreshold?: number | null;
+  isActive: boolean;
+};
+
 export type ProductFormValues = {
   providerId?: string;
   categoryId: string;
@@ -32,6 +41,7 @@ export type ProductFormValues = {
   lowStockThreshold?: number;
   sku?: string;
   barcode?: string;
+  deliveryZoneIds: string[];
   isPublished?: boolean;
   isFeatured?: boolean;
   images?: UploadFile[];

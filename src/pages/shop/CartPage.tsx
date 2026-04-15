@@ -1,18 +1,37 @@
 import { Link, useLocation } from "react-router-dom";
 import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
+import { Select } from "antd";
 
 import PublicLayout from "@/components/layouts/PublicLayout";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/hooks/useAuth";
+import { useSystemCurrency } from "@/hooks/useSystemCurrency";
+import { defaultSystemCurrency } from "@/redux/features/generalApi/systemSettingsApi";
+import { formatCurrencyAmount } from "@/utils/currency";
 
 const isImageUrl = (value: string) =>
   value.startsWith("http://") || value.startsWith("https://");
 
 const CartPage = () => {
   const location = useLocation();
-  const { items, subtotal, shipping, total, removeFromCart, updateQuantity } = useCart();
+  const {
+    items,
+    subtotal,
+    shipping,
+    total,
+    removeFromCart,
+    updateQuantity,
+    deliveryZoneId,
+    setDeliveryZoneId,
+    deliveryMode,
+    setDeliveryMode,
+    eligibleDeliveryZones,
+    pricingMessage,
+    canCheckout,
+  } = useCart();
   const { isAuthenticated, user } = useAuth();
+  const { currency = defaultSystemCurrency } = useSystemCurrency();
   const isPurchaseDisabled =
     user?.role === "admin" ||
     user?.role === "super-admin" ||
@@ -55,7 +74,9 @@ const CartPage = () => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold truncate">{item.name}</h3>
-                  <div className="text-primary font-bold">${item.price.toFixed(2)}</div>
+                  <div className="text-primary font-bold">
+                    {formatCurrencyAmount(item.price, currency)}
+                  </div>
                   <div className="text-xs text-muted-foreground">by {item.vendor}</div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -77,11 +98,36 @@ const CartPage = () => {
           <div className="rounded-xl border bg-card p-6 h-fit">
             <h3 className="font-semibold mb-4">Order Summary</h3>
             <div className="space-y-2 text-sm">
+              <div className="space-y-2 rounded-lg border bg-secondary/30 p-3">
+                <div className="text-sm font-medium">Delivery</div>
+                <Select
+                  className="w-full"
+                  placeholder="Select delivery zone"
+                  value={deliveryZoneId || undefined}
+                  onChange={(value) => setDeliveryZoneId(value)}
+                  options={eligibleDeliveryZones.map((zone) => ({
+                    value: zone.id,
+                    label: zone.name,
+                  }))}
+                />
+                <Select
+                  className="w-full"
+                  value={deliveryMode}
+                  onChange={(value) => setDeliveryMode(value)}
+                  options={[
+                    { value: "NORMAL", label: "Normal delivery" },
+                    { value: "EXPRESS", label: "Express delivery" },
+                  ]}
+                />
+                {pricingMessage ? (
+                  <div className="text-xs text-muted-foreground">{pricingMessage}</div>
+                ) : null}
+              </div>
               <div className="flex justify-between"><span className="text-muted-foreground">Items</span><span>{items.length}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Shipping</span><span className="text-accent font-medium">{shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>{formatCurrencyAmount(subtotal, currency)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Shipping</span><span className="text-accent font-medium">{shipping === 0 ? "Free" : formatCurrencyAmount(shipping, currency)}</span></div>
               <div className="border-t pt-2 mt-2 flex justify-between font-bold text-base">
-                <span>Total</span><span className="text-primary">${total.toFixed(2)}</span>
+                <span>Total</span><span className="text-primary">{formatCurrencyAmount(total, currency)}</span>
               </div>
             </div>
             {isPurchaseDisabled ? (
@@ -99,7 +145,7 @@ const CartPage = () => {
                   variant="hero"
                   className="mt-6 w-full"
                   size="lg"
-                  disabled={items.length === 0}
+                  disabled={items.length === 0 || (isAuthenticated && !canCheckout)}
                 >
                   <ShoppingBag className="mr-2 h-5 w-5" /> Checkout
                 </Button>
