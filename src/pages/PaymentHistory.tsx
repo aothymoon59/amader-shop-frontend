@@ -1,5 +1,6 @@
 import PublicLayout from "@/components/layouts/PublicLayout";
-import { Button, Empty, Spin } from "antd";
+import { Button, Empty, Spin, Table, Tag } from "antd";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 
 import { useGetMyPaymentsQuery } from "@/redux/features/orders/orderApi";
@@ -7,6 +8,58 @@ import { useGetMyPaymentsQuery } from "@/redux/features/orders/orderApi";
 const PaymentHistory = () => {
   const { data, isLoading } = useGetMyPaymentsQuery();
   const payments = data?.data ?? [];
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const columns = [
+    {
+      title: "Transaction",
+      dataIndex: "transactionId",
+      key: "transactionId",
+      render: (value: string) => (
+        <span className="font-semibold text-foreground">{value}</span>
+      ),
+    },
+    {
+      title: "Created At",
+      key: "createdAt",
+      render: (_: unknown, payment: (typeof payments)[number]) => (
+        <div>
+          <div>{new Date(payment.createdAt).toLocaleDateString()}</div>
+          <div className="text-xs text-muted-foreground">
+            {new Date(payment.createdAt).toLocaleTimeString()}
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: "Provider",
+      dataIndex: "provider",
+      key: "provider",
+    },
+    {
+      title: "Order Number",
+      key: "orderNumber",
+      render: (_: unknown, payment: (typeof payments)[number]) =>
+        payment.orderGroup?.groupNumber || "N/A",
+    },
+    {
+      title: "Amount",
+      key: "amount",
+      render: (_: unknown, payment: (typeof payments)[number]) => (
+        <span className="font-medium">${payment.amount.toFixed(2)}</span>
+      ),
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      render: (status: string) => (
+        <Tag color={status === "SUCCESS" ? "green" : status === "FAILED" ? "red" : "gold"}>
+          {status}
+        </Tag>
+      ),
+    },
+  ];
 
   return (
     <PublicLayout>
@@ -16,10 +69,11 @@ const PaymentHistory = () => {
             &larr; Back to Account Settings
           </Link>
         </Button>
-        <div>
-          <h1 className="text-3xl font-bold">Payment History</h1>
-          <p className="mt-2 text-muted-foreground">
-            Review payment attempts, gateway transactions, and retry outcomes.
+        <div className="rounded-2xl border bg-card p-6">
+          <h1 className="text-3xl font-bold">Customer Payment History</h1>
+          <p className="mt-2 max-w-2xl text-muted-foreground">
+            Track payment attempts, transaction references, order numbers, and
+            final payment results from this dedicated page.
           </p>
         </div>
 
@@ -32,7 +86,28 @@ const PaymentHistory = () => {
             <Empty description="No payment attempts found yet." />
           </div>
         ) : (
-          <div className="grid gap-4">
+          <div className="overflow-hidden rounded-2xl border bg-card">
+            <Table
+              rowKey="id"
+              columns={columns}
+              dataSource={payments}
+              pagination={{
+                current: page,
+                pageSize,
+                total: payments.length,
+                showSizeChanger: true,
+                pageSizeOptions: ["5", "10", "20", "50"],
+                showTotal: (total, range) =>
+                  `${range[0]}-${range[1]} of ${total} payments`,
+                onChange: (nextPage, nextPageSize) => {
+                  setPage(nextPage);
+                  setPageSize(nextPageSize);
+                },
+                hideOnSinglePage: false,
+              }}
+              scroll={{ x: 840 }}
+            />
+            <div className="hidden">
             {payments.map((payment) => (
               <div
                 key={payment.id}
@@ -53,6 +128,7 @@ const PaymentHistory = () => {
                 </span>
               </div>
             ))}
+            </div>
           </div>
         )}
       </div>
