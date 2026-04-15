@@ -1,9 +1,9 @@
 import DashboardLayout from "@/components/layouts/DashboardLayout";
-import OrderManagementBoard from "@/components/orders/OrderManagementBoard";
+import LiveOrderManagementBoard from "@/components/orders/LiveOrderManagementBoard";
 
 const ProviderOrders = () => (
   <DashboardLayout role="provider">
-    <OrderManagementBoard role="provider" />
+    <LiveOrderManagementBoard role="provider" section="orders" />
   </DashboardLayout>
 );
 

@@ -4,6 +4,7 @@ import ProtectedRoute from "../components/auth/ProtectedRoute";
 import ProviderApply from "../pages/provider/ProviderApply";
 import ProviderDashboard from "../pages/provider/ProviderDashboard";
 import ProviderOrders from "../pages/provider/ProviderOrders";
+import ProviderPayments from "../pages/provider/ProviderPayments";
 import ProviderPOS from "../pages/provider/ProviderPOS";
 import ProviderProducts from "../pages/provider/ProviderProducts";
 import ProviderReceipts from "../pages/provider/ProviderReceipts";
@@ -26,6 +27,10 @@ export const providerRoutes: RouteObject[] = [
   {
     path: "provider/orders",
     element: <ProtectedRoute allowedRoles={["provider"]}><ProviderOrders /></ProtectedRoute>,
+  },
+  {
+    path: "provider/payments",
+    element: <ProtectedRoute allowedRoles={["provider"]}><ProviderPayments /></ProtectedRoute>,
   },
   {
     path: "provider/pos",

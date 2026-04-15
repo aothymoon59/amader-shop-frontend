@@ -25,6 +25,20 @@ export type ProductCategory = {
   name: string;
 };
 
+export type ProductDeliveryZone = {
+  productId: string;
+  deliveryZoneId: string;
+  deliveryZone: {
+    id: string;
+    name: string;
+    slug: string;
+    normalCharge: number;
+    expressCharge: number;
+    freeDeliveryThreshold?: number | null;
+    isActive: boolean;
+  };
+};
+
 export type Product = {
   id: string;
   providerId: string;
@@ -49,6 +63,7 @@ export type Product = {
   category: ProductCategory;
   provider: ProductProvider;
   images: ProductImage[];
+  deliveryZones: ProductDeliveryZone[];
 };
 
 export type ManagedProductsResponse = {

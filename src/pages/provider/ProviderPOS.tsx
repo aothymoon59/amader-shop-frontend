@@ -5,11 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 import { useProviderSales } from "@/context/ProviderSalesContext";
+import { useSystemCurrency } from "@/hooks/useSystemCurrency";
 import { CreditCard, Minus, Plus, ReceiptText, Search, X } from "lucide-react";
+import { defaultSystemCurrency } from "@/redux/features/generalApi/systemSettingsApi";
+import { formatCurrencyAmount } from "@/utils/currency";
 
 const ProviderPOS = () => {
   const navigate = useNavigate();
   const { products, cart, subtotal, totalItems, addToSale, updateQty, removeFromSale, completeSale } = useProviderSales();
+  const { currency = defaultSystemCurrency } = useSystemCurrency();
   const [search, setSearch] = useState("");
   const [customerName, setCustomerName] = useState("Walk-in Customer");
   const [customerMobile, setCustomerMobile] = useState("");
@@ -99,7 +103,9 @@ const ProviderPOS = () => {
                 >
                   <div>{product.name}</div>
                   <div className="text-xs text-muted-foreground mt-1">{product.sku}</div>
-                  <div className="text-primary font-semibold mt-2">${product.price.toFixed(2)}</div>
+                  <div className="text-primary font-semibold mt-2">
+                    {formatCurrencyAmount(product.price, currency)}
+                  </div>
                 </button>
               ))}
             </div>
@@ -122,7 +128,9 @@ const ProviderPOS = () => {
                     <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => updateQty(item.id, item.qty + 1)}>
                       <Plus className="h-3 w-3" />
                     </Button>
-                    <span className="font-medium text-sm">${(item.price * item.qty).toFixed(2)}</span>
+                    <span className="font-medium text-sm">
+                      {formatCurrencyAmount(item.price * item.qty, currency)}
+                    </span>
                     <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeFromSale(item.id)}><X className="h-3 w-3" /></Button>
                   </div>
                 </div>
@@ -190,13 +198,13 @@ const ProviderPOS = () => {
                 <span className="text-muted-foreground">Items</span><span>{totalItems}</span>
               </div>
               <div className="flex justify-between text-sm mb-2">
-                <span className="text-muted-foreground">Subtotal</span><span>${subtotal.toFixed(2)}</span>
+                <span className="text-muted-foreground">Subtotal</span><span>{formatCurrencyAmount(subtotal, currency)}</span>
               </div>
               <div className="flex justify-between text-sm mb-2">
-                <span className="text-muted-foreground">Discount ({discountValue.toFixed(2)}%)</span><span>${discountAmount.toFixed(2)}</span>
+                <span className="text-muted-foreground">Discount ({discountValue.toFixed(2)}%)</span><span>{formatCurrencyAmount(discountAmount, currency)}</span>
               </div>
               <div className="flex justify-between text-lg font-bold">
-                <span>Total</span><span className="text-primary">${grandTotal.toFixed(2)}</span>
+                <span>Total</span><span className="text-primary">{formatCurrencyAmount(grandTotal, currency)}</span>
               </div>
             </div>
             <div className="flex gap-3">

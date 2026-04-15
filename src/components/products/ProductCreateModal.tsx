@@ -10,6 +10,7 @@ import {
 } from "@/components/products/productForm.helpers";
 import type {
   CategoryOption,
+  DeliveryZoneOption,
   ProductFormValues,
   ProviderOption,
 } from "@/components/products/productManagement.types";
@@ -22,6 +23,7 @@ type ProductCreateModalProps = {
   closeModal: () => void;
   categoryOptions: CategoryOption[];
   providerOptions: ProviderOption[];
+  deliveryZoneOptions: DeliveryZoneOption[];
 };
 
 const ProductCreateModal = ({
@@ -30,6 +32,7 @@ const ProductCreateModal = ({
   closeModal,
   categoryOptions,
   providerOptions,
+  deliveryZoneOptions,
 }: ProductCreateModalProps) => {
   const [form] = Form.useForm<ProductFormValues>();
   const [imageFileList, setImageFileList] = useState<UploadFile[]>([]);
@@ -43,14 +46,15 @@ const ProductCreateModal = ({
     }
 
     setImageFileList([]);
-    form.setFieldsValue({
-      isPublished: false,
-      isFeatured: false,
-      discountValue: 0,
-      lowStockThreshold: 5,
-      stock: 0,
-      images: [],
-    });
+      form.setFieldsValue({
+        isPublished: false,
+        isFeatured: false,
+        discountValue: 0,
+        lowStockThreshold: 5,
+        stock: 0,
+        deliveryZoneIds: [],
+        images: [],
+      });
   }, [form, isModalOpen]);
 
   const handleClose = () => {
@@ -106,6 +110,7 @@ const ProductCreateModal = ({
           discountValue: 0,
           lowStockThreshold: 5,
           stock: 0,
+          deliveryZoneIds: [],
           images: [],
         }}
       >
@@ -113,6 +118,7 @@ const ProductCreateModal = ({
           role={role}
           categoryOptions={categoryOptions}
           providerOptions={providerOptions}
+          deliveryZoneOptions={deliveryZoneOptions}
           imageFileList={imageFileList}
           onImageFileListChange={setImageFileList}
         />

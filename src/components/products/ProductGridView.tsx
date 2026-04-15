@@ -2,7 +2,10 @@ import { Button, Card, Pagination, Popconfirm, Tag } from "antd";
 import { Eye, Pencil, RotateCcw, Trash2 } from "lucide-react";
 
 import type { PaginationState } from "@/components/products/productManagement.types";
+import { useSystemCurrency } from "@/hooks/useSystemCurrency";
+import { defaultSystemCurrency } from "@/redux/features/generalApi/systemSettingsApi";
 import type { Product } from "@/redux/features/products/productApi";
+import { formatCurrencyAmount } from "@/utils/currency";
 
 type ProductGridViewProps = {
   products: Product[];
@@ -39,6 +42,8 @@ const ProductGridView = ({
   onDelete,
   onRestore,
 }: ProductGridViewProps) => {
+  const { currency = defaultSystemCurrency } = useSystemCurrency();
+
   if (!products.length) {
     return null;
   }
@@ -115,7 +120,9 @@ const ProductGridView = ({
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
                   <div className="text-muted-foreground">Price</div>
-                  <div className="font-semibold">${product.price.toFixed(2)}</div>
+                  <div className="font-semibold">
+                    {formatCurrencyAmount(product.price, currency)}
+                  </div>
                 </div>
                 <div>
                   <div className="text-muted-foreground">Stock</div>

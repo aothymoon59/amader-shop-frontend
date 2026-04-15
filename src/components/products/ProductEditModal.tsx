@@ -10,6 +10,7 @@ import {
 } from "@/components/products/productForm.helpers";
 import type {
   CategoryOption,
+  DeliveryZoneOption,
   ProductFormValues,
   ProviderOption,
 } from "@/components/products/productManagement.types";
@@ -27,6 +28,7 @@ type ProductEditModalProps = {
   closeModal: () => void;
   categoryOptions: CategoryOption[];
   providerOptions: ProviderOption[];
+  deliveryZoneOptions: DeliveryZoneOption[];
 };
 
 const ProductEditModal = ({
@@ -36,6 +38,7 @@ const ProductEditModal = ({
   closeModal,
   categoryOptions,
   providerOptions,
+  deliveryZoneOptions,
 }: ProductEditModalProps) => {
   const [form] = Form.useForm<ProductFormValues>();
   const [retainedImages, setRetainedImages] = useState<ProductImage[]>([]);
@@ -66,6 +69,7 @@ const ProductEditModal = ({
       lowStockThreshold: product.lowStockThreshold,
       sku: product.sku || "",
       barcode: product.barcode || "",
+      deliveryZoneIds: product.deliveryZones?.map((zone) => zone.deliveryZoneId) || [],
       isPublished: product.isPublished,
       isFeatured: role === "admin" ? product.isFeatured : undefined,
       images: [],
@@ -134,6 +138,7 @@ const ProductEditModal = ({
           role={role}
           categoryOptions={categoryOptions}
           providerOptions={providerOptions}
+          deliveryZoneOptions={deliveryZoneOptions}
           retainedImages={retainedImages}
           onRemoveRetainedImage={(imageId) =>
             setRetainedImages((current) =>

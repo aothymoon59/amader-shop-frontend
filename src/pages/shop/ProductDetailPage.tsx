@@ -7,12 +7,16 @@ import { toast } from "@/components/ui/use-toast";
 import { useCart } from "@/context/CartContext";
 import { getProductById } from "@/data/products";
 import { useAuth } from "@/hooks/useAuth";
+import { useSystemCurrency } from "@/hooks/useSystemCurrency";
+import { defaultSystemCurrency } from "@/redux/features/generalApi/systemSettingsApi";
+import { formatCurrencyAmount } from "@/utils/currency";
 
 const ProductDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const { user } = useAuth();
+  const { currency = defaultSystemCurrency } = useSystemCurrency();
   const product = getProductById(Number(id));
   const isPurchaseDisabled =
     user?.role === "admin" ||
@@ -74,7 +78,9 @@ const ProductDetailPage = () => {
               </div>
               <span className="text-sm text-muted-foreground">({product.rating}) · {product.reviews} reviews</span>
             </div>
-            <div className="text-3xl font-bold text-primary mb-6">${product.price.toFixed(2)}</div>
+            <div className="text-3xl font-bold text-primary mb-6">
+              {formatCurrencyAmount(product.price, currency)}
+            </div>
             <p className="text-muted-foreground mb-8 leading-relaxed">
               {product.description} Perfect for everyday use from trusted seller {product.vendor}.
             </p>

@@ -26,6 +26,8 @@ export type CheckoutPayload = {
   shippingCity: string;
   shippingPostalCode: string;
   shippingCountry: string;
+  deliveryZoneId: string;
+  deliveryMode: "NORMAL" | "EXPRESS";
   paymentMethod: CheckoutPaymentMethod;
   idempotencyKey: string;
 };
@@ -41,6 +43,9 @@ export type PaymentAttempt = {
   failureReason?: string | null;
   createdAt: string;
   updatedAt: string;
+  orderGroup?: {
+    groupNumber?: string;
+  };
 };
 
 export type OrderItemRecord = {
@@ -57,10 +62,9 @@ export type OrderItemRecord = {
   };
 };
 
-export type ChildOrderRecord = {
+export type OrderRecord = {
   id: string;
   orderNumber: string;
-  providerId: string;
   customerName: string;
   customerPhone: string;
   customerEmail?: string | null;
@@ -68,62 +72,41 @@ export type ChildOrderRecord = {
   totalAmount: number;
   status: OrderStatus;
   paymentMethod: CheckoutPaymentMethod;
-  paymentProvider: CheckoutPaymentProvider;
   paymentStatus: PaymentStatus;
+  paymentProvider?: string | null;
+  courier?: string | null;
+  trackingNumber?: string | null;
+  internalNotes?: string | null;
   createdAt: string;
-  provider?: {
-    id: string;
-    name: string;
-    providerProfile?: {
-      id: string;
-      shopName: string;
-    } | null;
-  };
+  updatedAt: string;
   items: OrderItemRecord[];
+  providerNames?: string[];
+  workflow?: {
+    currentStatus: OrderStatus;
+    recommendedNextStatus?: OrderStatus | null;
+    availableStatuses: OrderStatus[];
+    allowedPaymentStatuses: PaymentStatus[];
+    canEditPaymentStatus: boolean;
+    blockers: string[];
+  };
   receipt?: {
     id: string;
     receiptNumber: string;
   } | null;
 };
 
-export type OrderGroupRecord = {
-  id: string;
-  groupNumber: string;
-  customerId?: string | null;
-  customerName: string;
-  customerPhone: string;
-  customerEmail?: string | null;
-  shippingAddress: string;
-  shippingCity?: string | null;
-  shippingPostalCode?: string | null;
-  shippingCountry?: string | null;
-  subtotalAmount: number;
-  shippingAmount: number;
-  totalAmount: number;
-  status: OrderStatus;
-  paymentMethod: CheckoutPaymentMethod;
-  paymentProvider: CheckoutPaymentProvider;
-  paymentStatus: PaymentStatus;
-  idempotencyKey: string;
-  gatewayTransactionId?: string | null;
-  createdAt: string;
-  orders: ChildOrderRecord[];
-  paymentAttempts: PaymentAttempt[];
-};
-
 type CheckoutResponse = {
   success: boolean;
   message?: string;
   data: {
-    orderGroup: OrderGroupRecord;
+    order: OrderRecord;
     payment?: {
       provider: CheckoutPaymentProvider;
       transactionId: string;
-      externalPaymentId?: string | null;
       redirectUrl?: string | null;
     } | null;
     nextAction: {
-      type: "CONFIRMED" | "REDIRECT" | "RETRY_REQUIRED";
+      type: "CONFIRMED" | "REDIRECT";
     };
   };
 };
@@ -137,19 +120,63 @@ type OrderListResponse = {
     total?: number;
     totalPages?: number;
   };
-  data: ChildOrderRecord[];
-};
-
-type OrderGroupResponse = {
-  success: boolean;
-  message?: string;
-  data: OrderGroupRecord;
+  data: OrderRecord[];
 };
 
 type PaymentListResponse = {
   success: boolean;
   message?: string;
+  meta?: {
+    page?: number;
+    limit?: number;
+    total?: number;
+    totalPages?: number;
+  };
   data: PaymentAttempt[];
+};
+
+export type ManagementOrderQuery = {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: string;
+  paymentMethod?: string;
+  paymentStatus?: string;
+  providerId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+};
+
+type ManagementOrderListResponse = {
+  success: boolean;
+  message?: string;
+  meta?: {
+    page?: number;
+    limit?: number;
+    total?: number;
+    totalPages?: number;
+  };
+  summary?: {
+    totalOrders: number;
+    pendingOrders: number;
+    processingOrders: number;
+    shippedOrders: number;
+    deliveredOrders: number;
+    cancelledOrders: number;
+    paidOrders: number;
+    codOrders: number;
+    onlineOrders: number;
+    totalRevenue: number;
+  };
+  data: OrderRecord[];
+};
+
+type ManagementOrderUpdatePayload = {
+  status?: string;
+  paymentStatus?: string;
+  courier?: string;
+  trackingNumber?: string;
+  internalNotes?: string;
 };
 
 export const orderApi = baseApi.injectEndpoints({
@@ -161,23 +188,6 @@ export const orderApi = baseApi.injectEndpoints({
         body: payload,
       }),
       invalidatesTags: [tagTypes.CART],
-    }),
-    retryPayment: builder.mutation<
-      CheckoutResponse,
-      { orderGroupId: string; paymentProvider?: "SSLCOMMERZ" | "BKASH" }
-    >({
-      query: ({ orderGroupId, paymentProvider }) => ({
-        url: `/orders/${orderGroupId}/retry-payment`,
-        method: "POST",
-        body: paymentProvider ? { paymentProvider } : {},
-      }),
-    }),
-    getOrderGroup: builder.query<OrderGroupResponse, string>({
-      query: (orderGroupId) => ({
-        url: `/orders/groups/${orderGroupId}`,
-        method: "GET",
-      }),
-      providesTags: [tagTypes.CART],
     }),
     getMyOrders: builder.query<OrderListResponse, void>({
       query: () => ({
@@ -191,13 +201,44 @@ export const orderApi = baseApi.injectEndpoints({
         method: "GET",
       }),
     }),
+    getManagementOrders: builder.query<
+      ManagementOrderListResponse,
+      ManagementOrderQuery | void
+    >({
+      query: (query) => ({
+        url: "/orders/management",
+        method: "GET",
+        params: query,
+      }),
+    }),
+    getManagementPayments: builder.query<
+      PaymentListResponse,
+      ManagementOrderQuery | void
+    >({
+      query: (query) => ({
+        url: "/orders/management/payments",
+        method: "GET",
+        params: query,
+      }),
+    }),
+    updateManagementOrder: builder.mutation<
+      { success: boolean; message?: string; data: OrderRecord },
+      { orderId: string; payload: ManagementOrderUpdatePayload }
+    >({
+      query: ({ orderId, payload }) => ({
+        url: `/orders/${orderId}/manage`,
+        method: "PATCH",
+        body: payload,
+      }),
+    }),
   }),
 });
 
 export const {
   useCheckoutMutation,
-  useRetryPaymentMutation,
-  useGetOrderGroupQuery,
   useGetMyOrdersQuery,
   useGetMyPaymentsQuery,
+  useGetManagementOrdersQuery,
+  useGetManagementPaymentsQuery,
+  useUpdateManagementOrderMutation,
 } = orderApi;
