@@ -18,6 +18,7 @@ const ProductDetailPage = () => {
   const { user } = useAuth();
   const [selectedImage, setSelectedImage] = useState("");
   const [isZoomActive, setIsZoomActive] = useState(false);
+  const [isMobileZoomOpen, setIsMobileZoomOpen] = useState(false);
   const [zoomPosition, setZoomPosition] = useState({
     xPercent: 50,
     yPercent: 50,
@@ -45,6 +46,7 @@ const ProductDetailPage = () => {
 
   useEffect(() => {
     setIsZoomActive(false);
+    setIsMobileZoomOpen(false);
     setZoomPosition({
       xPercent: 50,
       yPercent: 50,
@@ -145,6 +147,34 @@ const ProductDetailPage = () => {
     });
   };
 
+  const handleTouchZoom = (event: React.TouchEvent<HTMLDivElement>) => {
+    const touch = event.touches[0];
+
+    if (!touch) {
+      return;
+    }
+
+    const { left, top, width, height } =
+      event.currentTarget.getBoundingClientRect();
+    const relativeX = touch.clientX - left;
+    const relativeY = touch.clientY - top;
+    const clampedX = Math.min(Math.max(relativeX, 0), width);
+    const clampedY = Math.min(Math.max(relativeY, 0), height);
+
+    setZoomPosition({
+      xPercent: (clampedX / width) * 100,
+      yPercent: (clampedY / height) * 100,
+      lensLeft: Math.min(
+        Math.max(clampedX - lensSize / 2, 0),
+        Math.max(width - lensSize, 0),
+      ),
+      lensTop: Math.min(
+        Math.max(clampedY - lensSize / 2, 0),
+        Math.max(height - lensSize, 0),
+      ),
+    });
+  };
+
   return (
     <PublicLayout>
       <div className="container py-8 lg:py-12">
@@ -163,6 +193,7 @@ const ProductDetailPage = () => {
                 onMouseEnter={() => setIsZoomActive(true)}
                 onMouseLeave={() => setIsZoomActive(false)}
                 onMouseMove={handleImageZoom}
+                onClick={() => setIsMobileZoomOpen(true)}
               >
                 <img
                   src={displayImage}
@@ -183,6 +214,12 @@ const ProductDetailPage = () => {
                     />
                   </>
                 ) : null}
+
+                <div className="pointer-events-none absolute inset-x-4 bottom-4 flex justify-center xl:hidden">
+                  <span className="rounded-full bg-background/90 px-3 py-1 text-center text-xs font-medium text-foreground shadow-sm backdrop-blur">
+                    Tap to zoom
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -221,6 +258,40 @@ const ProductDetailPage = () => {
                     />
                   </button>
                 ))}
+              </div>
+            ) : null}
+
+            {isMobileZoomOpen ? (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 xl:hidden">
+                <button
+                  type="button"
+                  aria-label="Close zoom view"
+                  className="absolute right-4 top-4 rounded-full bg-background/90 px-3 py-2 text-sm font-medium text-foreground shadow-lg"
+                  onClick={() => setIsMobileZoomOpen(false)}
+                >
+                  Close
+                </button>
+
+                <div className="w-full max-w-md space-y-4">
+                  <div
+                    className="relative overflow-hidden rounded-2xl bg-background"
+                    onTouchStart={handleTouchZoom}
+                    onTouchMove={handleTouchZoom}
+                  >
+                    <div
+                      className="h-[70vh] w-full bg-no-repeat"
+                      style={{
+                        backgroundImage: `url(${displayImage})`,
+                        backgroundPosition: `${zoomPosition.xPercent}% ${zoomPosition.yPercent}%`,
+                        backgroundSize: "240%",
+                      }}
+                    />
+                  </div>
+
+                  <div className="rounded-full bg-background/90 px-4 py-2 text-center text-xs font-medium text-foreground shadow-sm">
+                    Drag on the image to inspect details
+                  </div>
+                </div>
               </div>
             ) : null}
           </div>
