@@ -46,8 +46,7 @@ const OrderHistory = () => {
                     {order.items.length} item(s) · ${order.totalAmount.toFixed(2)}
                   </div>
                   <div className="mt-1 text-sm text-muted-foreground">
-                    Vendor:{" "}
-                    {order.provider?.providerProfile?.shopName || order.provider?.name}
+                    Payment Method: {order.paymentMethod}
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2">

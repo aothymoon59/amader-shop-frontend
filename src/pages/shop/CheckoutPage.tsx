@@ -19,7 +19,7 @@ const isImageUrl = (value: string) =>
 const CheckoutPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { items, subtotal, shipping, total } = useCart();
+  const { items, subtotal, shipping, total, placeOrder } = useCart();
   const { isAuthenticated, user } = useAuth();
   const [checkout, { isLoading }] = useCheckoutMutation();
   const [formData, setFormData] = useState({
@@ -132,12 +132,12 @@ const CheckoutPage = () => {
         return;
       }
 
-      toast({
-        title: "Order confirmed",
-        description: "Your cash on delivery order has been placed successfully.",
-      });
+      placeOrder(formData);
       setIdempotencyKey(crypto.randomUUID());
-      navigate("/account/orders", { replace: true });
+      navigate(
+        `/checkout/payment-status?status=success&orderNumber=${encodeURIComponent(response.data.order.orderNumber)}&paymentMethod=${encodeURIComponent(response.data.order.paymentMethod)}&paymentStatus=${encodeURIComponent(response.data.order.paymentStatus)}${response.data.order.receipt?.receiptNumber ? `&receiptNumber=${encodeURIComponent(response.data.order.receipt.receiptNumber)}` : ""}`,
+        { replace: true },
+      );
     } catch (error: unknown) {
       const message =
         typeof error === "object" &&
@@ -155,6 +155,10 @@ const CheckoutPage = () => {
         variant: "destructive",
       });
       setIdempotencyKey(crypto.randomUUID());
+      navigate(
+        `/checkout/payment-status?status=failed&paymentMethod=${encodeURIComponent(paymentMethod)}&message=${encodeURIComponent(message)}`,
+        { replace: true },
+      );
     }
   };
 

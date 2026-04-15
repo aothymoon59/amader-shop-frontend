@@ -455,7 +455,18 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       total,
       itemCount,
     });
-    clearCart();
+    setItems([]);
+
+    if (!isCustomerAuthenticated || syncedUserId !== user?.id) {
+      setSyncedUserId(null);
+      return;
+    }
+
+    void refetch().then((response) => {
+      if ("data" in response) {
+        applyServerCart(response.data?.data);
+      }
+    });
   };
 
   return (

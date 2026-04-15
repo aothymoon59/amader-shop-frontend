@@ -45,7 +45,7 @@ const PaymentHistory = () => {
                     {payment.provider} · ${payment.amount.toFixed(2)}
                   </div>
                   <div className="mt-1 text-sm text-muted-foreground">
-                    Order Group: {payment.orderGroup?.groupNumber || "N/A"}
+                    Order Number: {payment.orderGroup?.groupNumber || "N/A"}
                   </div>
                 </div>
                 <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
