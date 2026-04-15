@@ -77,6 +77,11 @@ const menuItems: Record<string, SidebarItem[]> = {
         { title: "Providers", icon: UserCheck, path: "/super-admin/providers" },
       ],
     },
+    {
+      title: "Orders",
+      icon: ShoppingCart,
+      path: "/super-admin/orders",
+    },
     { title: "Analytics", icon: BarChart3, path: "/super-admin/analytics" },
     { title: "Audit Log", icon: FileText, path: "/super-admin/audit-log" },
     { title: "CMS", icon: FileText, path: "/super-admin/cms" },

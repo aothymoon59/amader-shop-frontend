@@ -65,14 +65,20 @@ export type OrderRecord = {
   orderNumber: string;
   customerName: string;
   customerPhone: string;
+  customerEmail?: string | null;
   shippingAddress: string;
   totalAmount: number;
   status: OrderStatus;
   paymentMethod: CheckoutPaymentMethod;
   paymentStatus: PaymentStatus;
+  paymentProvider?: string | null;
+  courier?: string | null;
+  trackingNumber?: string | null;
+  internalNotes?: string | null;
   createdAt: string;
   updatedAt: string;
   items: OrderItemRecord[];
+  providerNames?: string[];
   receipt?: {
     id: string;
     receiptNumber: string;
@@ -110,7 +116,45 @@ type OrderListResponse = {
 type PaymentListResponse = {
   success: boolean;
   message?: string;
+  meta?: {
+    page?: number;
+    limit?: number;
+    total?: number;
+    totalPages?: number;
+  };
   data: PaymentAttempt[];
+};
+
+export type ManagementOrderQuery = {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: string;
+  paymentMethod?: string;
+  paymentStatus?: string;
+  providerId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+};
+
+type ManagementOrderListResponse = {
+  success: boolean;
+  message?: string;
+  meta?: {
+    page?: number;
+    limit?: number;
+    total?: number;
+    totalPages?: number;
+  };
+  data: OrderRecord[];
+};
+
+type ManagementOrderUpdatePayload = {
+  status?: string;
+  paymentStatus?: string;
+  courier?: string;
+  trackingNumber?: string;
+  internalNotes?: string;
 };
 
 export const orderApi = baseApi.injectEndpoints({
@@ -135,6 +179,36 @@ export const orderApi = baseApi.injectEndpoints({
         method: "GET",
       }),
     }),
+    getManagementOrders: builder.query<
+      ManagementOrderListResponse,
+      ManagementOrderQuery | void
+    >({
+      query: (query) => ({
+        url: "/orders/management",
+        method: "GET",
+        params: query,
+      }),
+    }),
+    getManagementPayments: builder.query<
+      PaymentListResponse,
+      ManagementOrderQuery | void
+    >({
+      query: (query) => ({
+        url: "/orders/management/payments",
+        method: "GET",
+        params: query,
+      }),
+    }),
+    updateManagementOrder: builder.mutation<
+      { success: boolean; message?: string; data: OrderRecord },
+      { orderId: string; payload: ManagementOrderUpdatePayload }
+    >({
+      query: ({ orderId, payload }) => ({
+        url: `/orders/${orderId}/manage`,
+        method: "PATCH",
+        body: payload,
+      }),
+    }),
   }),
 });
 
@@ -142,4 +216,7 @@ export const {
   useCheckoutMutation,
   useGetMyOrdersQuery,
   useGetMyPaymentsQuery,
+  useGetManagementOrdersQuery,
+  useGetManagementPaymentsQuery,
+  useUpdateManagementOrderMutation,
 } = orderApi;

@@ -1,10 +1,10 @@
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import LiveOrderManagementBoard from "@/components/orders/LiveOrderManagementBoard";
 
-const AdminOrders = () => (
-  <DashboardLayout role="admin">
-    <LiveOrderManagementBoard role="admin" />
+const SuperAdminOrders = () => (
+  <DashboardLayout role="super-admin">
+    <LiveOrderManagementBoard role="super-admin" />
   </DashboardLayout>
 );
 
-export default AdminOrders;
+export default SuperAdminOrders;
