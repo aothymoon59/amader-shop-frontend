@@ -3,7 +3,7 @@ import LiveOrderManagementBoard from "@/components/orders/LiveOrderManagementBoa
 
 const ProviderOrders = () => (
   <DashboardLayout role="provider">
-    <LiveOrderManagementBoard role="provider" />
+    <LiveOrderManagementBoard role="provider" section="orders" />
   </DashboardLayout>
 );
 

@@ -6,6 +6,7 @@ import AdminCMS from "../pages/admin/AdminCMS";
 import AdminCustomers from "../pages/admin/AdminCustomers";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import AdminOrders from "../pages/admin/AdminOrders";
+import AdminPayments from "../pages/admin/AdminPayments";
 import AdminProducts from "../pages/admin/AdminProducts";
 import AdminProviders from "../pages/admin/AdminProviders";
 import AdminReports from "../pages/admin/AdminReports";
@@ -27,6 +28,10 @@ export const adminRoutes: RouteObject[] = [
   {
     path: "admin/orders",
     element: <ProtectedRoute allowedRoles={["admin"]}><AdminOrders /></ProtectedRoute>,
+  },
+  {
+    path: "admin/payments",
+    element: <ProtectedRoute allowedRoles={["admin"]}><AdminPayments /></ProtectedRoute>,
   },
   {
     path: "admin/providers",

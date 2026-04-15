@@ -7,6 +7,7 @@ import SuperAdminAnalytics from "../pages/super-admin/SuperAdminAnalytics";
 import SuperAdminCMS from "../pages/super-admin/SuperAdminCMS";
 import SuperAdminDashboard from "../pages/super-admin/SuperAdminDashboard";
 import SuperAdminOrders from "../pages/super-admin/SuperAdminOrders";
+import SuperAdminPayments from "../pages/super-admin/SuperAdminPayments";
 import SuperAdminSettings from "../pages/super-admin/SuperAdminSettings";
 import AdminProviders from "@/pages/admin/AdminProviders";
 
@@ -48,6 +49,14 @@ export const superAdminRoutes: RouteObject[] = [
     element: (
       <ProtectedRoute allowedRoles={["super-admin"]}>
         <SuperAdminOrders />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "super-admin/payments",
+    element: (
+      <ProtectedRoute allowedRoles={["super-admin"]}>
+        <SuperAdminPayments />
       </ProtectedRoute>
     ),
   },

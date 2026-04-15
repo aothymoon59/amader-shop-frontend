@@ -1,7 +1,7 @@
 import { Pagination, Table } from "antd";
 import type { ColumnsType, TableProps } from "antd/es/table";
 import type { PaginationProps } from "antd";
-import type { Key, ReactNode } from "react";
+import type { ReactNode } from "react";
 
 type PaginationState = {
   page: number;

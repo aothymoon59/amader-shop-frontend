@@ -15,8 +15,9 @@ import {
   Truck,
   UserRound,
 } from "lucide-react";
-import { Alert, Button, Drawer, Input, Select, Steps, Table, Tabs, Tag } from "antd";
+import { Alert, Button, Drawer, Input, Select, Steps, Tag } from "antd";
 
+import CustomTable from "@/components/shared/table/CustomTable";
 import { toast } from "@/components/ui/use-toast";
 import {
   useGetManagementOrdersQuery,
@@ -98,10 +99,11 @@ const getStepIndex = (status: OrderStatus) => {
 
 const LiveOrderManagementBoard = ({
   role,
+  section = "orders",
 }: {
   role: "provider" | "admin" | "super-admin";
+  section?: "orders" | "payments";
 }) => {
-  const [activeTab, setActiveTab] = useState<"orders" | "payments">("orders");
   const [query, setQuery] = useState<ManagementOrderQuery>({
     page: 1,
     limit: 10,
@@ -185,6 +187,15 @@ const LiveOrderManagementBoard = ({
 
   const roleLabel =
     role === "provider" ? "Provider Operations" : role === "super-admin" ? "Marketplace Control" : "Admin Operations";
+  const sectionTitle = section === "orders" ? "Orders Desk" : "Payments Desk";
+  const sectionDescription =
+    section === "orders"
+      ? role === "provider"
+        ? "Work your live orders like a production fulfillment queue: confirm, pack, assign courier, ship, and close delivery."
+        : "Review marketplace-wide order flow, monitor payment state, and unblock fulfillment with clear operational controls."
+      : role === "provider"
+        ? "Monitor only your payment activity, COD collection progress, and online payment outcomes."
+        : "Track marketplace payment activity, paid order movement, and settlement-related exceptions.";
 
   const currentAvailableStatuses = useMemo(() => {
     if (!draftOrder) {
@@ -417,6 +428,26 @@ const LiveOrderManagementBoard = ({
     });
   };
 
+  const setTablePagination = (
+    value:
+      | { page: number; per_page: number }
+      | ((prev: { page: number; per_page: number }) => { page: number; per_page: number })
+  ) => {
+    setQuery((current) => {
+      const previous = {
+        page: current.page || 1,
+        per_page: current.limit || 10,
+      };
+      const next = typeof value === "function" ? value(previous) : value;
+
+      return {
+        ...current,
+        page: next.page,
+        limit: next.per_page,
+      };
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -425,22 +456,27 @@ const LiveOrderManagementBoard = ({
             {roleLabel}
           </p>
           <h1 className="mt-2 text-3xl font-bold">
-            {role === "provider" ? "Fulfillment & Payment Desk" : "Marketplace Order Desk"}
+            {sectionTitle}
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {role === "provider"
-              ? "Work your live orders like a production fulfillment queue: confirm, pack, assign courier, ship, and close delivery."
-              : "Review marketplace-wide order flow, monitor payment state, and unblock fulfillment with clear operational controls."}
-          </p>
+          <p className="mt-1 text-sm text-muted-foreground">{sectionDescription}</p>
         </div>
         <div className="max-w-xl rounded-2xl border bg-card p-5 shadow-sm">
           <p className="mb-3 font-medium">Operational flow</p>
-          <div className="grid grid-cols-2 gap-3 text-sm text-muted-foreground">
-            <div className="rounded-lg bg-secondary/50 p-3">1. Confirm after stock review</div>
-            <div className="rounded-lg bg-secondary/50 p-3">2. Move into processing while packing</div>
-            <div className="rounded-lg bg-secondary/50 p-3">3. Add courier and tracking before ship</div>
-            <div className="rounded-lg bg-secondary/50 p-3">4. Close delivery and settle payment</div>
-          </div>
+          {section === "orders" ? (
+            <div className="grid grid-cols-2 gap-3 text-sm text-muted-foreground">
+              <div className="rounded-lg bg-secondary/50 p-3">1. Confirm after stock review</div>
+              <div className="rounded-lg bg-secondary/50 p-3">2. Move into processing while packing</div>
+              <div className="rounded-lg bg-secondary/50 p-3">3. Add courier and tracking before ship</div>
+              <div className="rounded-lg bg-secondary/50 p-3">4. Close delivery and settle payment</div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-3 text-sm text-muted-foreground">
+              <div className="rounded-lg bg-secondary/50 p-3">1. Watch COD vs online mix</div>
+              <div className="rounded-lg bg-secondary/50 p-3">2. Track paid order movement</div>
+              <div className="rounded-lg bg-secondary/50 p-3">3. Spot failed or refunded payments</div>
+              <div className="rounded-lg bg-secondary/50 p-3">4. Reconcile receipts and settlements</div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -544,77 +580,51 @@ const LiveOrderManagementBoard = ({
         </div>
       </div>
 
-      <Tabs
-        activeKey={activeTab}
-        onChange={(key) => setActiveTab(key as "orders" | "payments")}
-        items={[
-          {
-            key: "orders",
-            label: "Orders",
-            children: (
-              <div className="rounded-xl border bg-card p-2">
-                <Table
-                  rowKey="id"
-                  columns={orderColumns}
-                  dataSource={orders}
-                  loading={isOrdersLoading}
-                  pagination={{
-                    current: ordersMeta?.page || query.page || 1,
-                    pageSize: ordersMeta?.limit || query.limit || 10,
-                    total: ordersMeta?.total || 0,
-                    showSizeChanger: true,
-                    pageSizeOptions: ["10", "20", "50"],
-                    onChange: (page, limit) =>
-                      setQuery((current) => ({ ...current, page, limit })),
-                  }}
-                  scroll={{ x: 1480 }}
-                />
-              </div>
-            ),
-          },
-          {
-            key: "payments",
-            label: "Payments",
-            children: (
-              <div className="rounded-xl border bg-card p-2">
-                <Table
-                  rowKey="id"
-                  columns={paymentColumns}
-                  dataSource={payments}
-                  loading={isPaymentsLoading}
-                  pagination={{
-                    current: paymentsMeta?.page || query.page || 1,
-                    pageSize: paymentsMeta?.limit || query.limit || 10,
-                    total: paymentsMeta?.total || 0,
-                    showSizeChanger: true,
-                    pageSizeOptions: ["10", "20", "50"],
-                    onChange: (page, limit) =>
-                      setQuery((current) => ({ ...current, page, limit })),
-                  }}
-                  scroll={{ x: 920 }}
-                />
-              </div>
-            ),
-          },
-        ]}
-      />
+      {section === "orders" ? (
+        <div className="rounded-xl border bg-card p-2">
+          <CustomTable
+            rowKey="id"
+            columns={orderColumns}
+            dataSource={orders}
+            loading={isOrdersLoading}
+            setPagination={setTablePagination}
+            totaldata={ordersMeta?.total || 0}
+            currentPage={ordersMeta?.page || query.page || 1}
+            pageSize={ordersMeta?.limit || query.limit || 10}
+          />
+        </div>
+      ) : (
+        <div className="rounded-xl border bg-card p-2">
+          <CustomTable
+            rowKey="id"
+            columns={paymentColumns}
+            dataSource={payments}
+            loading={isPaymentsLoading}
+            setPagination={setTablePagination}
+            totaldata={paymentsMeta?.total || 0}
+            currentPage={paymentsMeta?.page || query.page || 1}
+            pageSize={paymentsMeta?.limit || query.limit || 10}
+          />
+        </div>
+      )}
 
-      <Drawer
-        open={Boolean(selectedOrder && draftOrder)}
-        onClose={() => setSelectedOrder(null)}
-        width={960}
-        title={draftOrder ? `Manage ${draftOrder.orderNumber}` : "Manage Order"}
-        extra={
-          <div className="flex gap-2">
-            <Button onClick={() => setSelectedOrder(null)}>Close</Button>
-            <Button type="primary" onClick={handleSave} loading={isUpdating}>
-              Save Updates
-            </Button>
-          </div>
-        }
-      >
-        {draftOrder ? (
-          <div className="space-y-6">
+      {section === "orders" ? (
+        <Drawer
+          open={Boolean(selectedOrder && draftOrder)}
+          onClose={() => setSelectedOrder(null)}
+          width={960}
+          title={draftOrder ? `Manage ${draftOrder.orderNumber}` : "Manage Order"}
+          extra={
+            <div className="flex gap-2">
+              <Button onClick={() => setSelectedOrder(null)}>Close</Button>
+              <Button type="primary" onClick={handleSave} loading={isUpdating}>
+                Save Updates
+              </Button>
+            </div>
+          }
+        >
+          {draftOrder ? (
+            <div className="space-y-6">
             <div className="rounded-2xl border bg-card p-5">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>
@@ -916,9 +926,10 @@ const LiveOrderManagementBoard = ({
                 </div>
               </div>
             </div>
-          </div>
-        ) : null}
-      </Drawer>
+            </div>
+          ) : null}
+        </Drawer>
+      ) : null}
     </div>
   );
 };
