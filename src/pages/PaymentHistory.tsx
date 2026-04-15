@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 
 import { useGetMyPaymentsQuery } from "@/redux/features/orders/orderApi";
+import dayjs from "dayjs";
 
 const PaymentHistory = () => {
   const { data, isLoading } = useGetMyPaymentsQuery();
@@ -24,9 +25,9 @@ const PaymentHistory = () => {
       key: "createdAt",
       render: (_: unknown, payment: (typeof payments)[number]) => (
         <div>
-          <div>{new Date(payment.createdAt).toLocaleDateString()}</div>
+          <div>{dayjs(payment.createdAt).format("MMMM D, YYYY")}</div>
           <div className="text-xs text-muted-foreground">
-            {new Date(payment.createdAt).toLocaleTimeString()}
+            {dayjs(payment.createdAt).format("hh:mm A")}
           </div>
         </div>
       ),
@@ -54,7 +55,15 @@ const PaymentHistory = () => {
       dataIndex: "status",
       key: "status",
       render: (status: string) => (
-        <Tag color={status === "SUCCESS" ? "green" : status === "FAILED" ? "red" : "gold"}>
+        <Tag
+          color={
+            status === "SUCCESS"
+              ? "green"
+              : status === "FAILED"
+                ? "red"
+                : "gold"
+          }
+        >
           {status}
         </Tag>
       ),
@@ -108,26 +117,26 @@ const PaymentHistory = () => {
               scroll={{ x: 840 }}
             />
             <div className="hidden">
-            {payments.map((payment) => (
-              <div
-                key={payment.id}
-                className="flex flex-col gap-4 rounded-xl border bg-card p-5 sm:flex-row sm:items-center"
-              >
-                <div className="flex-1">
-                  <div className="font-semibold">{payment.transactionId}</div>
-                  <div className="mt-1 text-sm text-muted-foreground">
-                    {new Date(payment.createdAt).toLocaleDateString()} ·{" "}
-                    {payment.provider} · ${payment.amount.toFixed(2)}
+              {payments.map((payment) => (
+                <div
+                  key={payment.id}
+                  className="flex flex-col gap-4 rounded-xl border bg-card p-5 sm:flex-row sm:items-center"
+                >
+                  <div className="flex-1">
+                    <div className="font-semibold">{payment.transactionId}</div>
+                    <div className="mt-1 text-sm text-muted-foreground">
+                      {new Date(payment.createdAt).toLocaleDateString()} ·{" "}
+                      {payment.provider} · ${payment.amount.toFixed(2)}
+                    </div>
+                    <div className="mt-1 text-sm text-muted-foreground">
+                      Order Number: {payment.orderGroup?.groupNumber || "N/A"}
+                    </div>
                   </div>
-                  <div className="mt-1 text-sm text-muted-foreground">
-                    Order Number: {payment.orderGroup?.groupNumber || "N/A"}
-                  </div>
+                  <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+                    {payment.status}
+                  </span>
                 </div>
-                <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
-                  {payment.status}
-                </span>
-              </div>
-            ))}
+              ))}
             </div>
           </div>
         )}

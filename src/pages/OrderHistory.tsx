@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 
 import { useGetMyOrdersQuery } from "@/redux/features/orders/orderApi";
+import dayjs from "dayjs";
 
 const OrderHistory = () => {
   const { data, isLoading } = useGetMyOrdersQuery();
@@ -24,9 +25,9 @@ const OrderHistory = () => {
       key: "createdAt",
       render: (_: unknown, order: (typeof orders)[number]) => (
         <div>
-          <div>{new Date(order.createdAt).toLocaleDateString()}</div>
+          <div>{dayjs(order.createdAt).format("MMMM D, YYYY")}</div>
           <div className="text-xs text-muted-foreground">
-            {new Date(order.createdAt).toLocaleTimeString()}
+            {dayjs(order.createdAt).format("hh:mm A")}
           </div>
         </div>
       ),
@@ -75,7 +76,11 @@ const OrderHistory = () => {
       dataIndex: "paymentStatus",
       key: "paymentStatus",
       render: (status: string) => (
-        <Tag color={status === "PAID" ? "green" : status === "FAILED" ? "red" : "gold"}>
+        <Tag
+          color={
+            status === "PAID" ? "green" : status === "FAILED" ? "red" : "gold"
+          }
+        >
           {status}
         </Tag>
       ),
@@ -130,31 +135,32 @@ const OrderHistory = () => {
               scroll={{ x: 980 }}
             />
             <div className="hidden">
-            {orders.map((order) => (
-              <div
-                key={order.id}
-                className="flex flex-col gap-4 rounded-xl border bg-card p-5 sm:flex-row sm:items-center"
-              >
-                <div className="flex-1">
-                  <div className="font-semibold">{order.orderNumber}</div>
-                  <div className="mt-1 text-sm text-muted-foreground">
-                    {new Date(order.createdAt).toLocaleDateString()} ·{" "}
-                    {order.items.length} item(s) · ${order.totalAmount.toFixed(2)}
+              {orders.map((order) => (
+                <div
+                  key={order.id}
+                  className="flex flex-col gap-4 rounded-xl border bg-card p-5 sm:flex-row sm:items-center"
+                >
+                  <div className="flex-1">
+                    <div className="font-semibold">{order.orderNumber}</div>
+                    <div className="mt-1 text-sm text-muted-foreground">
+                      {new Date(order.createdAt).toLocaleDateString()} ·{" "}
+                      {order.items.length} item(s) · $
+                      {order.totalAmount.toFixed(2)}
+                    </div>
+                    <div className="mt-1 text-sm text-muted-foreground">
+                      Payment Method: {order.paymentMethod}
+                    </div>
                   </div>
-                  <div className="mt-1 text-sm text-muted-foreground">
-                    Payment Method: {order.paymentMethod}
+                  <div className="flex flex-wrap gap-2">
+                    <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+                      {order.status}
+                    </span>
+                    <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground">
+                      {order.paymentStatus}
+                    </span>
                   </div>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
-                    {order.status}
-                  </span>
-                  <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground">
-                    {order.paymentStatus}
-                  </span>
-                </div>
-              </div>
-            ))}
+              ))}
             </div>
           </div>
         )}
