@@ -3,10 +3,14 @@ import { Button, Empty, Spin, Table, Tag } from "antd";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
+import { useSystemCurrency } from "@/hooks/useSystemCurrency";
+import { defaultSystemCurrency } from "@/redux/features/generalApi/systemSettingsApi";
 import { useGetMyOrdersQuery } from "@/redux/features/orders/orderApi";
+import { formatCurrencyAmount } from "@/utils/currency";
 import dayjs from "dayjs";
 
 const OrderHistory = () => {
+  const { currency = defaultSystemCurrency } = useSystemCurrency();
   const { data, isLoading } = useGetMyOrdersQuery();
   const orders = data?.data ?? [];
   const [page, setPage] = useState(1);
@@ -56,7 +60,7 @@ const OrderHistory = () => {
       title: "Total",
       key: "total",
       render: (_: unknown, order: (typeof orders)[number]) => (
-        <span className="font-medium">${order.totalAmount.toFixed(2)}</span>
+        <span className="font-medium">{formatCurrencyAmount(order.totalAmount, currency)}</span>
       ),
     },
     {

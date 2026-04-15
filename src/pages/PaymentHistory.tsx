@@ -3,10 +3,14 @@ import { Button, Empty, Spin, Table, Tag } from "antd";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
+import { useSystemCurrency } from "@/hooks/useSystemCurrency";
+import { defaultSystemCurrency } from "@/redux/features/generalApi/systemSettingsApi";
 import { useGetMyPaymentsQuery } from "@/redux/features/orders/orderApi";
+import { formatCurrencyAmount } from "@/utils/currency";
 import dayjs from "dayjs";
 
 const PaymentHistory = () => {
+  const { currency = defaultSystemCurrency } = useSystemCurrency();
   const { data, isLoading } = useGetMyPaymentsQuery();
   const payments = data?.data ?? [];
   const [page, setPage] = useState(1);
@@ -47,7 +51,7 @@ const PaymentHistory = () => {
       title: "Amount",
       key: "amount",
       render: (_: unknown, payment: (typeof payments)[number]) => (
-        <span className="font-medium">${payment.amount.toFixed(2)}</span>
+        <span className="font-medium">{formatCurrencyAmount(payment.amount, currency)}</span>
       ),
     },
     {

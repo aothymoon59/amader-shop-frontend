@@ -1,6 +1,9 @@
 import { Card, Drawer, Empty, Image, Space, Tag, Typography } from "antd";
 
+import { useSystemCurrency } from "@/hooks/useSystemCurrency";
+import { defaultSystemCurrency } from "@/redux/features/generalApi/systemSettingsApi";
 import type { Product } from "@/redux/features/products/productApi";
+import { formatCurrencyAmount } from "@/utils/currency";
 
 const { Text } = Typography;
 
@@ -13,6 +16,8 @@ const ProductDetailsDrawer = ({
   product,
   onClose,
 }: ProductDetailsDrawerProps) => {
+  const { currency = defaultSystemCurrency } = useSystemCurrency();
+
   return (
     <Drawer
       open={Boolean(product)}
@@ -36,12 +41,12 @@ const ProductDetailsDrawer = ({
             </Card>
             <Card size="small">
               <Text type="secondary">Price</Text>
-              <p className="mt-1 font-medium">${product.price.toFixed(2)}</p>
+              <p className="mt-1 font-medium">{formatCurrencyAmount(product.price, currency)}</p>
             </Card>
             <Card size="small">
               <Text type="secondary">Cost Price</Text>
               <p className="mt-1 font-medium">
-                {product.costPrice ? `$${product.costPrice.toFixed(2)}` : "Not set"}
+                {product.costPrice ? formatCurrencyAmount(product.costPrice, currency) : "Not set"}
               </p>
             </Card>
             <Card size="small">
@@ -64,7 +69,7 @@ const ProductDetailsDrawer = ({
                 <Tag color="purple">
                   {product.discountType === "PERCENTAGE"
                     ? `${product.discountValue || 0}% off`
-                    : `$${product.discountValue || 0} off`}
+                    : `${formatCurrencyAmount(Number(product.discountValue || 0), currency)} off`}
                 </Tag>
               ) : null}
             </Space>

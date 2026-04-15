@@ -4,6 +4,7 @@ import type { ColumnsType } from "antd/es/table";
 import { MapPinned, Pencil, Plus } from "lucide-react";
 
 import CustomTable from "@/components/shared/table/CustomTable";
+import { useSystemCurrency } from "@/hooks/useSystemCurrency";
 import { toast } from "@/hooks/use-toast";
 import {
   type DeliveryZone,
@@ -11,6 +12,8 @@ import {
   useGetManagedDeliveryZonesQuery,
   useUpdateDeliveryZoneMutation,
 } from "@/redux/features/generalApi/deliveryZonesApi";
+import { defaultSystemCurrency } from "@/redux/features/generalApi/systemSettingsApi";
+import { formatCurrencyAmount } from "@/utils/currency";
 
 type DeliveryZoneFormValues = {
   name: string;
@@ -24,6 +27,7 @@ const DeliveryZonesManagementPage = () => {
   const [form] = Form.useForm<DeliveryZoneFormValues>();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingZone, setEditingZone] = useState<DeliveryZone | null>(null);
+  const { currency = defaultSystemCurrency } = useSystemCurrency();
   const { data, isLoading, refetch } = useGetManagedDeliveryZonesQuery();
   const [createDeliveryZone, { isLoading: isCreating }] = useCreateDeliveryZoneMutation();
   const [updateDeliveryZone, { isLoading: isUpdating }] = useUpdateDeliveryZoneMutation();
@@ -112,18 +116,20 @@ const DeliveryZonesManagementPage = () => {
       {
         title: "Normal",
         key: "normalCharge",
-        render: (_, zone) => `৳${zone.normalCharge}`,
+        render: (_, zone) => formatCurrencyAmount(zone.normalCharge, currency),
       },
       {
         title: "Express",
         key: "expressCharge",
-        render: (_, zone) => `৳${zone.expressCharge}`,
+        render: (_, zone) => formatCurrencyAmount(zone.expressCharge, currency),
       },
       {
         title: "Free Delivery",
         key: "freeDeliveryThreshold",
         render: (_, zone) =>
-          zone.freeDeliveryThreshold ? `৳${zone.freeDeliveryThreshold}` : "Not set",
+          zone.freeDeliveryThreshold
+            ? formatCurrencyAmount(zone.freeDeliveryThreshold, currency)
+            : "Not set",
       },
       {
         title: "Status",
@@ -144,7 +150,7 @@ const DeliveryZonesManagementPage = () => {
         ),
       },
     ],
-    []
+    [currency]
   );
 
   return (

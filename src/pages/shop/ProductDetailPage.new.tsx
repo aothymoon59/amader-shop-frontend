@@ -8,7 +8,10 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/hooks/useAuth";
+import { useSystemCurrency } from "@/hooks/useSystemCurrency";
+import { defaultSystemCurrency } from "@/redux/features/generalApi/systemSettingsApi";
 import { useGetSingleProductQuery } from "@/redux/features/products/productApi";
+import { formatCurrencyAmount } from "@/utils/currency";
 import { getDiscountedPrice } from "@/utils/getDiscountedPrice";
 
 const ProductDetailPage = () => {
@@ -16,6 +19,7 @@ const ProductDetailPage = () => {
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const { user } = useAuth();
+  const { currency = defaultSystemCurrency } = useSystemCurrency();
   const [selectedImage, setSelectedImage] = useState("");
   const [isZoomActive, setIsZoomActive] = useState(false);
   const [isMobileZoomOpen, setIsMobileZoomOpen] = useState(false);
@@ -319,17 +323,17 @@ const ProductDetailPage = () => {
 
             <div className="mb-6 flex flex-wrap items-center gap-3">
               <div className="text-3xl font-bold text-primary">
-                ${discountedPrice.toFixed(2)}
+                {formatCurrencyAmount(discountedPrice, currency)}
               </div>
               {hasDiscount ? (
                 <>
                   <div className="text-lg text-muted-foreground line-through">
-                    ${Number(product.price).toFixed(2)}
+                    {formatCurrencyAmount(Number(product.price), currency)}
                   </div>
                   <span className="rounded-full bg-accent/10 px-3 py-1 text-xs font-medium text-accent">
                     {product.discountType === "PERCENTAGE"
                       ? `${product.discountValue}% off`
-                      : `$${Number(product.discountValue || 0).toFixed(2)} off`}
+                      : `${formatCurrencyAmount(Number(product.discountValue || 0), currency)} off`}
                   </span>
                 </>
               ) : null}

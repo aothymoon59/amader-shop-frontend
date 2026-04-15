@@ -8,11 +8,14 @@ import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/hooks/useAuth";
+import { useSystemCurrency } from "@/hooks/useSystemCurrency";
 import { Select } from "antd";
+import { defaultSystemCurrency } from "@/redux/features/generalApi/systemSettingsApi";
 import {
   useCheckoutMutation,
   type CheckoutPaymentMethod,
 } from "@/redux/features/orders/orderApi";
+import { formatCurrencyAmount } from "@/utils/currency";
 
 const isImageUrl = (value: string) =>
   value.startsWith("http://") || value.startsWith("https://");
@@ -35,6 +38,7 @@ const CheckoutPage = () => {
     canCheckout,
   } = useCart();
   const { isAuthenticated, user } = useAuth();
+  const { currency = defaultSystemCurrency } = useSystemCurrency();
   const [checkout, { isLoading }] = useCheckoutMutation();
   const [formData, setFormData] = useState({
     firstName: user?.name?.split(" ")[0] || "",
@@ -323,7 +327,7 @@ const CheckoutPage = () => {
                       <div className="mb-3 flex items-center justify-between">
                         <div className="font-medium">{vendorGroup.vendor}</div>
                         <div className="text-sm font-semibold text-primary">
-                          ${vendorGroup.total.toFixed(2)}
+                          {formatCurrencyAmount(vendorGroup.total, currency)}
                         </div>
                       </div>
                       <div className="space-y-3">
@@ -343,11 +347,11 @@ const CheckoutPage = () => {
                             <div className="min-w-0 flex-1">
                               <div className="truncate font-medium">{item.name}</div>
                               <div className="text-sm text-muted-foreground">
-                                {item.quantity} x ${item.price.toFixed(2)}
+                                {item.quantity} x {formatCurrencyAmount(item.price, currency)}
                               </div>
                             </div>
                             <div className="font-medium">
-                              ${(item.quantity * item.price).toFixed(2)}
+                              {formatCurrencyAmount(item.quantity * item.price, currency)}
                             </div>
                           </div>
                         ))}
@@ -404,15 +408,15 @@ const CheckoutPage = () => {
               <div className="mt-6 space-y-3 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
+                  <span>{formatCurrencyAmount(subtotal, currency)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Shipping</span>
-                  <span>{shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}</span>
+                  <span>{shipping === 0 ? "Free" : formatCurrencyAmount(shipping, currency)}</span>
                 </div>
                 <div className="flex justify-between border-t pt-3 text-base font-bold">
                   <span>Total</span>
-                  <span className="text-primary">${total.toFixed(2)}</span>
+                  <span className="text-primary">{formatCurrencyAmount(total, currency)}</span>
                 </div>
               </div>
 

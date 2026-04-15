@@ -6,6 +6,9 @@ import PublicLayout from "@/components/layouts/PublicLayout";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/hooks/useAuth";
+import { useSystemCurrency } from "@/hooks/useSystemCurrency";
+import { defaultSystemCurrency } from "@/redux/features/generalApi/systemSettingsApi";
+import { formatCurrencyAmount } from "@/utils/currency";
 
 const isImageUrl = (value: string) =>
   value.startsWith("http://") || value.startsWith("https://");
@@ -28,6 +31,7 @@ const CartPage = () => {
     canCheckout,
   } = useCart();
   const { isAuthenticated, user } = useAuth();
+  const { currency = defaultSystemCurrency } = useSystemCurrency();
   const isPurchaseDisabled =
     user?.role === "admin" ||
     user?.role === "super-admin" ||
@@ -70,7 +74,9 @@ const CartPage = () => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold truncate">{item.name}</h3>
-                  <div className="text-primary font-bold">${item.price.toFixed(2)}</div>
+                  <div className="text-primary font-bold">
+                    {formatCurrencyAmount(item.price, currency)}
+                  </div>
                   <div className="text-xs text-muted-foreground">by {item.vendor}</div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -118,10 +124,10 @@ const CartPage = () => {
                 ) : null}
               </div>
               <div className="flex justify-between"><span className="text-muted-foreground">Items</span><span>{items.length}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Shipping</span><span className="text-accent font-medium">{shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>{formatCurrencyAmount(subtotal, currency)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Shipping</span><span className="text-accent font-medium">{shipping === 0 ? "Free" : formatCurrencyAmount(shipping, currency)}</span></div>
               <div className="border-t pt-2 mt-2 flex justify-between font-bold text-base">
-                <span>Total</span><span className="text-primary">${total.toFixed(2)}</span>
+                <span>Total</span><span className="text-primary">{formatCurrencyAmount(total, currency)}</span>
               </div>
             </div>
             {isPurchaseDisabled ? (

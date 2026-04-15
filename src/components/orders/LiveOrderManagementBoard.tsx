@@ -18,7 +18,9 @@ import {
 import { Alert, Button, Drawer, Input, Select, Steps, Tag } from "antd";
 
 import CustomTable from "@/components/shared/table/CustomTable";
+import { useSystemCurrency } from "@/hooks/useSystemCurrency";
 import { toast } from "@/components/ui/use-toast";
+import { defaultSystemCurrency } from "@/redux/features/generalApi/systemSettingsApi";
 import {
   useGetManagementOrdersQuery,
   useGetManagementPaymentsQuery,
@@ -28,6 +30,7 @@ import {
   type PaymentStatus,
   type OrderRecord,
 } from "@/redux/features/orders/orderApi";
+import { formatCurrencyAmount } from "@/utils/currency";
 
 const orderStatusOptions: OrderStatus[] = [
   "PENDING",
@@ -115,6 +118,7 @@ const LiveOrderManagementBoard = ({
   const [selectedOrder, setSelectedOrder] = useState<OrderRecord | null>(null);
   const [draftOrder, setDraftOrder] = useState<OrderRecord | null>(null);
   const [customCourierDraft, setCustomCourierDraft] = useState("");
+  const { currency = defaultSystemCurrency } = useSystemCurrency();
 
   const { data: ordersResponse, isLoading: isOrdersLoading, refetch: refetchOrders } =
     useGetManagementOrdersQuery(query);
@@ -176,13 +180,13 @@ const LiveOrderManagementBoard = ({
       },
       {
         label: "Collected Revenue",
-        value: `$${Number(ordersSummary?.totalRevenue ?? 0).toFixed(2)}`,
+        value: formatCurrencyAmount(Number(ordersSummary?.totalRevenue ?? 0), currency),
         accent: "from-sky-500 via-cyan-500 to-blue-600",
         icon: DollarSign,
         helper: `${ordersSummary?.paidOrders ?? 0} paid orders`,
       },
     ],
-    [ordersSummary]
+    [currency, ordersSummary]
   );
 
   const roleLabel =
@@ -261,7 +265,8 @@ const LiveOrderManagementBoard = ({
     {
       title: "Amount",
       key: "amount",
-      render: (_: unknown, order: OrderRecord) => `$${order.totalAmount.toFixed(2)}`,
+      render: (_: unknown, order: OrderRecord) =>
+        formatCurrencyAmount(order.totalAmount, currency),
     },
     {
       title: "Status",
@@ -341,7 +346,7 @@ const LiveOrderManagementBoard = ({
       title: "Amount",
       key: "amount",
       render: (_: unknown, payment: (typeof payments)[number]) =>
-        `$${payment.amount.toFixed(2)}`,
+        formatCurrencyAmount(payment.amount, currency),
     },
     {
       title: "Status",
@@ -714,11 +719,11 @@ const LiveOrderManagementBoard = ({
                             {item.product?.name || item.productName}
                           </div>
                           <div className="mt-1 text-sm text-muted-foreground">
-                            Qty {item.quantity} x ${item.unitPrice.toFixed(2)}
+                            Qty {item.quantity} x {formatCurrencyAmount(item.unitPrice, currency)}
                           </div>
                         </div>
                         <div className="text-right text-sm font-medium">
-                          ${item.subtotal.toFixed(2)}
+                          {formatCurrencyAmount(item.subtotal, currency)}
                         </div>
                       </div>
                     ))}
@@ -876,7 +881,9 @@ const LiveOrderManagementBoard = ({
                   <div className="space-y-3 text-sm">
                     <div className="flex items-start justify-between gap-4">
                       <span className="text-muted-foreground">Total amount</span>
-                      <span className="font-semibold">${draftOrder.totalAmount.toFixed(2)}</span>
+                      <span className="font-semibold">
+                        {formatCurrencyAmount(draftOrder.totalAmount, currency)}
+                      </span>
                     </div>
                     <div className="flex items-start justify-between gap-4">
                       <span className="text-muted-foreground">Receipt</span>

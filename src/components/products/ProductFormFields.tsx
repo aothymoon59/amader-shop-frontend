@@ -8,7 +8,10 @@ import type {
   ProductFormValues,
   ProviderOption,
 } from "@/components/products/productManagement.types";
+import { useSystemCurrency } from "@/hooks/useSystemCurrency";
+import { defaultSystemCurrency } from "@/redux/features/generalApi/systemSettingsApi";
 import type { ProductImage } from "@/redux/features/products/productApi";
+import { formatCurrencyAmount } from "@/utils/currency";
 
 const { TextArea } = Input;
 
@@ -43,6 +46,8 @@ const ProductFormFields = ({
   imageFileList,
   onImageFileListChange,
 }: ProductFormFieldsProps) => {
+  const { currency = defaultSystemCurrency } = useSystemCurrency();
+
   return (
     <div className="overflow-x-hidden">
       <Row gutter={[16, 0]} wrap>
@@ -103,7 +108,7 @@ const ProductFormFields = ({
               placeholder="Select delivery zones"
               options={deliveryZoneOptions.map((zone) => ({
                 value: zone.id,
-                label: `${zone.name} | Normal ৳${zone.normalCharge} | Express ৳${zone.expressCharge}`,
+                label: `${zone.name} | Normal ${formatCurrencyAmount(zone.normalCharge, currency)} | Express ${formatCurrencyAmount(zone.expressCharge, currency)}`,
               }))}
             />
           </Form.Item>
