@@ -6,6 +6,7 @@ import SuperAdminAuditLog from "../pages/super-admin/SuperAdminAuditLog";
 import SuperAdminAnalytics from "../pages/super-admin/SuperAdminAnalytics";
 import SuperAdminCMS from "../pages/super-admin/SuperAdminCMS";
 import SuperAdminDashboard from "../pages/super-admin/SuperAdminDashboard";
+import SuperAdminDeliveryZones from "../pages/super-admin/SuperAdminDeliveryZones";
 import SuperAdminOrders from "../pages/super-admin/SuperAdminOrders";
 import SuperAdminPayments from "../pages/super-admin/SuperAdminPayments";
 import SuperAdminSettings from "../pages/super-admin/SuperAdminSettings";
@@ -49,6 +50,14 @@ export const superAdminRoutes: RouteObject[] = [
     element: (
       <ProtectedRoute allowedRoles={["super-admin"]}>
         <SuperAdminOrders />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "super-admin/delivery-zones",
+    element: (
+      <ProtectedRoute allowedRoles={["super-admin"]}>
+        <SuperAdminDeliveryZones />
       </ProtectedRoute>
     ),
   },

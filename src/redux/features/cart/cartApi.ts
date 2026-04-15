@@ -1,6 +1,7 @@
 import { tagTypes } from "@/redux/tagTypes";
 import { baseApi } from "@/redux/api/baseApi";
 import type { Product } from "@/redux/features/products/productApi";
+import type { DeliveryZone } from "@/redux/features/generalApi/deliveryZonesApi";
 
 export type CartProduct = Product;
 
@@ -15,6 +16,17 @@ export type CartApiCart = {
   id: string;
   userId: string;
   items: CartApiItem[];
+  pricing?: {
+    subtotal: number;
+    deliveryCharge: number;
+    total: number;
+    deliveryMode: "NORMAL" | "EXPRESS";
+    selectedZone?: DeliveryZone | null;
+    eligibleDeliveryZones: DeliveryZone[];
+    requiresZoneSelection: boolean;
+    canCheckout: boolean;
+    message?: string | null;
+  };
 };
 
 type CartResponse = {
@@ -35,10 +47,14 @@ type UpdateCartItemPayload = {
 
 export const cartApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getCart: builder.query<CartResponse, void>({
-      query: () => ({
+    getCart: builder.query<
+      CartResponse,
+      { deliveryZoneId?: string; deliveryMode?: "NORMAL" | "EXPRESS" } | void
+    >({
+      query: (args) => ({
         url: "/cart",
         method: "GET",
+        params: args,
       }),
       providesTags: [tagTypes.CART],
     }),

@@ -22,6 +22,7 @@ import {
   LogOut,
   X,
   ChevronDown,
+  MapPinned,
 } from "lucide-react";
 
 interface SidebarItem {
@@ -40,6 +41,7 @@ const menuItems: Record<string, SidebarItem[]> = {
   admin: [
     { title: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard" },
     { title: "Manage Products", icon: Package, path: "/admin/manage-products" },
+    { title: "Delivery Zones", icon: MapPinned, path: "/admin/delivery-zones" },
     {
       title: "Order Management",
       icon: ShoppingCart,
@@ -99,6 +101,7 @@ const menuItems: Record<string, SidebarItem[]> = {
         { title: "Payments", icon: CreditCard, path: "/super-admin/payments" },
       ],
     },
+    { title: "Delivery Zones", icon: MapPinned, path: "/super-admin/delivery-zones" },
     { title: "Analytics", icon: BarChart3, path: "/super-admin/analytics" },
     { title: "Audit Log", icon: FileText, path: "/super-admin/audit-log" },
     { title: "CMS", icon: FileText, path: "/super-admin/cms" },

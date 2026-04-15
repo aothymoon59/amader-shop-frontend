@@ -23,6 +23,8 @@ import {
   useRemoveCartItemMutation,
   useUpdateCartItemMutation,
 } from "@/redux/features/cart/cartApi";
+import { useGetDeliveryZonesQuery } from "@/redux/features/generalApi/deliveryZonesApi";
+import type { DeliveryZone } from "@/redux/features/generalApi/deliveryZonesApi";
 
 type CartProduct = {
   id: string | number;
@@ -34,6 +36,7 @@ type CartProduct = {
   description: string;
   rating?: number;
   reviews?: number;
+  deliveryZones?: DeliveryZone[];
 };
 
 export type CheckoutFormData = {
@@ -44,6 +47,8 @@ export type CheckoutFormData = {
   zipCode: string;
   phone: string;
   email: string;
+  deliveryZoneId: string;
+  deliveryMode: "NORMAL" | "EXPRESS";
 };
 
 type CartItem = CartProduct & {
@@ -60,6 +65,13 @@ type CartContextValue = {
   shipping: number;
   total: number;
   itemCount: number;
+  deliveryZoneId: string;
+  setDeliveryZoneId: (deliveryZoneId: string) => void;
+  deliveryMode: "NORMAL" | "EXPRESS";
+  setDeliveryMode: (deliveryMode: "NORMAL" | "EXPRESS") => void;
+  eligibleDeliveryZones: DeliveryZone[];
+  pricingMessage: string | null;
+  canCheckout: boolean;
   placeOrder: (formData: CheckoutFormData) => void;
   lastOrder: {
     customerName: string;
@@ -87,9 +99,6 @@ type StoredCartState = {
 };
 
 const STORAGE_KEY = "smallshop-cart";
-const FREE_SHIPPING_THRESHOLD = 50;
-const SHIPPING_COST = 9.99;
-
 const CartContext = createContext<CartContextValue | null>(null);
 
 const getApiProductImage = (product: ApiProduct) =>
@@ -109,6 +118,8 @@ const normalizeProduct = (
       category: product.category?.name || "",
       description:
         product.shortDescription || product.description || "No description available.",
+      deliveryZones:
+        product.deliveryZones?.map((zone) => zone.deliveryZone).filter(Boolean) || [],
     };
   }
 
@@ -209,6 +220,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     initialCartState.syncedUserId,
   );
   const [lastOrder, setLastOrder] = useState<CartContextValue["lastOrder"]>(null);
+  const [deliveryZoneId, setDeliveryZoneId] = useState("");
+  const [deliveryMode, setDeliveryMode] = useState<"NORMAL" | "EXPRESS">("NORMAL");
   const user = useAppSelector(useCurrentUser);
   const isCustomerAuthenticated = user?.role === "customer" && Boolean(user?.id);
   const itemsRef = useRef(items);
@@ -216,9 +229,18 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [addCartItemRemote] = useAddCartItemMutation();
   const [updateCartItemRemote] = useUpdateCartItemMutation();
   const [removeCartItemRemote] = useRemoveCartItemMutation();
-  const { data: cartResponse, refetch } = useGetCartQuery(undefined, {
-    skip: !isCustomerAuthenticated,
-  });
+  const { data: deliveryZoneResponse } = useGetDeliveryZonesQuery();
+  const { data: cartResponse, refetch } = useGetCartQuery(
+    isCustomerAuthenticated
+      ? {
+          deliveryZoneId: deliveryZoneId || undefined,
+          deliveryMode,
+        }
+      : undefined,
+    {
+      skip: !isCustomerAuthenticated,
+    },
+  );
 
   const applyServerCart = useCallback(
     (cart: CartApiCart | null | undefined) => {
@@ -252,6 +274,30 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       setSyncedUserId(null);
     }
   }, [isCustomerAuthenticated, syncedUserId]);
+
+  useEffect(() => {
+    const serverEligibleZones = cartResponse?.data?.pricing?.eligibleDeliveryZones || [];
+    const fallbackZones = deliveryZoneResponse?.data || [];
+    const zones = isCustomerAuthenticated ? serverEligibleZones : fallbackZones;
+
+    if (!zones.length) {
+      if (deliveryZoneId) {
+        setDeliveryZoneId("");
+      }
+      return;
+    }
+
+    const isCurrentValid = zones.some((zone) => zone.id === deliveryZoneId);
+    if (!isCurrentValid) {
+      setDeliveryZoneId(zones[0].id);
+    }
+  }, [
+    cartResponse?.data?.pricing?.eligibleDeliveryZones,
+    deliveryMode,
+    deliveryZoneId,
+    deliveryZoneResponse?.data,
+    isCustomerAuthenticated,
+  ]);
 
   useEffect(() => {
     const syncGuestCartToServer = async () => {
@@ -440,14 +486,28 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  const subtotal = useMemo(
-    () => items.reduce((sum, item) => sum + item.price * item.quantity, 0),
-    [items],
-  );
-  const shipping =
-    subtotal === 0 || subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
-  const total = subtotal + shipping;
+  const subtotal = isCustomerAuthenticated
+    ? cartResponse?.data?.pricing?.subtotal ||
+      items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+    : items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const shipping = isCustomerAuthenticated
+    ? cartResponse?.data?.pricing?.deliveryCharge || 0
+    : 0;
+  const total = isCustomerAuthenticated
+    ? cartResponse?.data?.pricing?.total || subtotal
+    : subtotal;
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+  const eligibleDeliveryZones = isCustomerAuthenticated
+    ? cartResponse?.data?.pricing?.eligibleDeliveryZones || []
+    : deliveryZoneResponse?.data || [];
+  const pricingMessage = isCustomerAuthenticated
+    ? cartResponse?.data?.pricing?.message || null
+    : items.length
+      ? "Login to calculate delivery charges from the backend."
+      : null;
+  const canCheckout = isCustomerAuthenticated
+    ? Boolean(cartResponse?.data?.pricing?.canCheckout)
+    : false;
 
   const placeOrder = (formData: CheckoutFormData) => {
     setLastOrder({
@@ -481,6 +541,13 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         shipping,
         total,
         itemCount,
+        deliveryZoneId,
+        setDeliveryZoneId,
+        deliveryMode,
+        setDeliveryMode,
+        eligibleDeliveryZones,
+        pricingMessage,
+        canCheckout,
         placeOrder,
         lastOrder,
       }}

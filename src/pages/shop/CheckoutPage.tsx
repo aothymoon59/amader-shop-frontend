@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/hooks/useAuth";
+import { Select } from "antd";
 import {
   useCheckoutMutation,
   type CheckoutPaymentMethod,
@@ -19,7 +20,20 @@ const isImageUrl = (value: string) =>
 const CheckoutPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { items, subtotal, shipping, total, placeOrder } = useCart();
+  const {
+    items,
+    subtotal,
+    shipping,
+    total,
+    placeOrder,
+    deliveryZoneId,
+    setDeliveryZoneId,
+    deliveryMode,
+    setDeliveryMode,
+    eligibleDeliveryZones,
+    pricingMessage,
+    canCheckout,
+  } = useCart();
   const { isAuthenticated, user } = useAuth();
   const [checkout, { isLoading }] = useCheckoutMutation();
   const [formData, setFormData] = useState({
@@ -111,6 +125,16 @@ const CheckoutPage = () => {
       return;
     }
 
+    if (!deliveryZoneId || !canCheckout) {
+      toast({
+        title: "Select delivery settings",
+        description:
+          pricingMessage || "Choose a valid delivery zone before placing the order.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const response = await checkout({
         customerName: `${formData.firstName} ${formData.lastName}`.trim(),
@@ -120,6 +144,8 @@ const CheckoutPage = () => {
         shippingCity: formData.city,
         shippingPostalCode: formData.zipCode,
         shippingCountry: "Bangladesh",
+        deliveryZoneId,
+        deliveryMode,
         paymentMethod,
         idempotencyKey,
       }).unwrap();
@@ -132,7 +158,11 @@ const CheckoutPage = () => {
         return;
       }
 
-      placeOrder(formData);
+      placeOrder({
+        ...formData,
+        deliveryZoneId,
+        deliveryMode,
+      });
       setIdempotencyKey(crypto.randomUUID());
       navigate(
         `/checkout/payment-status?status=success&orderNumber=${encodeURIComponent(response.data.order.orderNumber)}&paymentMethod=${encodeURIComponent(response.data.order.paymentMethod)}&paymentStatus=${encodeURIComponent(response.data.order.paymentStatus)}${response.data.order.receipt?.receiptNumber ? `&receiptNumber=${encodeURIComponent(response.data.order.receipt.receiptNumber)}` : ""}`,
@@ -253,6 +283,39 @@ const CheckoutPage = () => {
               </div>
 
               <div className="rounded-xl border bg-card p-6">
+                <h2 className="mb-4 text-lg font-semibold">Delivery</h2>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div>
+                    <Label>Delivery Zone</Label>
+                    <Select
+                      className="mt-1.5 w-full"
+                      value={deliveryZoneId || undefined}
+                      onChange={(value) => setDeliveryZoneId(value)}
+                      options={eligibleDeliveryZones.map((zone) => ({
+                        value: zone.id,
+                        label: zone.name,
+                      }))}
+                    />
+                  </div>
+                  <div>
+                    <Label>Delivery Speed</Label>
+                    <Select
+                      className="mt-1.5 w-full"
+                      value={deliveryMode}
+                      onChange={(value) => setDeliveryMode(value)}
+                      options={[
+                        { value: "NORMAL", label: "Normal delivery" },
+                        { value: "EXPRESS", label: "Express delivery" },
+                      ]}
+                    />
+                  </div>
+                </div>
+                {pricingMessage ? (
+                  <p className="mt-3 text-sm text-muted-foreground">{pricingMessage}</p>
+                ) : null}
+              </div>
+
+              <div className="rounded-xl border bg-card p-6">
                 <h2 className="mb-4 text-lg font-semibold">Summary</h2>
                 <div className="space-y-6">
                   {vendorBreakdown.map((vendorGroup) => (
@@ -358,7 +421,7 @@ const CheckoutPage = () => {
                 variant="hero"
                 size="lg"
                 className="mt-6 w-full"
-                disabled={isLoading}
+                disabled={isLoading || !canCheckout}
               >
                 {isLoading ? "Processing..." : "Place Order"}
               </Button>

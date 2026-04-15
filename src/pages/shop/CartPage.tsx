@@ -1,5 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
+import { Select } from "antd";
 
 import PublicLayout from "@/components/layouts/PublicLayout";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,21 @@ const isImageUrl = (value: string) =>
 
 const CartPage = () => {
   const location = useLocation();
-  const { items, subtotal, shipping, total, removeFromCart, updateQuantity } = useCart();
+  const {
+    items,
+    subtotal,
+    shipping,
+    total,
+    removeFromCart,
+    updateQuantity,
+    deliveryZoneId,
+    setDeliveryZoneId,
+    deliveryMode,
+    setDeliveryMode,
+    eligibleDeliveryZones,
+    pricingMessage,
+    canCheckout,
+  } = useCart();
   const { isAuthenticated, user } = useAuth();
   const isPurchaseDisabled =
     user?.role === "admin" ||
@@ -77,6 +92,31 @@ const CartPage = () => {
           <div className="rounded-xl border bg-card p-6 h-fit">
             <h3 className="font-semibold mb-4">Order Summary</h3>
             <div className="space-y-2 text-sm">
+              <div className="space-y-2 rounded-lg border bg-secondary/30 p-3">
+                <div className="text-sm font-medium">Delivery</div>
+                <Select
+                  className="w-full"
+                  placeholder="Select delivery zone"
+                  value={deliveryZoneId || undefined}
+                  onChange={(value) => setDeliveryZoneId(value)}
+                  options={eligibleDeliveryZones.map((zone) => ({
+                    value: zone.id,
+                    label: zone.name,
+                  }))}
+                />
+                <Select
+                  className="w-full"
+                  value={deliveryMode}
+                  onChange={(value) => setDeliveryMode(value)}
+                  options={[
+                    { value: "NORMAL", label: "Normal delivery" },
+                    { value: "EXPRESS", label: "Express delivery" },
+                  ]}
+                />
+                {pricingMessage ? (
+                  <div className="text-xs text-muted-foreground">{pricingMessage}</div>
+                ) : null}
+              </div>
               <div className="flex justify-between"><span className="text-muted-foreground">Items</span><span>{items.length}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">Shipping</span><span className="text-accent font-medium">{shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}</span></div>
@@ -99,7 +139,7 @@ const CartPage = () => {
                   variant="hero"
                   className="mt-6 w-full"
                   size="lg"
-                  disabled={items.length === 0}
+                  disabled={items.length === 0 || (isAuthenticated && !canCheckout)}
                 >
                   <ShoppingBag className="mr-2 h-5 w-5" /> Checkout
                 </Button>

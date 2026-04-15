@@ -4,6 +4,7 @@ import { Plus } from "lucide-react";
 
 import type {
   CategoryOption,
+  DeliveryZoneOption,
   ProductFormValues,
   ProviderOption,
 } from "@/components/products/productManagement.types";
@@ -25,6 +26,7 @@ type ProductFormFieldsProps = {
   role: "provider" | "admin";
   categoryOptions: CategoryOption[];
   providerOptions: ProviderOption[];
+  deliveryZoneOptions: DeliveryZoneOption[];
   retainedImages?: ProductImage[];
   onRemoveRetainedImage?: (imageId: string) => void;
   imageFileList?: UploadFile[];
@@ -35,6 +37,7 @@ const ProductFormFields = ({
   role,
   categoryOptions,
   providerOptions,
+  deliveryZoneOptions,
   retainedImages = [],
   onRemoveRetainedImage,
   imageFileList,
@@ -81,6 +84,31 @@ const ProductFormFields = ({
           </Form.Item>
         </Col>
  
+        <Col xs={24} md={12}>
+          <Form.Item
+            label="Delivery Zones"
+            name="deliveryZoneIds"
+            rules={[
+              {
+                required: true,
+                type: "array",
+                min: 1,
+                message: "Please select at least one delivery zone",
+              },
+            ]}
+          >
+            <Select
+              mode="multiple"
+              optionFilterProp="label"
+              placeholder="Select delivery zones"
+              options={deliveryZoneOptions.map((zone) => ({
+                value: zone.id,
+                label: `${zone.name} | Normal ৳${zone.normalCharge} | Express ৳${zone.expressCharge}`,
+              }))}
+            />
+          </Form.Item>
+        </Col>
+
         <Col xs={24} md={12}>
           <Form.Item
             label="Product Name"

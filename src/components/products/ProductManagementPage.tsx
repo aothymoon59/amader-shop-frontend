@@ -36,6 +36,7 @@ import { getErrorMessage } from "@/components/products/productForm.helpers";
 import ProductGridView from "@/components/products/ProductGridView";
 import type {
   CategoryOption,
+  DeliveryZoneOption,
   FilterState,
   PaginationState,
   ProviderOption,
@@ -44,6 +45,7 @@ import type {
 import { toast } from "@/hooks/use-toast";
 import { useGetAllProvidersQuery } from "@/redux/features/admin/providerManagementApi";
 import { useGetCategoriesQuery } from "@/redux/features/generalApi/categoriesApi";
+import { useGetDeliveryZonesQuery } from "@/redux/features/generalApi/deliveryZonesApi";
 import {
   type Product,
   useDeleteProductMutation,
@@ -92,6 +94,7 @@ const ProductManagementPage = ({ role }: ProductManagementPageProps) => {
       role === "admin" ? { status: "APPROVED" } : undefined,
       { skip: role !== "admin" },
     );
+  const { data: deliveryZoneResponse } = useGetDeliveryZonesQuery();
   const {
     data: productResponse,
     isLoading: isProductsLoading,
@@ -123,6 +126,10 @@ const ProductManagementPage = ({ role }: ProductManagementPageProps) => {
   const providerOptions = useMemo<ProviderOption[]>(
     () => (providerResponse?.data ?? []) as ProviderOption[],
     [providerResponse],
+  );
+  const deliveryZoneOptions = useMemo<DeliveryZoneOption[]>(
+    () => (deliveryZoneResponse?.data ?? []) as DeliveryZoneOption[],
+    [deliveryZoneResponse],
   );
 
   const products = useMemo<Product[]>(
@@ -587,6 +594,7 @@ const ProductManagementPage = ({ role }: ProductManagementPageProps) => {
         closeModal={() => setIsCreateModalOpen(false)}
         categoryOptions={categoryOptions}
         providerOptions={providerOptions}
+        deliveryZoneOptions={deliveryZoneOptions}
       />
 
       <ProductEditModal
@@ -596,6 +604,7 @@ const ProductManagementPage = ({ role }: ProductManagementPageProps) => {
         closeModal={closeEditModal}
         categoryOptions={categoryOptions}
         providerOptions={providerOptions}
+        deliveryZoneOptions={deliveryZoneOptions}
       />
 
       <ProductDetailsDrawer

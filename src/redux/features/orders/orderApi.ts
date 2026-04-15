@@ -26,6 +26,8 @@ export type CheckoutPayload = {
   shippingCity: string;
   shippingPostalCode: string;
   shippingCountry: string;
+  deliveryZoneId: string;
+  deliveryMode: "NORMAL" | "EXPRESS";
   paymentMethod: CheckoutPaymentMethod;
   idempotencyKey: string;
 };
