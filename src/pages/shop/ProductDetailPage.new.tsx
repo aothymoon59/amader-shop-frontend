@@ -17,6 +17,13 @@ const ProductDetailPage = () => {
   const { addToCart } = useCart();
   const { user } = useAuth();
   const [selectedImage, setSelectedImage] = useState("");
+  const [isZoomActive, setIsZoomActive] = useState(false);
+  const [zoomPosition, setZoomPosition] = useState({
+    xPercent: 50,
+    yPercent: 50,
+    lensLeft: 0,
+    lensTop: 0,
+  });
 
   const {
     data: productResponse,
@@ -35,6 +42,16 @@ const ProductDetailPage = () => {
       setSelectedImage("");
     }
   }, [product]);
+
+  useEffect(() => {
+    setIsZoomActive(false);
+    setZoomPosition({
+      xPercent: 50,
+      yPercent: 50,
+      lensLeft: 0,
+      lensTop: 0,
+    });
+  }, [selectedImage]);
 
   if (isLoading) {
     return (
@@ -104,6 +121,29 @@ const ProductDetailPage = () => {
     user?.role === "admin" ||
     user?.role === "super-admin" ||
     user?.role === "provider";
+  const lensSize = 150;
+
+  const handleImageZoom = (event: React.MouseEvent<HTMLDivElement>) => {
+    const { left, top, width, height } =
+      event.currentTarget.getBoundingClientRect();
+    const relativeX = event.clientX - left;
+    const relativeY = event.clientY - top;
+    const clampedX = Math.min(Math.max(relativeX, 0), width);
+    const clampedY = Math.min(Math.max(relativeY, 0), height);
+
+    setZoomPosition({
+      xPercent: (clampedX / width) * 100,
+      yPercent: (clampedY / height) * 100,
+      lensLeft: Math.min(
+        Math.max(clampedX - lensSize / 2, 0),
+        Math.max(width - lensSize, 0),
+      ),
+      lensTop: Math.min(
+        Math.max(clampedY - lensSize / 2, 0),
+        Math.max(height - lensSize, 0),
+      ),
+    });
+  };
 
   return (
     <PublicLayout>
@@ -116,12 +156,48 @@ const ProductDetailPage = () => {
         </Link>
 
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
-          <div className="space-y-4">
-            <div className="overflow-hidden rounded-2xl border bg-secondary">
-              <img
-                src={displayImage}
-                alt={product.name}
-                className="h-80 w-full object-cover lg:h-[500px]"
+          <div className="relative space-y-4">
+            <div>
+              <div
+                className="relative overflow-hidden rounded-xl bg-background"
+                onMouseEnter={() => setIsZoomActive(true)}
+                onMouseLeave={() => setIsZoomActive(false)}
+                onMouseMove={handleImageZoom}
+              >
+                <img
+                  src={displayImage}
+                  alt={product.name}
+                  className="h-80 w-full object-cover lg:h-[500px]"
+                />
+
+                {isZoomActive ? (
+                  <>
+                    <div
+                      className="pointer-events-none absolute border border-white/80 bg-primary/15 shadow-[0_0_0_1px_rgba(255,255,255,0.35)] backdrop-blur-[1px]"
+                      style={{
+                        width: `${lensSize}px`,
+                        height: `${lensSize}px`,
+                        left: `${zoomPosition.lensLeft}px`,
+                        top: `${zoomPosition.lensTop}px`,
+                      }}
+                    />
+                  </>
+                ) : null}
+              </div>
+            </div>
+
+            <div
+              className={`pointer-events-none absolute left-full top-3 z-20 ml-6 hidden h-[500px] w-[360px] overflow-hidden rounded-2xl border bg-background shadow-2xl xl:block ${
+                isZoomActive ? "opacity-100" : "opacity-0"
+              } transition-opacity duration-150`}
+            >
+              <div
+                className="h-full w-full bg-no-repeat"
+                style={{
+                  backgroundImage: `url(${displayImage})`,
+                  backgroundPosition: `${zoomPosition.xPercent}% ${zoomPosition.yPercent}%`,
+                  backgroundSize: "220%",
+                }}
               />
             </div>
 
@@ -239,7 +315,9 @@ const ProductDetailPage = () => {
               </div>
               <div className="rounded-lg border bg-card p-4 text-sm">
                 <div className="text-muted-foreground">Category</div>
-                <div className="mt-1 font-semibold">{product.category?.name}</div>
+                <div className="mt-1 font-semibold">
+                  {product.category?.name}
+                </div>
               </div>
             </div>
 
