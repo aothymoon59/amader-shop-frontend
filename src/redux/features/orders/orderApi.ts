@@ -79,6 +79,14 @@ export type OrderRecord = {
   updatedAt: string;
   items: OrderItemRecord[];
   providerNames?: string[];
+  workflow?: {
+    currentStatus: OrderStatus;
+    recommendedNextStatus?: OrderStatus | null;
+    availableStatuses: OrderStatus[];
+    allowedPaymentStatuses: PaymentStatus[];
+    canEditPaymentStatus: boolean;
+    blockers: string[];
+  };
   receipt?: {
     id: string;
     receiptNumber: string;
