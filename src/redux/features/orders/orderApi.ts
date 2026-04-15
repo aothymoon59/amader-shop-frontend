@@ -154,6 +154,18 @@ type ManagementOrderListResponse = {
     total?: number;
     totalPages?: number;
   };
+  summary?: {
+    totalOrders: number;
+    pendingOrders: number;
+    processingOrders: number;
+    shippedOrders: number;
+    deliveredOrders: number;
+    cancelledOrders: number;
+    paidOrders: number;
+    codOrders: number;
+    onlineOrders: number;
+    totalRevenue: number;
+  };
   data: OrderRecord[];
 };
 

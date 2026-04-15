@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
+  ArrowUpRight,
   CalendarDays,
   CheckCircle2,
   CreditCard,
+  DollarSign,
   MapPin,
   PackageCheck,
   Phone,
@@ -125,6 +127,7 @@ const LiveOrderManagementBoard = ({
   const orders = ordersResponse?.data ?? [];
   const payments = paymentsResponse?.data ?? [];
   const ordersMeta = ordersResponse?.meta;
+  const ordersSummary = ordersResponse?.summary;
   const paymentsMeta = paymentsResponse?.meta;
   const selectedOrderFromList = selectedOrder
     ? orders.find((order) => order.id === selectedOrder.id) || selectedOrder
@@ -148,21 +151,36 @@ const LiveOrderManagementBoard = ({
 
   const stats = useMemo(
     () => [
-      { label: "Orders", value: ordersMeta?.total ?? 0 },
       {
-        label: "Paid Payments",
-        value: payments.filter((payment) => payment.status === "SUCCESS").length,
+        label: "Total Orders",
+        value: ordersSummary?.totalOrders ?? 0,
+        accent: "from-slate-900 via-slate-800 to-slate-700",
+        icon: ShoppingBag,
+        helper: `${ordersSummary?.codOrders ?? 0} COD / ${ordersSummary?.onlineOrders ?? 0} online`,
       },
       {
-        label: "Pending Orders",
-        value: orders.filter((order) => order.status === "PENDING").length,
+        label: "Pending Queue",
+        value: ordersSummary?.pendingOrders ?? 0,
+        accent: "from-amber-500 via-orange-500 to-amber-600",
+        icon: CalendarDays,
+        helper: `${ordersSummary?.processingOrders ?? 0} processing now`,
       },
       {
         label: "Delivered",
-        value: orders.filter((order) => order.status === "DELIVERED").length,
+        value: ordersSummary?.deliveredOrders ?? 0,
+        accent: "from-emerald-500 via-green-500 to-emerald-600",
+        icon: PackageCheck,
+        helper: `${ordersSummary?.shippedOrders ?? 0} still in transit`,
+      },
+      {
+        label: "Collected Revenue",
+        value: `$${Number(ordersSummary?.totalRevenue ?? 0).toFixed(2)}`,
+        accent: "from-sky-500 via-cyan-500 to-blue-600",
+        icon: DollarSign,
+        helper: `${ordersSummary?.paidOrders ?? 0} paid orders`,
       },
     ],
-    [orders, ordersMeta?.total, payments]
+    [ordersSummary]
   );
 
   const roleLabel =
@@ -426,11 +444,29 @@ const LiveOrderManagementBoard = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {stats.map((stat) => (
-          <div key={stat.label} className="rounded-xl border bg-card p-5">
-            <div className="text-sm text-muted-foreground">{stat.label}</div>
-            <div className="mt-2 text-2xl font-bold">{stat.value}</div>
+          <div
+            key={stat.label}
+            className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${stat.accent} p-[1px] shadow-sm`}
+          >
+            <div className="rounded-[15px] bg-background/95 p-4 backdrop-blur">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                    {stat.label}
+                  </div>
+                  <div className="mt-2 text-2xl font-bold tracking-tight">{stat.value}</div>
+                </div>
+                <div className="rounded-xl bg-secondary/80 p-2.5 text-foreground shadow-sm">
+                  <stat.icon className="h-4 w-4" />
+                </div>
+              </div>
+              <div className="mt-3 flex items-center justify-between gap-3 text-xs text-muted-foreground">
+                <span>{stat.helper}</span>
+                <ArrowUpRight className="h-3.5 w-3.5" />
+              </div>
+            </div>
           </div>
         ))}
       </div>
