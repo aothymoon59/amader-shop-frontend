@@ -15,6 +15,7 @@ import {
   Store,
   FileText,
   CreditCard,
+  Wallet,
   Shield,
   UserCheck,
   TrendingUp,
@@ -50,6 +51,7 @@ const menuItems: Record<string, SidebarItem[]> = {
         { title: "Payments", icon: CreditCard, path: "/admin/payments" },
       ],
     },
+    { title: "Wallet & Earnings", icon: Wallet, path: "/admin/wallet" },
     {
       title: "User Management",
       icon: Users,
@@ -74,6 +76,7 @@ const menuItems: Record<string, SidebarItem[]> = {
         { title: "Payments", icon: CreditCard, path: "/provider/payments" },
       ],
     },
+    { title: "Wallet & Earnings", icon: Wallet, path: "/provider/wallet" },
     { title: "POS", icon: CreditCard, path: "/provider/pos" },
     { title: "Receipts", icon: Receipt, path: "/provider/receipts" },
     { title: "Reports", icon: TrendingUp, path: "/provider/reports" },

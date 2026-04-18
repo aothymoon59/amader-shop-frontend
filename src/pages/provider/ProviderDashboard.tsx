@@ -7,9 +7,6 @@ import {
   ArrowUp,
   Store,
   Clock3,
-  Wallet,
-  Eye,
-  Plus,
 } from "lucide-react";
 
 const stats = [
@@ -84,19 +81,17 @@ const statusColors: Record<string, string> = {
 const ProviderDashboard = () => (
   <DashboardLayout role="provider">
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
             Vendor Dashboard
           </h1>
           <p className="text-sm text-muted-foreground">
-            Welcome back, TechStore. Here’s your business performance overview.
+            Welcome back, TechStore. Here&apos;s your business performance overview.
           </p>
         </div>
       </div>
 
-      {/* Summary banner */}
       <div className="rounded-2xl border bg-card p-6 shadow-sm">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
@@ -127,7 +122,6 @@ const ProviderDashboard = () => (
         </div>
       </div>
 
-      {/* Stat cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {stats.map((s) => (
           <div
@@ -154,9 +148,7 @@ const ProviderDashboard = () => (
         ))}
       </div>
 
-      {/* Main content */}
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-        {/* Recent Sales */}
         <div className="rounded-2xl border bg-card p-6 shadow-sm xl:col-span-2">
           <div className="mb-5 flex items-center justify-between">
             <div>
@@ -204,7 +196,6 @@ const ProviderDashboard = () => (
           </div>
         </div>
 
-        {/* Side widgets */}
         <div className="space-y-6">
           <div className="rounded-2xl border bg-card p-5 shadow-sm">
             <h2 className="font-semibold">Quick Summary</h2>

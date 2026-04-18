@@ -1,5 +1,5 @@
 import AntdModal from "@/components/shared/modal/AntdModal";
-import { Avatar, Button, Divider, Tag, Typography } from "antd";
+import { Avatar, Button, Divider, Form, InputNumber, Select, Switch, Tag, Typography } from "antd";
 import {
   MailOutlined,
   PhoneOutlined,
@@ -9,6 +9,12 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
+import { useEffect } from "react";
+import { toast } from "@/components/ui/use-toast";
+import {
+  useGetProviderCommissionSettingsQuery,
+  useUpdateProviderCommissionSettingsMutation,
+} from "@/redux/features/wallet/walletApi";
 
 const { Text, Paragraph } = Typography;
 
@@ -68,6 +74,65 @@ const ProviderDetailsModal = ({
   closeModal,
   data: provider,
 }: ProviderDetailsModalProps) => {
+  const [commissionForm] = Form.useForm();
+  const { data: commissionData } = useGetProviderCommissionSettingsQuery(
+    provider?.userId || "",
+    { skip: !provider?.userId || !isModalOpen },
+  );
+  const [updateCommissionSettings, { isLoading: isSavingCommission }] =
+    useUpdateProviderCommissionSettingsMutation();
+
+  const commissionSettings = commissionData?.data;
+
+  const handleSaveCommission = async () => {
+    if (!provider?.userId) return;
+
+    try {
+      const values = await commissionForm.validateFields();
+      await updateCommissionSettings({
+        providerId: provider.userId,
+        useCustomCommission: Boolean(values.useCustomCommission),
+        commissionEnabled: Boolean(values.commissionEnabled),
+        commissionType: values.commissionType,
+        commissionValue: Number(values.commissionValue || 0),
+      }).unwrap();
+
+      toast({
+        title: "Commission updated",
+        description: "Provider commission settings were saved successfully.",
+      });
+    } catch (error: unknown) {
+      const message =
+        typeof error === "object" &&
+        error !== null &&
+        "data" in error &&
+        typeof error.data === "object" &&
+        error.data !== null &&
+        "message" in error.data
+          ? String(error.data.message)
+          : "Unable to update provider commission settings.";
+
+      toast({
+        title: "Commission update failed",
+        description: message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (!commissionSettings) {
+      return;
+    }
+
+    commissionForm.setFieldsValue({
+      useCustomCommission: commissionSettings.useCustomCommission,
+      commissionEnabled: commissionSettings.commissionEnabled,
+      commissionType: commissionSettings.commissionType,
+      commissionValue: commissionSettings.commissionValue,
+    });
+  }, [commissionForm, commissionSettings]);
+
   return (
     <AntdModal
       title="Provider Details"
@@ -208,6 +273,55 @@ const ProviderDetailsModal = ({
                 View License
               </Button>
             </div>
+          </div>
+
+          <div className="rounded-xl border p-4 space-y-4">
+            <h3 className="text-base font-semibold">Payment / Commission Settings</h3>
+            <Form form={commissionForm} layout="vertical">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Form.Item
+                  label="Use Custom Commission"
+                  name="useCustomCommission"
+                  valuePropName="checked"
+                >
+                  <Switch />
+                </Form.Item>
+
+                <Form.Item
+                  label="Commission Enabled"
+                  name="commissionEnabled"
+                  valuePropName="checked"
+                >
+                  <Switch />
+                </Form.Item>
+
+                <Form.Item label="Commission Type" name="commissionType">
+                  <Select
+                    options={[
+                      { label: "Percentage", value: "PERCENTAGE" },
+                      { label: "Fixed", value: "FIXED" },
+                    ]}
+                  />
+                </Form.Item>
+
+                <Form.Item label="Commission Value" name="commissionValue">
+                  <InputNumber min={0} className="w-full" />
+                </Form.Item>
+              </div>
+            </Form>
+
+            {commissionSettings?.effectiveCommission && (
+              <div className="rounded-lg bg-secondary/30 p-3 text-sm">
+                Effective:{" "}
+                {commissionSettings.effectiveCommission.enabled
+                  ? `${commissionSettings.effectiveCommission.type} ${commissionSettings.effectiveCommission.value} (${commissionSettings.effectiveCommission.source})`
+                  : `Disabled (${commissionSettings.effectiveCommission.source})`}
+              </div>
+            )}
+
+            <Button type="primary" onClick={handleSaveCommission} loading={isSavingCommission}>
+              Save Commission Settings
+            </Button>
           </div>
 
           {provider.createdBy && (

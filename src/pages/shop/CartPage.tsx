@@ -40,7 +40,14 @@ const CartPage = () => {
   const checkoutPath = isAuthenticated ? "/checkout" : "/login";
   const checkoutState = isAuthenticated
     ? undefined
-    : { from: { pathname: location.pathname === "/cart" ? "/checkout" : location.pathname } };
+    : {
+        from: {
+          pathname:
+            location.pathname === "/cart" ? "/checkout" : location.pathname,
+        },
+      };
+
+  console.log("eligibleDeliveryZones:", eligibleDeliveryZones);
 
   return (
     <PublicLayout>
@@ -50,9 +57,12 @@ const CartPage = () => {
           <div className="lg:col-span-2 space-y-4">
             {items.length === 0 && (
               <div className="rounded-xl border bg-card p-8 text-center">
-                <h2 className="text-xl font-semibold mb-2">Your cart is empty</h2>
+                <h2 className="text-xl font-semibold mb-2">
+                  Your cart is empty
+                </h2>
                 <p className="text-muted-foreground mb-6">
-                  Add a product to your cart to see the order summary and continue to checkout.
+                  Add a product to your cart to see the order summary and
+                  continue to checkout.
                 </p>
                 <Link to="/products">
                   <Button variant="hero">Browse Products</Button>
@@ -61,7 +71,10 @@ const CartPage = () => {
             )}
 
             {items.map((item) => (
-              <div key={item.id} className="flex items-center gap-4 p-4 rounded-xl border bg-card">
+              <div
+                key={item.id}
+                className="flex items-center gap-4 p-4 rounded-xl border bg-card"
+              >
                 <div className="h-20 w-20 rounded-lg bg-secondary flex items-center justify-center text-3xl shrink-0">
                   {isImageUrl(item.image) ? (
                     <img
@@ -78,18 +91,37 @@ const CartPage = () => {
                   <div className="text-primary font-bold">
                     {formatCurrencyAmount(item.price, currency)}
                   </div>
-                  <div className="text-xs text-muted-foreground">by {item.vendor}</div>
+                  <div className="text-xs text-muted-foreground">
+                    by {item.vendor}
+                  </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => updateQuantity(item.id, item.quantity - 1)}>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                  >
                     <Minus className="h-3 w-3" />
                   </Button>
-                  <span className="w-8 text-center font-medium">{item.quantity}</span>
-                  <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
+                  <span className="w-8 text-center font-medium">
+                    {item.quantity}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                  >
                     <Plus className="h-3 w-3" />
                   </Button>
                 </div>
-                <Button variant="ghost" size="icon" className="text-destructive" onClick={() => removeFromCart(item.id)}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-destructive"
+                  onClick={() => removeFromCart(item.id)}
+                >
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
@@ -121,7 +153,9 @@ const CartPage = () => {
                   ]}
                 />
                 {pricingMessage ? (
-                  <div className="text-xs text-muted-foreground">{pricingMessage}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {pricingMessage}
+                  </div>
                 ) : null}
                 {isCartSyncing ? (
                   <div className="text-xs text-muted-foreground">
@@ -129,20 +163,31 @@ const CartPage = () => {
                   </div>
                 ) : null}
               </div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Items</span><span>{items.length}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>{formatCurrencyAmount(subtotal, currency)}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Shipping</span><span className="text-accent font-medium">{shipping === 0 ? "Free" : formatCurrencyAmount(shipping, currency)}</span></div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Items</span>
+                <span>{items.length}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Subtotal</span>
+                <span>{formatCurrencyAmount(subtotal, currency)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Shipping</span>
+                <span className="text-accent font-medium">
+                  {shipping === 0
+                    ? "Free"
+                    : formatCurrencyAmount(shipping, currency)}
+                </span>
+              </div>
               <div className="border-t pt-2 mt-2 flex justify-between font-bold text-base">
-                <span>Total</span><span className="text-primary">{formatCurrencyAmount(total, currency)}</span>
+                <span>Total</span>
+                <span className="text-primary">
+                  {formatCurrencyAmount(total, currency)}
+                </span>
               </div>
             </div>
             {isPurchaseDisabled ? (
-              <Button
-                variant="hero"
-                className="mt-6 w-full"
-                size="lg"
-                disabled
-              >
+              <Button variant="hero" className="mt-6 w-full" size="lg" disabled>
                 <ShoppingBag className="mr-2 h-5 w-5" /> Checkout
               </Button>
             ) : (
@@ -151,7 +196,10 @@ const CartPage = () => {
                   variant="hero"
                   className="mt-6 w-full"
                   size="lg"
-                  disabled={items.length === 0 || (isAuthenticated && (!canCheckout || isCartSyncing))}
+                  disabled={
+                    items.length === 0 ||
+                    (isAuthenticated && (!canCheckout || isCartSyncing))
+                  }
                 >
                   <ShoppingBag className="mr-2 h-5 w-5" /> Checkout
                 </Button>
@@ -159,7 +207,8 @@ const CartPage = () => {
             )}
             {!isAuthenticated && items.length > 0 ? (
               <p className="mt-3 text-xs text-muted-foreground">
-                You can add items to cart as a guest. Login is required only when you continue to checkout.
+                You can add items to cart as a guest. Login is required only
+                when you continue to checkout.
               </p>
             ) : null}
           </div>
