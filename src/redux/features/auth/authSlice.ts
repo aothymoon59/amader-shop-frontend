@@ -18,6 +18,7 @@ export type TUser = {
     status?: "PENDING" | "APPROVED" | "REJECTED";
     isActive?: boolean;
   } | null;
+  isPaymentConfigured?: boolean;
   iat?: number;
   exp?: number;
   [key: string]: unknown;

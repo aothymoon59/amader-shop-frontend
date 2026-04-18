@@ -72,6 +72,8 @@ type CartContextValue = {
   eligibleDeliveryZones: DeliveryZone[];
   pricingMessage: string | null;
   canCheckout: boolean;
+  isCartSyncing: boolean;
+  refreshCartPricing: () => Promise<CartApiCart | null>;
   placeOrder: (formData: CheckoutFormData) => void;
   lastOrder: {
     customerName: string;
@@ -222,6 +224,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [lastOrder, setLastOrder] = useState<CartContextValue["lastOrder"]>(null);
   const [deliveryZoneId, setDeliveryZoneId] = useState("");
   const [deliveryMode, setDeliveryMode] = useState<"NORMAL" | "EXPRESS">("NORMAL");
+  const [isCartSyncing, setIsCartSyncing] = useState(false);
   const user = useAppSelector(useCurrentUser);
   const isCustomerAuthenticated = user?.role === "customer" && Boolean(user?.id);
   const itemsRef = useRef(items);
@@ -230,7 +233,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [updateCartItemRemote] = useUpdateCartItemMutation();
   const [removeCartItemRemote] = useRemoveCartItemMutation();
   const { data: deliveryZoneResponse } = useGetDeliveryZonesQuery();
-  const { data: cartResponse, refetch } = useGetCartQuery(
+  const { data: cartResponse, refetch, isFetching: isCartFetching } = useGetCartQuery(
     isCustomerAuthenticated
       ? {
           deliveryZoneId: deliveryZoneId || undefined,
@@ -315,6 +318,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       }
 
       syncInProgressRef.current = true;
+      setIsCartSyncing(true);
 
       try {
         if (syncedUserId !== null && syncedUserId !== user.id) {
@@ -345,6 +349,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         applyServerCart(latestCart);
       } finally {
         syncInProgressRef.current = false;
+        setIsCartSyncing(false);
       }
     };
 
@@ -357,6 +362,19 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     syncedUserId,
     user?.id,
   ]);
+
+  const refreshCartPricing = useCallback(async () => {
+    if (!isCustomerAuthenticated) {
+      return null;
+    }
+
+    const response = await refetch();
+    if ("data" in response) {
+      return response.data?.data || null;
+    }
+
+    return null;
+  }, [isCustomerAuthenticated, refetch]);
 
   const addToCart = (
     product: LegacyProduct | ApiProduct | CartProduct,
@@ -506,7 +524,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       ? "Login to calculate delivery charges from the backend."
       : null;
   const canCheckout = isCustomerAuthenticated
-    ? Boolean(cartResponse?.data?.pricing?.canCheckout)
+    ? Boolean(cartResponse?.data?.pricing?.canCheckout) &&
+      !isCartFetching &&
+      !isCartSyncing
     : false;
 
   const placeOrder = (formData: CheckoutFormData) => {
@@ -548,6 +568,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         eligibleDeliveryZones,
         pricingMessage,
         canCheckout,
+        isCartSyncing,
+        refreshCartPricing,
         placeOrder,
         lastOrder,
       }}

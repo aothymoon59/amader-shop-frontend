@@ -10,6 +10,7 @@ import ProviderProducts from "../pages/provider/ProviderProducts";
 import ProviderReceipts from "../pages/provider/ProviderReceipts";
 import ProviderReports from "../pages/provider/ProviderReports";
 import ProviderSettings from "../pages/provider/ProviderSettings";
+import ProviderWallet from "../pages/provider/ProviderWallet";
 
 export const providerRoutes: RouteObject[] = [
   {
@@ -31,6 +32,10 @@ export const providerRoutes: RouteObject[] = [
   {
     path: "provider/payments",
     element: <ProtectedRoute allowedRoles={["provider"]}><ProviderPayments /></ProtectedRoute>,
+  },
+  {
+    path: "provider/wallet",
+    element: <ProtectedRoute allowedRoles={["provider"]}><ProviderWallet /></ProtectedRoute>,
   },
   {
     path: "provider/pos",
