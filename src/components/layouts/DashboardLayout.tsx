@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
-import { Alert } from "antd";
+import { Alert, Avatar, Divider, Dropdown, Typography } from "antd";
 import {
   LayoutDashboard,
   Package,
@@ -25,6 +25,10 @@ import {
   ChevronDown,
   MapPinned,
 } from "lucide-react";
+import { useGetMyWalletQuery } from "@/redux/features/wallet/walletApi";
+import { useSystemCurrency } from "@/hooks/useSystemCurrency";
+import { defaultSystemCurrency } from "@/redux/features/generalApi/systemSettingsApi";
+import { formatCurrencyAmount } from "@/utils/currency";
 
 interface SidebarItem {
   title: string;
@@ -122,14 +126,20 @@ const roleLabels: Record<string, string> = {
   "super-admin": "Super Admin",
 };
 
-const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
+const DashboardLayout: React.FC<DashboardLayoutProps> = ({
+  children,
+  role: dashboardRole,
+}) => {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, userData, logout } = useAuth();
-  // console.log("user", user);
-  const role = user?.role;
+  const role = user?.role ?? dashboardRole;
+  const { currency = defaultSystemCurrency } = useSystemCurrency();
+  const { data: walletData } = useGetMyWalletQuery(undefined, {
+    skip: role !== "provider",
+  });
   const items = useMemo(() => menuItems[role] || [], [role]);
   const activeSubmenuTitles = useMemo(
     () =>
@@ -160,10 +170,41 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     });
   }, [activeSubmenuTitles]);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     logout();
     navigate("/", { replace: true });
-  };
+  }, [logout, navigate]);
+
+  const profileMenuItems = useMemo(() => {
+    const items = [
+      {
+        key: "dashboard",
+        label: "Dashboard",
+        onClick: () => navigate(`/${role}/dashboard`),
+      },
+    ];
+
+    if (role === "provider") {
+      items.push({
+        key: "wallet",
+        label: "Wallet & Earnings",
+        onClick: () => navigate("/provider/wallet"),
+      });
+    }
+
+    items.push({
+      key: "settings",
+      label: "Profile Settings",
+      onClick: () => navigate(`/${role}/settings`),
+    });
+    items.push({
+      key: "logout",
+      label: "Logout",
+      onClick: handleLogout,
+    });
+
+    return items;
+  }, [handleLogout, navigate, role]);
 
   const toggleMenu = (title: string) => {
     if (collapsed) {
@@ -354,9 +395,62 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           </button>
           <div className="flex-1" />
           <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-full gradient-primary flex items-center justify-center text-primary-foreground text-xs font-bold">
-              {user?.name?.charAt(0).toUpperCase() || "U"}
-            </div>
+            <Dropdown
+              trigger={["click"]}
+              menu={{ items: profileMenuItems }}
+              dropdownRender={(menu) => (
+                <div className="min-w-[260px] rounded-xl border bg-card p-3 shadow-lg">
+                  <div className="flex items-center gap-3">
+                    <Avatar
+                      src={userData?.profileImage || undefined}
+                      size={40}
+                    >
+                      {user?.name?.charAt(0).toUpperCase() || "U"}
+                    </Avatar>
+                    <div className="min-w-0">
+                      <Typography.Text strong className="block truncate">
+                        {userData?.name || user?.name || "User"}
+                      </Typography.Text>
+                      <Typography.Text type="secondary" className="text-xs">
+                        {userData?.email || user?.email || ""}
+                      </Typography.Text>
+                    </div>
+                  </div>
+                  {role === "provider" ? (
+                    <>
+                      <Divider className="my-3" />
+                      <div className="rounded-lg bg-secondary/40 px-3 py-2">
+                        <Typography.Text type="secondary" className="block text-xs">
+                          Available Balance
+                        </Typography.Text>
+                        <Typography.Text strong>
+                          {formatCurrencyAmount(
+                            Number(walletData?.data?.wallet?.availableBalance || 0),
+                            currency,
+                          )}
+                        </Typography.Text>
+                      </div>
+                    </>
+                  ) : null}
+                  <Divider className="my-3" />
+                  {menu}
+                </div>
+              )}
+            >
+              <button className="flex items-center gap-3 rounded-full border border-border/70 bg-background px-2 py-1 pr-3 transition hover:bg-muted">
+                <Avatar src={userData?.profileImage || undefined} size={32}>
+                  {user?.name?.charAt(0).toUpperCase() || "U"}
+                </Avatar>
+                <div className="hidden text-left md:block">
+                  <div className="text-sm font-medium leading-none">
+                    {userData?.name || user?.name || "User"}
+                  </div>
+                  <div className="mt-1 text-xs text-muted-foreground">
+                    {roleLabels[role]}
+                  </div>
+                </div>
+              </button>
+            </Dropdown>
           </div>
         </header>
 
