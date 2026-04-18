@@ -29,6 +29,7 @@ const CartPage = () => {
     eligibleDeliveryZones,
     pricingMessage,
     canCheckout,
+    isCartSyncing,
   } = useCart();
   const { isAuthenticated, user } = useAuth();
   const { currency = defaultSystemCurrency } = useSystemCurrency();
@@ -122,6 +123,11 @@ const CartPage = () => {
                 {pricingMessage ? (
                   <div className="text-xs text-muted-foreground">{pricingMessage}</div>
                 ) : null}
+                {isCartSyncing ? (
+                  <div className="text-xs text-muted-foreground">
+                    Updating common delivery zones...
+                  </div>
+                ) : null}
               </div>
               <div className="flex justify-between"><span className="text-muted-foreground">Items</span><span>{items.length}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>{formatCurrencyAmount(subtotal, currency)}</span></div>
@@ -145,7 +151,7 @@ const CartPage = () => {
                   variant="hero"
                   className="mt-6 w-full"
                   size="lg"
-                  disabled={items.length === 0 || (isAuthenticated && !canCheckout)}
+                  disabled={items.length === 0 || (isAuthenticated && (!canCheckout || isCartSyncing))}
                 >
                   <ShoppingBag className="mr-2 h-5 w-5" /> Checkout
                 </Button>
