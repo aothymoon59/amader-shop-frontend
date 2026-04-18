@@ -8,9 +8,17 @@ type SettingsTabsProps = {
   title?: string | null;
   description?: string | null;
   items: TabsProps["items"];
+  activeKey?: string;
+  onChange?: (key: string) => void;
 };
 
-const SettingsTabs = ({ title, description, items }: SettingsTabsProps) => {
+const SettingsTabs = ({
+  title,
+  description,
+  items,
+  activeKey,
+  onChange,
+}: SettingsTabsProps) => {
   const screens = useBreakpoint();
   const isMobile = !screens.md;
 
@@ -33,6 +41,8 @@ const SettingsTabs = ({ title, description, items }: SettingsTabsProps) => {
 
       <div className="overflow-hidden rounded-2xl border border-border/80 bg-card p-2 sm:p-4">
         <Tabs
+          activeKey={activeKey}
+          onChange={onChange}
           tabPosition={isMobile ? "top" : "left"}
           items={items}
           className={[
