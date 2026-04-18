@@ -10,6 +10,7 @@ export const tagTypes = {
   DELIVERY_ZONES: "DELIVERY_ZONES",
   ADMINS: "ADMINS",
   SYSTEM_SETTINGS: "SYSTEM_SETTINGS",
+  AUDIT_LOGS: "AUDIT_LOGS",
 };
 
 export const tagTypesList = Object.values(tagTypes);
