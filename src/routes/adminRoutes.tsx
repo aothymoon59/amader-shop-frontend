@@ -12,6 +12,7 @@ import AdminProducts from "../pages/admin/AdminProducts";
 import AdminProviders from "../pages/admin/AdminProviders";
 import AdminReports from "../pages/admin/AdminReports";
 import AdminSettings from "../pages/admin/AdminSettings";
+import AdminWallet from "../pages/admin/AdminWallet";
 
 export const adminRoutes: RouteObject[] = [
   {
@@ -37,6 +38,10 @@ export const adminRoutes: RouteObject[] = [
   {
     path: "admin/payments",
     element: <ProtectedRoute allowedRoles={["admin"]}><AdminPayments /></ProtectedRoute>,
+  },
+  {
+    path: "admin/wallet",
+    element: <ProtectedRoute allowedRoles={["admin"]}><AdminWallet /></ProtectedRoute>,
   },
   {
     path: "admin/providers",

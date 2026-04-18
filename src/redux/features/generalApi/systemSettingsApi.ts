@@ -10,6 +10,12 @@ export type SystemCurrency = {
 export type SystemSettings = {
   id: string;
   currency: SystemCurrency;
+  commission: {
+    enabled: boolean;
+    type: "PERCENTAGE" | "FIXED";
+    value: number;
+    balanceReleaseDelayDays: number;
+  };
   createdAt: string;
   updatedAt: string;
 };
@@ -21,7 +27,8 @@ type SystemSettingsResponse = {
 };
 
 type UpdateSystemSettingsPayload = {
-  currency: SystemCurrency;
+  currency?: SystemCurrency;
+  commission?: SystemSettings["commission"];
 };
 
 export const defaultSystemCurrency: SystemCurrency = {
@@ -48,7 +55,7 @@ export const systemSettingsApi = baseApi.injectEndpoints({
         method: "PATCH",
         body,
       }),
-      invalidatesTags: [tagTypes.SYSTEM_SETTINGS],
+      invalidatesTags: [tagTypes.SYSTEM_SETTINGS, tagTypes.WALLET],
     }),
   }),
 });

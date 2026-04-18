@@ -36,6 +36,8 @@ const CheckoutPage = () => {
     eligibleDeliveryZones,
     pricingMessage,
     canCheckout,
+    isCartSyncing,
+    refreshCartPricing,
   } = useCart();
   const { isAuthenticated, user } = useAuth();
   const { currency = defaultSystemCurrency } = useSystemCurrency();
@@ -140,6 +142,24 @@ const CheckoutPage = () => {
     }
 
     try {
+      const latestCart = await refreshCartPricing();
+      const latestPricing = latestCart?.pricing;
+
+      if (
+        !latestPricing?.canCheckout ||
+        !latestPricing?.selectedZone ||
+        latestPricing.selectedZone.id !== deliveryZoneId
+      ) {
+        toast({
+          title: "Delivery options changed",
+          description:
+            latestPricing?.message ||
+            "Your cart's common delivery zone is no longer available. Please review your cart delivery settings.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const response = await checkout({
         customerName: `${formData.firstName} ${formData.lastName}`.trim(),
         customerPhone: formData.phone,
@@ -317,6 +337,11 @@ const CheckoutPage = () => {
                 {pricingMessage ? (
                   <p className="mt-3 text-sm text-muted-foreground">{pricingMessage}</p>
                 ) : null}
+                {isCartSyncing ? (
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Updating cart delivery availability...
+                  </p>
+                ) : null}
               </div>
 
               <div className="rounded-xl border bg-card p-6">
@@ -425,9 +450,9 @@ const CheckoutPage = () => {
                 variant="hero"
                 size="lg"
                 className="mt-6 w-full"
-                disabled={isLoading || !canCheckout}
+                disabled={isLoading || isCartSyncing || !canCheckout}
               >
-                {isLoading ? "Processing..." : "Place Order"}
+                {isLoading ? "Processing..." : isCartSyncing ? "Updating Cart..." : "Place Order"}
               </Button>
             </div>
           </form>

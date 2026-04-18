@@ -29,6 +29,7 @@ export type UserRecord = {
   dateOfBirth: string | null;
   profileImage: string | null;
   createdAt: string;
+  isPaymentConfigured?: boolean;
   providerProfile?: unknown | null;
 };
 
