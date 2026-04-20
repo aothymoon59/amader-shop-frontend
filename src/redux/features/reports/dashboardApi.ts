@@ -186,6 +186,64 @@ export type AdminReportsAnalytics = {
   };
 };
 
+export type ProviderReportsMetric = {
+  value: number;
+  change: number;
+};
+
+export type ProviderReportsProduct = {
+  name: string;
+  sold: number;
+  revenue?: number;
+  stock?: number;
+};
+
+export type ProviderReportsAnalytics = {
+  generatedAt: string;
+  periodLabel: string;
+  profile: {
+    shopName: string;
+  };
+  summary: {
+    todaySales: ProviderReportsMetric;
+    monthSales: ProviderReportsMetric;
+    yearSales: ProviderReportsMetric;
+    averageOrderValue: ProviderReportsMetric;
+  };
+  banner: {
+    title: string;
+    text: string;
+    todayOrders: number;
+    deliveredToday: number;
+    pendingOrders: number;
+  };
+  charts: {
+    weeklySales: DashboardSeriesPoint[];
+    topProductsByQuantity: ProviderReportsProduct[];
+    topProductsByRevenue: ProviderReportsProduct[];
+  };
+  insights: {
+    bestSalesDay: {
+      label: string;
+      sales: number;
+      orders: number;
+    };
+    topProduct: {
+      name: string;
+      sold: number;
+      revenue: number;
+    };
+    monthlyGrowth: {
+      title: string;
+      change: number;
+    };
+    yearlyRevenue: {
+      value: number;
+      note: string;
+    };
+  };
+};
+
 export type DashboardOverviewData =
   | AdminDashboardOverview
   | ProviderDashboardOverview
@@ -203,6 +261,12 @@ export type AdminReportsAnalyticsResponse = {
   data: AdminReportsAnalytics;
 };
 
+export type ProviderReportsAnalyticsResponse = {
+  success: boolean;
+  message?: string;
+  data: ProviderReportsAnalytics;
+};
+
 export const dashboardApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getDashboardOverview: builder.query<DashboardOverviewResponse, void>({
@@ -218,10 +282,18 @@ export const dashboardApi = baseApi.injectEndpoints({
           method: "GET",
         }),
       }),
+    getProviderReportsAnalytics:
+      builder.query<ProviderReportsAnalyticsResponse, void>({
+        query: () => ({
+          url: "/reports/provider-analytics",
+          method: "GET",
+        }),
+      }),
   }),
 });
 
 export const {
   useGetDashboardOverviewQuery,
   useGetAdminReportsAnalyticsQuery,
+  useGetProviderReportsAnalyticsQuery,
 } = dashboardApi;
