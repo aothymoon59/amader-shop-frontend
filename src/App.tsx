@@ -5,7 +5,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { CartProvider } from "@/context/CartContext";
 import { CmsProvider } from "@/context/CmsContext";
-import { ProviderSalesProvider } from "@/context/ProviderSalesContext";
 import AntdProvider from "./context/AntdProvider";
 
 const queryClient = new QueryClient();
@@ -14,15 +13,13 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <AntdProvider>
       <CmsProvider>
-        <ProviderSalesProvider>
-          <CartProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <Outlet />
-            </TooltipProvider>
-          </CartProvider>
-        </ProviderSalesProvider>
+        <CartProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <Outlet />
+          </TooltipProvider>
+        </CartProvider>
       </CmsProvider>
     </AntdProvider>
   </QueryClientProvider>
