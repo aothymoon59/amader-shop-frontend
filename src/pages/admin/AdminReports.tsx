@@ -1,13 +1,25 @@
+import { useState } from "react";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
+import AnalyticsDateFilterBar from "@/components/reports/AnalyticsDateFilterBar";
+import { useSystemCurrency } from "@/hooks/useSystemCurrency";
+import { defaultSystemCurrency } from "@/redux/features/generalApi/systemSettingsApi";
 import {
-  BarChart3,
+  type AnalyticsPeriod,
+  type AdminReportsAnalytics,
+  useGetAdminReportsAnalyticsQuery,
+} from "@/redux/features/reports/dashboardApi";
+import { formatCurrencyAmount } from "@/utils/currency";
+import {
   TrendingUp,
   DollarSign,
   ShoppingCart,
-  ArrowUpRight,
-  ArrowDownRight,
+  ArrowUp,
+  ArrowDown,
   Wallet,
+  Activity,
 } from "lucide-react";
+import { Alert, Spin } from "antd";
+import dayjs from "dayjs";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -20,66 +32,65 @@ import {
   Cell,
   BarChart,
   Bar,
+  YAxis,
 } from "recharts";
-
-const salesData = [
-  { name: "Mon", sales: 1200, orders: 32 },
-  { name: "Tue", sales: 1800, orders: 41 },
-  { name: "Wed", sales: 1400, orders: 36 },
-  { name: "Thu", sales: 2200, orders: 52 },
-  { name: "Fri", sales: 2600, orders: 61 },
-  { name: "Sat", sales: 3100, orders: 74 },
-  { name: "Sun", sales: 2400, orders: 57 },
-];
-
-const categoryData = [
-  { name: "Groceries", value: 42 },
-  { name: "Beverages", value: 26 },
-  { name: "Snacks", value: 18 },
-  { name: "Household", value: 14 },
-];
-
-const providerPerformance = [
-  { name: "Provider A", revenue: 12400 },
-  { name: "Provider B", revenue: 9800 },
-  { name: "Provider C", revenue: 7600 },
-  { name: "Provider D", revenue: 5400 },
-];
 
 const COLORS = ["#22c55e", "#3b82f6", "#f59e0b", "#ef4444"];
 
-const reportCards = [
-  {
-    title: "Daily Sales",
-    value: "$2,345",
-    change: "+12.4%",
-    positive: true,
-    icon: DollarSign,
-  },
-  {
-    title: "Monthly Revenue",
-    value: "$45,231",
-    change: "+18.2%",
-    positive: true,
-    icon: TrendingUp,
-  },
-  {
-    title: "Orders Today",
-    value: "324",
-    change: "+8.1%",
-    positive: true,
-    icon: ShoppingCart,
-  },
-  {
-    title: "Net Profit",
-    value: "$8,420",
-    change: "-2.3%",
-    positive: false,
-    icon: Wallet,
-  },
-];
-
 const AdminReports = () => {
+  const [period, setPeriod] = useState<AnalyticsPeriod>("monthly");
+  const [customRange, setCustomRange] = useState({
+    startDate: dayjs().startOf("month").format("YYYY-MM-DD"),
+    endDate: dayjs().format("YYYY-MM-DD"),
+  });
+  const { data, isLoading, isFetching, isError } =
+    useGetAdminReportsAnalyticsQuery(
+      period === "custom" ? { period, ...customRange } : { period },
+    );
+  const { currency = defaultSystemCurrency } = useSystemCurrency();
+  const analytics = data?.data as AdminReportsAnalytics | undefined;
+
+  const reportCards = [
+    {
+      title: "Revenue",
+      value: formatCurrencyAmount(
+        analytics?.summary?.revenue?.value || 0,
+        currency,
+      ),
+      change: Number(analytics?.summary?.revenue?.change || 0),
+      icon: DollarSign,
+    },
+    {
+      title: "Orders",
+      value: String(analytics?.summary?.orders?.value || 0),
+      change: Number(analytics?.summary?.orders?.change || 0),
+      icon: ShoppingCart,
+    },
+    {
+      title: "Net Profit",
+      value: formatCurrencyAmount(
+        analytics?.summary?.netProfit?.value || 0,
+        currency,
+      ),
+      change: Number(analytics?.summary?.netProfit?.change || 0),
+      icon: Wallet,
+    },
+    {
+      title: "Avg. Order Value",
+      value: formatCurrencyAmount(
+        analytics?.summary?.averageOrderValue?.value || 0,
+        currency,
+      ),
+      change: Number(analytics?.summary?.averageOrderValue?.change || 0),
+      icon: TrendingUp,
+    },
+  ];
+
+  const performanceData = analytics?.charts?.performance || [];
+  const categoryData = analytics?.charts?.salesByCategory || [];
+  const providerPerformance = analytics?.charts?.topProviders || [];
+  const growthChange = Number(analytics?.insights?.growthNote?.change || 0);
+
   return (
     <DashboardLayout role="admin">
       <div className="space-y-6">
@@ -93,240 +104,318 @@ const AdminReports = () => {
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button className="rounded-lg border bg-background px-4 py-2 text-sm font-medium hover:bg-muted transition">
-              This Week
-            </button>
-            <button className="rounded-lg border bg-background px-4 py-2 text-sm font-medium hover:bg-muted transition">
-              Export Report
-            </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <AnalyticsDateFilterBar
+              period={period}
+              onPeriodChange={setPeriod}
+              startDate={customRange.startDate}
+              endDate={customRange.endDate}
+              onRangeChange={setCustomRange}
+            />
+            <div className="inline-flex items-center gap-2 rounded-lg border bg-background px-4 py-2 text-sm font-medium">
+              <Activity className="h-4 w-4 text-primary" />
+              {analytics?.periodLabel || "Current period"}
+            </div>
+            <div className="rounded-lg border bg-background px-4 py-2 text-sm text-muted-foreground">
+              Updated{" "}
+              {analytics?.generatedAt
+                ? new Date(analytics.generatedAt).toLocaleString()
+                : "just now"}
+            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {reportCards.map((card) => (
-            <div
-              key={card.title}
-              className="rounded-2xl border bg-card p-5 shadow-sm transition hover:shadow-md"
-            >
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">{card.title}</p>
-                  <h2 className="mt-2 text-3xl font-bold">{card.value}</h2>
-                </div>
-
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10">
-                  <card.icon className="h-5 w-5 text-primary" />
-                </div>
-              </div>
-
-              <div className="mt-4 flex items-center gap-2 text-sm">
-                <span
-                  className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-medium ${
-                    card.positive
-                      ? "bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400"
-                      : "bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400"
-                  }`}
-                >
-                  {card.positive ? (
-                    <ArrowUpRight className="h-4 w-4" />
-                  ) : (
-                    <ArrowDownRight className="h-4 w-4" />
-                  )}
-                  {card.change}
-                </span>
-                <span className="text-muted-foreground">vs last period</span>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-          <div className="rounded-2xl border bg-card p-6 shadow-sm xl:col-span-2">
-            <div className="mb-5 flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold">Weekly Sales Overview</h3>
-                <p className="text-sm text-muted-foreground">
-                  Revenue trend across the last 7 days
-                </p>
-              </div>
-              <div className="rounded-lg bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
-                +16.8% growth
-              </div>
-            </div>
-
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={salesData}>
-                  <defs>
-                    <linearGradient id="salesFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop
-                        offset="5%"
-                        stopColor="currentColor"
-                        stopOpacity={0.35}
-                      />
-                      <stop
-                        offset="95%"
-                        stopColor="currentColor"
-                        stopOpacity={0.02}
-                      />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    vertical={false}
-                    opacity={0.2}
-                  />
-                  <XAxis dataKey="name" tickLine={false} axisLine={false} />
-                  <Tooltip
-                    contentStyle={{
-                      borderRadius: 12,
-                      border: "1px solid hsl(var(--border))",
-                      background: "hsl(var(--background))",
-                    }}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="sales"
-                    stroke="hsl(var(--primary))"
-                    strokeWidth={3}
-                    fill="url(#salesFill)"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
+        {isLoading || isFetching ? (
+          <div className="flex min-h-[420px] items-center justify-center">
+            <Spin size="large" />
           </div>
+        ) : isError ? (
+          <Alert
+            type="error"
+            showIcon
+            message="Unable to load reports analytics right now."
+          />
+        ) : (
+          <>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+              {reportCards.map((card) => {
+                const positive = card.change >= 0;
 
-          <div className="rounded-2xl border bg-card p-6 shadow-sm">
-            <div className="mb-5">
-              <h3 className="text-lg font-semibold">Sales by Category</h3>
-              <p className="text-sm text-muted-foreground">
-                Contribution by product segment
-              </p>
-            </div>
-
-            <div className="h-72">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={categoryData}
-                    innerRadius={60}
-                    outerRadius={90}
-                    paddingAngle={4}
-                    dataKey="value"
+                return (
+                  <div
+                    key={card.title}
+                    className="rounded-2xl border bg-card p-5 shadow-sm transition hover:shadow-md"
                   >
-                    {categoryData.map((entry, index) => (
-                      <Cell
-                        key={entry.name}
-                        fill={COLORS[index % COLORS.length]}
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">{card.title}</p>
+                        <h2 className="mt-2 text-3xl font-bold">{card.value}</h2>
+                      </div>
 
-            <div className="mt-4 space-y-3">
-              {categoryData.map((item, index) => (
-                <div
-                  key={item.name}
-                  className="flex items-center justify-between text-sm"
-                >
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="h-3 w-3 rounded-full"
-                      style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                    />
-                    <span>{item.name}</span>
+                      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10">
+                        <card.icon className="h-5 w-5 text-primary" />
+                      </div>
+                    </div>
+
+                    <div className="mt-4 flex items-center gap-2 text-sm">
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-medium ${
+                          positive
+                            ? "bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400"
+                            : "bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400"
+                        }`}
+                      >
+                        {positive ? (
+                          <ArrowUp className="h-4 w-4" />
+                        ) : (
+                          <ArrowDown className="h-4 w-4" />
+                        )}
+                        {Math.abs(card.change)}%
+                      </span>
+                      <span className="text-muted-foreground">vs last period</span>
+                    </div>
                   </div>
-                  <span className="font-medium">{item.value}%</span>
+                );
+              })}
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+              <div className="rounded-2xl border bg-card p-6 shadow-sm xl:col-span-2">
+                <div className="mb-5 flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold">Revenue Overview</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Revenue trend across the selected period
+                    </p>
+                  </div>
+                  <div
+                    className={`rounded-lg px-3 py-1 text-sm font-medium ${
+                      growthChange >= 0
+                        ? "bg-primary/10 text-primary"
+                        : "bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400"
+                    }`}
+                  >
+                    {growthChange >= 0 ? "+" : ""}
+                    {growthChange}% growth
+                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
 
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-          <div className="rounded-2xl border bg-card p-6 shadow-sm xl:col-span-2">
-            <div className="mb-5">
-              <h3 className="text-lg font-semibold">
-                Top Provider Performance
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Highest revenue-generating providers this month
-              </p>
-            </div>
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={performanceData}>
+                      <defs>
+                        <linearGradient id="salesFill" x1="0" y1="0" x2="0" y2="1">
+                          <stop
+                            offset="5%"
+                            stopColor="currentColor"
+                            stopOpacity={0.35}
+                          />
+                          <stop
+                            offset="95%"
+                            stopColor="currentColor"
+                            stopOpacity={0.02}
+                          />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        vertical={false}
+                        opacity={0.2}
+                      />
+                      <XAxis dataKey="date" tickLine={false} axisLine={false} />
+                      <Tooltip
+                        formatter={(value, name) => {
+                          if (name === "revenue") {
+                            return formatCurrencyAmount(Number(value || 0), currency);
+                          }
 
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={providerPerformance}>
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    vertical={false}
-                    opacity={0.2}
-                  />
-                  <XAxis dataKey="name" tickLine={false} axisLine={false} />
-                  <Tooltip
-                    contentStyle={{
-                      borderRadius: 12,
-                      border: "1px solid hsl(var(--border))",
-                      background: "hsl(var(--background))",
-                    }}
-                  />
-                  <Bar
-                    dataKey="revenue"
-                    radius={[10, 10, 0, 0]}
-                    fill="hsl(var(--primary))"
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          <div className="rounded-2xl border bg-card p-6 shadow-sm">
-            <div className="mb-5">
-              <h3 className="text-lg font-semibold">Quick Insights</h3>
-              <p className="text-sm text-muted-foreground">
-                Key highlights from current data
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              <div className="rounded-xl border bg-background p-4">
-                <p className="text-sm text-muted-foreground">Best sales day</p>
-                <p className="mt-1 text-lg font-semibold">Saturday</p>
-                <p className="text-sm text-green-600">
-                  Revenue peaked at $3,100
-                </p>
+                          return value;
+                        }}
+                        contentStyle={{
+                          borderRadius: 12,
+                          border: "1px solid hsl(var(--border))",
+                          background: "hsl(var(--background))",
+                        }}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="revenue"
+                        stroke="hsl(var(--primary))"
+                        strokeWidth={3}
+                        fill="url(#salesFill)"
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
 
-              <div className="rounded-xl border bg-background p-4">
-                <p className="text-sm text-muted-foreground">Top category</p>
-                <p className="mt-1 text-lg font-semibold">Groceries</p>
-                <p className="text-sm text-primary">42% of total sales share</p>
-              </div>
+              <div className="rounded-2xl border bg-card p-6 shadow-sm">
+                <div className="mb-5">
+                  <h3 className="text-lg font-semibold">Sales by Category</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Contribution by product segment in the selected period
+                  </p>
+                </div>
 
-              <div className="rounded-xl border bg-background p-4">
-                <p className="text-sm text-muted-foreground">Provider leader</p>
-                <p className="mt-1 text-lg font-semibold">Provider A</p>
-                <p className="text-sm text-muted-foreground">
-                  $12,400 monthly revenue
-                </p>
-              </div>
+                <div className="h-72">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={categoryData}
+                        innerRadius={60}
+                        outerRadius={90}
+                        paddingAngle={4}
+                        dataKey="value"
+                      >
+                        {categoryData.map((entry, index) => (
+                          <Cell
+                            key={entry.name}
+                            fill={COLORS[index % COLORS.length]}
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        formatter={(value, _name, item) => [
+                          `${value}%`,
+                          item?.payload?.name || "Share",
+                        ]}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
 
-              <div className="rounded-xl border bg-background p-4">
-                <p className="text-sm text-muted-foreground">Growth note</p>
-                <p className="mt-1 text-lg font-semibold">
-                  Monthly trend is healthy
-                </p>
-                <p className="text-sm text-green-600">
-                  Revenue increased 18.2% compared to last month
-                </p>
+                <div className="mt-4 space-y-3">
+                  {categoryData.map((item, index) => (
+                    <div
+                      key={item.name}
+                      className="flex items-center justify-between text-sm"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="h-3 w-3 rounded-full"
+                          style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                        />
+                        <span>{item.name}</span>
+                      </div>
+                      <span className="font-medium">{item.value}%</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-        </div>
+
+            <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+              <div className="rounded-2xl border bg-card p-6 shadow-sm xl:col-span-2">
+                <div className="mb-5">
+                  <h3 className="text-lg font-semibold">
+                    Top Provider Performance
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Highest revenue-generating providers in the selected period
+                  </p>
+                </div>
+
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={providerPerformance}>
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        vertical={false}
+                        opacity={0.2}
+                      />
+                      <XAxis dataKey="name" tickLine={false} axisLine={false} />
+                      <YAxis tickFormatter={(value) => `${value}`} />
+                      <Tooltip
+                        formatter={(value, name) => {
+                          if (name === "revenue") {
+                            return formatCurrencyAmount(Number(value || 0), currency);
+                          }
+
+                          return value;
+                        }}
+                        contentStyle={{
+                          borderRadius: 12,
+                          border: "1px solid hsl(var(--border))",
+                          background: "hsl(var(--background))",
+                        }}
+                      />
+                      <Bar
+                        dataKey="revenue"
+                        radius={[10, 10, 0, 0]}
+                        fill="hsl(var(--primary))"
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border bg-card p-6 shadow-sm">
+                <div className="mb-5">
+                  <h3 className="text-lg font-semibold">Quick Insights</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Key highlights from the selected period
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="rounded-xl border bg-background p-4">
+                    <p className="text-sm text-muted-foreground">Best sales day</p>
+                    <p className="mt-1 text-lg font-semibold">
+                      {analytics?.insights?.bestSalesPoint?.label || "No data yet"}
+                    </p>
+                    <p className="text-sm text-green-600">
+                      Revenue peaked at{" "}
+                      {formatCurrencyAmount(
+                        analytics?.insights?.bestSalesPoint?.revenue || 0,
+                        currency,
+                      )}
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl border bg-background p-4">
+                    <p className="text-sm text-muted-foreground">Top category</p>
+                    <p className="mt-1 text-lg font-semibold">
+                      {analytics?.insights?.topCategory?.name || "No data yet"}
+                    </p>
+                    <p className="text-sm text-primary">
+                      {Number(analytics?.insights?.topCategory?.share || 0)}% of total
+                      sales share
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl border bg-background p-4">
+                    <p className="text-sm text-muted-foreground">Provider leader</p>
+                    <p className="mt-1 text-lg font-semibold">
+                      {analytics?.insights?.providerLeader?.name || "No data yet"}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {formatCurrencyAmount(
+                        analytics?.insights?.providerLeader?.revenue || 0,
+                        currency,
+                      )}{" "}
+                      period revenue
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl border bg-background p-4">
+                    <p className="text-sm text-muted-foreground">Growth note</p>
+                    <p className="mt-1 text-lg font-semibold">
+                      {analytics?.insights?.growthNote?.title || "No trend available"}
+                    </p>
+                    <p
+                      className={`text-sm ${
+                        growthChange >= 0 ? "text-green-600" : "text-red-600"
+                      }`}
+                    >
+                      {analytics?.insights?.growthNote?.text} ({growthChange >= 0 ? "+" : ""}
+                      {growthChange}% vs previous period)
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </DashboardLayout>
   );
