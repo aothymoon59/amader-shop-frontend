@@ -1,7 +1,10 @@
+import { useState } from "react";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
+import AnalyticsDateFilterBar from "@/components/reports/AnalyticsDateFilterBar";
 import { useSystemCurrency } from "@/hooks/useSystemCurrency";
 import { defaultSystemCurrency } from "@/redux/features/generalApi/systemSettingsApi";
 import {
+  type AnalyticsPeriod,
   type ProviderReportsAnalytics,
   useGetProviderReportsAnalyticsQuery,
 } from "@/redux/features/reports/dashboardApi";
@@ -17,6 +20,7 @@ import {
   Activity,
 } from "lucide-react";
 import { Alert, Spin } from "antd";
+import dayjs from "dayjs";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -30,38 +34,33 @@ import {
 } from "recharts";
 
 const ProviderReports = () => {
+  const [period, setPeriod] = useState<AnalyticsPeriod>("monthly");
+  const [customRange, setCustomRange] = useState({
+    startDate: dayjs().startOf("month").format("YYYY-MM-DD"),
+    endDate: dayjs().format("YYYY-MM-DD"),
+  });
   const { data, isLoading, isFetching, isError } =
-    useGetProviderReportsAnalyticsQuery();
+    useGetProviderReportsAnalyticsQuery(
+      period === "custom" ? { period, ...customRange } : { period },
+    );
   const { currency = defaultSystemCurrency } = useSystemCurrency();
   const analytics = data?.data as ProviderReportsAnalytics | undefined;
 
   const reportStats = [
     {
-      title: "Today's Sales",
+      title: "Sales",
       value: formatCurrencyAmount(
-        Number(analytics?.summary?.todaySales?.value || 0),
+        Number(analytics?.summary?.sales?.value || 0),
         currency,
       ),
-      change: Number(analytics?.summary?.todaySales?.change || 0),
+      change: Number(analytics?.summary?.sales?.change || 0),
       icon: DollarSign,
     },
     {
-      title: "This Month",
-      value: formatCurrencyAmount(
-        Number(analytics?.summary?.monthSales?.value || 0),
-        currency,
-      ),
-      change: Number(analytics?.summary?.monthSales?.change || 0),
+      title: "Orders",
+      value: String(analytics?.summary?.orders?.value || 0),
+      change: Number(analytics?.summary?.orders?.change || 0),
       icon: TrendingUp,
-    },
-    {
-      title: "This Year",
-      value: formatCurrencyAmount(
-        Number(analytics?.summary?.yearSales?.value || 0),
-        currency,
-      ),
-      change: Number(analytics?.insights?.monthlyGrowth?.change || 0),
-      icon: Wallet,
     },
     {
       title: "Avg. Order Value",
@@ -72,9 +71,15 @@ const ProviderReports = () => {
       change: Number(analytics?.summary?.averageOrderValue?.change || 0),
       icon: ReceiptText,
     },
+    {
+      title: "Items Sold",
+      value: String(analytics?.summary?.itemsSold?.value || 0),
+      change: Number(analytics?.summary?.itemsSold?.change || 0),
+      icon: Wallet,
+    },
   ];
 
-  const growthChange = Number(analytics?.insights?.monthlyGrowth?.change || 0);
+  const growthChange = Number(analytics?.insights?.growthNote?.change || 0);
 
   return (
     <DashboardLayout role="provider">
@@ -88,9 +93,16 @@ const ProviderReports = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            <AnalyticsDateFilterBar
+              period={period}
+              onPeriodChange={setPeriod}
+              startDate={customRange.startDate}
+              endDate={customRange.endDate}
+              onRangeChange={setCustomRange}
+            />
             <div className="inline-flex items-center gap-2 rounded-xl border bg-background px-4 py-2 text-sm font-medium">
               <Activity className="h-4 w-4 text-primary" />
-              {analytics?.periodLabel || "Last 7 days"}
+              {analytics?.periodLabel || "Current period"}
             </div>
             <div className="rounded-xl border bg-background px-4 py-2 text-sm text-muted-foreground">
               Updated{" "}
@@ -129,15 +141,15 @@ const ProviderReports = () => {
 
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                   <div className="rounded-xl bg-muted/40 px-4 py-3">
-                    <p className="text-xs text-muted-foreground">Today Orders</p>
+                    <p className="text-xs text-muted-foreground">Orders In Range</p>
                     <p className="mt-1 text-lg font-bold">
-                      {analytics?.banner?.todayOrders || 0}
+                      {analytics?.banner?.ordersInRange || 0}
                     </p>
                   </div>
                   <div className="rounded-xl bg-muted/40 px-4 py-3">
                     <p className="text-xs text-muted-foreground">Delivered</p>
                     <p className="mt-1 text-lg font-bold">
-                      {analytics?.banner?.deliveredToday || 0}
+                      {analytics?.banner?.deliveredOrders || 0}
                     </p>
                   </div>
                   <div className="rounded-xl bg-muted/40 px-4 py-3">
@@ -196,7 +208,7 @@ const ProviderReports = () => {
                   <div>
                     <h3 className="text-lg font-semibold">Weekly Sales Trend</h3>
                     <p className="text-sm text-muted-foreground">
-                      Sales performance over the last 7 days
+                      Sales performance over the selected period
                     </p>
                   </div>
                   <div
@@ -213,7 +225,7 @@ const ProviderReports = () => {
 
                 <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={analytics?.charts?.weeklySales || []}>
+                    <AreaChart data={analytics?.charts?.performance || []}>
                       <defs>
                         <linearGradient
                           id="providerSalesFill"
@@ -268,10 +280,10 @@ const ProviderReports = () => {
 
               <div className="rounded-2xl border bg-card p-6 shadow-sm">
                 <div className="mb-5">
-                  <h3 className="text-lg font-semibold">Top Selling Products</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Best performers by quantity sold
-                  </p>
+                    <h3 className="text-lg font-semibold">Top Selling Products</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Best performers by quantity sold in the selected period
+                    </p>
                 </div>
 
                 <div className="h-72">
@@ -316,10 +328,10 @@ const ProviderReports = () => {
             <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
               <div className="rounded-2xl border bg-card p-6 shadow-sm xl:col-span-2">
                 <div className="mb-5">
-                  <h3 className="text-lg font-semibold">Product Performance</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Revenue generated by your strongest products
-                  </p>
+                    <h3 className="text-lg font-semibold">Product Performance</h3>
+                    <p className="text-sm text-muted-foreground">
+                    Revenue generated by your strongest products in the selected period
+                    </p>
                 </div>
 
                 <div className="space-y-4">
@@ -362,12 +374,12 @@ const ProviderReports = () => {
                   <div className="rounded-xl border bg-background p-4">
                     <p className="text-sm text-muted-foreground">Best sales day</p>
                     <p className="mt-1 text-lg font-semibold">
-                      {analytics?.insights?.bestSalesDay?.label || "No data yet"}
+                      {analytics?.insights?.bestSalesPoint?.label || "No data yet"}
                     </p>
                     <p className="text-sm text-green-600">
                       Reached{" "}
                       {formatCurrencyAmount(
-                        Number(analytics?.insights?.bestSalesDay?.sales || 0),
+                        Number(analytics?.insights?.bestSalesPoint?.sales || 0),
                         currency,
                       )}{" "}
                       in sales
@@ -385,30 +397,26 @@ const ProviderReports = () => {
                   </div>
 
                   <div className="rounded-xl border bg-background p-4">
-                    <p className="text-sm text-muted-foreground">Monthly growth</p>
+                    <p className="text-sm text-muted-foreground">Growth note</p>
                     <p className="mt-1 text-lg font-semibold">
-                      {analytics?.insights?.monthlyGrowth?.title || "No trend available"}
+                      {analytics?.insights?.growthNote?.title || "No trend available"}
                     </p>
                     <p
                       className={`text-sm ${
                         growthChange >= 0 ? "text-green-600" : "text-red-600"
                       }`}
                     >
-                      Sales changed by {growthChange >= 0 ? "+" : ""}
-                      {growthChange}% this month
+                      {analytics?.insights?.growthNote?.text}
                     </p>
                   </div>
 
                   <div className="rounded-xl border bg-background p-4">
-                    <p className="text-sm text-muted-foreground">Yearly revenue</p>
+                    <p className="text-sm text-muted-foreground">Fulfillment</p>
                     <p className="mt-1 text-lg font-semibold">
-                      {formatCurrencyAmount(
-                        Number(analytics?.insights?.yearlyRevenue?.value || 0),
-                        currency,
-                      )}
+                      {analytics?.insights?.fulfillment?.rate || 0}%
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      {analytics?.insights?.yearlyRevenue?.note}
+                      {analytics?.insights?.fulfillment?.note}
                     </p>
                   </div>
                 </div>

@@ -1,7 +1,10 @@
+import { useState } from "react";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
+import AnalyticsDateFilterBar from "@/components/reports/AnalyticsDateFilterBar";
 import { useSystemCurrency } from "@/hooks/useSystemCurrency";
 import { defaultSystemCurrency } from "@/redux/features/generalApi/systemSettingsApi";
 import {
+  type AnalyticsPeriod,
   type AdminReportsAnalytics,
   useGetAdminReportsAnalyticsQuery,
 } from "@/redux/features/reports/dashboardApi";
@@ -16,6 +19,7 @@ import {
   Activity,
 } from "lucide-react";
 import { Alert, Spin } from "antd";
+import dayjs from "dayjs";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -34,34 +38,32 @@ import {
 const COLORS = ["#22c55e", "#3b82f6", "#f59e0b", "#ef4444"];
 
 const AdminReports = () => {
+  const [period, setPeriod] = useState<AnalyticsPeriod>("monthly");
+  const [customRange, setCustomRange] = useState({
+    startDate: dayjs().startOf("month").format("YYYY-MM-DD"),
+    endDate: dayjs().format("YYYY-MM-DD"),
+  });
   const { data, isLoading, isFetching, isError } =
-    useGetAdminReportsAnalyticsQuery();
+    useGetAdminReportsAnalyticsQuery(
+      period === "custom" ? { period, ...customRange } : { period },
+    );
   const { currency = defaultSystemCurrency } = useSystemCurrency();
   const analytics = data?.data as AdminReportsAnalytics | undefined;
 
   const reportCards = [
     {
-      title: "Daily Sales",
+      title: "Revenue",
       value: formatCurrencyAmount(
-        analytics?.summary?.dailySales?.value || 0,
+        analytics?.summary?.revenue?.value || 0,
         currency,
       ),
-      change: Number(analytics?.summary?.dailySales?.change || 0),
+      change: Number(analytics?.summary?.revenue?.change || 0),
       icon: DollarSign,
     },
     {
-      title: "Monthly Revenue",
-      value: formatCurrencyAmount(
-        analytics?.summary?.monthlyRevenue?.value || 0,
-        currency,
-      ),
-      change: Number(analytics?.summary?.monthlyRevenue?.change || 0),
-      icon: TrendingUp,
-    },
-    {
-      title: "Orders Today",
-      value: String(analytics?.summary?.ordersToday?.value || 0),
-      change: Number(analytics?.summary?.ordersToday?.change || 0),
+      title: "Orders",
+      value: String(analytics?.summary?.orders?.value || 0),
+      change: Number(analytics?.summary?.orders?.change || 0),
       icon: ShoppingCart,
     },
     {
@@ -73,9 +75,18 @@ const AdminReports = () => {
       change: Number(analytics?.summary?.netProfit?.change || 0),
       icon: Wallet,
     },
+    {
+      title: "Avg. Order Value",
+      value: formatCurrencyAmount(
+        analytics?.summary?.averageOrderValue?.value || 0,
+        currency,
+      ),
+      change: Number(analytics?.summary?.averageOrderValue?.change || 0),
+      icon: TrendingUp,
+    },
   ];
 
-  const weeklySales = analytics?.charts?.weeklySales || [];
+  const performanceData = analytics?.charts?.performance || [];
   const categoryData = analytics?.charts?.salesByCategory || [];
   const providerPerformance = analytics?.charts?.topProviders || [];
   const growthChange = Number(analytics?.insights?.growthNote?.change || 0);
@@ -94,9 +105,16 @@ const AdminReports = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            <AnalyticsDateFilterBar
+              period={period}
+              onPeriodChange={setPeriod}
+              startDate={customRange.startDate}
+              endDate={customRange.endDate}
+              onRangeChange={setCustomRange}
+            />
             <div className="inline-flex items-center gap-2 rounded-lg border bg-background px-4 py-2 text-sm font-medium">
               <Activity className="h-4 w-4 text-primary" />
-              {analytics?.periodLabel || "Last 7 days"}
+              {analytics?.periodLabel || "Current period"}
             </div>
             <div className="rounded-lg border bg-background px-4 py-2 text-sm text-muted-foreground">
               Updated{" "}
@@ -165,9 +183,9 @@ const AdminReports = () => {
               <div className="rounded-2xl border bg-card p-6 shadow-sm xl:col-span-2">
                 <div className="mb-5 flex items-center justify-between">
                   <div>
-                    <h3 className="text-lg font-semibold">Weekly Sales Overview</h3>
+                    <h3 className="text-lg font-semibold">Revenue Overview</h3>
                     <p className="text-sm text-muted-foreground">
-                      Revenue trend across the last 7 days
+                      Revenue trend across the selected period
                     </p>
                   </div>
                   <div
@@ -184,7 +202,7 @@ const AdminReports = () => {
 
                 <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={weeklySales}>
+                    <AreaChart data={performanceData}>
                       <defs>
                         <linearGradient id="salesFill" x1="0" y1="0" x2="0" y2="1">
                           <stop
@@ -235,7 +253,7 @@ const AdminReports = () => {
                 <div className="mb-5">
                   <h3 className="text-lg font-semibold">Sales by Category</h3>
                   <p className="text-sm text-muted-foreground">
-                    Contribution by product segment this month
+                    Contribution by product segment in the selected period
                   </p>
                 </div>
 
@@ -293,7 +311,7 @@ const AdminReports = () => {
                     Top Provider Performance
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    Highest revenue-generating providers this month
+                    Highest revenue-generating providers in the selected period
                   </p>
                 </div>
 
@@ -335,7 +353,7 @@ const AdminReports = () => {
                 <div className="mb-5">
                   <h3 className="text-lg font-semibold">Quick Insights</h3>
                   <p className="text-sm text-muted-foreground">
-                    Key highlights from current data
+                    Key highlights from the selected period
                   </p>
                 </div>
 
@@ -343,12 +361,12 @@ const AdminReports = () => {
                   <div className="rounded-xl border bg-background p-4">
                     <p className="text-sm text-muted-foreground">Best sales day</p>
                     <p className="mt-1 text-lg font-semibold">
-                      {analytics?.insights?.bestSalesDay?.label || "No data yet"}
+                      {analytics?.insights?.bestSalesPoint?.label || "No data yet"}
                     </p>
                     <p className="text-sm text-green-600">
                       Revenue peaked at{" "}
                       {formatCurrencyAmount(
-                        analytics?.insights?.bestSalesDay?.revenue || 0,
+                        analytics?.insights?.bestSalesPoint?.revenue || 0,
                         currency,
                       )}
                     </p>
@@ -375,7 +393,7 @@ const AdminReports = () => {
                         analytics?.insights?.providerLeader?.revenue || 0,
                         currency,
                       )}{" "}
-                      monthly revenue
+                      period revenue
                     </p>
                   </div>
 
@@ -390,7 +408,7 @@ const AdminReports = () => {
                       }`}
                     >
                       {analytics?.insights?.growthNote?.text} ({growthChange >= 0 ? "+" : ""}
-                      {growthChange}% vs last month)
+                      {growthChange}% vs previous period)
                     </p>
                   </div>
                 </div>

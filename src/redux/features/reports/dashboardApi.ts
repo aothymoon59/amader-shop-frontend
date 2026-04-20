@@ -12,6 +12,14 @@ export type DashboardSeriesPoint = {
   sales?: number;
 };
 
+export type AnalyticsPeriod = "monthly" | "yearly" | "custom";
+
+export type AnalyticsFilterParams = {
+  period?: AnalyticsPeriod;
+  startDate?: string;
+  endDate?: string;
+};
+
 export type AdminRecentOrder = {
   id: string;
   orderNumber: string;
@@ -167,19 +175,20 @@ export type AdminAnalyticsInsight = {
 export type AdminReportsAnalytics = {
   generatedAt: string;
   periodLabel: string;
+  selectedPeriod: AnalyticsPeriod;
   summary: {
-    dailySales: AdminAnalyticsMetric;
-    monthlyRevenue: AdminAnalyticsMetric;
-    ordersToday: AdminAnalyticsMetric;
+    revenue: AdminAnalyticsMetric;
+    orders: AdminAnalyticsMetric;
     netProfit: AdminAnalyticsMetric;
+    averageOrderValue: AdminAnalyticsMetric;
   };
   charts: {
-    weeklySales: DashboardSeriesPoint[];
+    performance: DashboardSeriesPoint[];
     salesByCategory: AdminAnalyticsCategory[];
     topProviders: AdminAnalyticsProvider[];
   };
   insights: {
-    bestSalesDay: AdminAnalyticsInsight;
+    bestSalesPoint: AdminAnalyticsInsight;
     topCategory: AdminAnalyticsInsight;
     providerLeader: AdminAnalyticsInsight;
     growthNote: AdminAnalyticsInsight;
@@ -201,29 +210,30 @@ export type ProviderReportsProduct = {
 export type ProviderReportsAnalytics = {
   generatedAt: string;
   periodLabel: string;
+  selectedPeriod: AnalyticsPeriod;
   profile: {
     shopName: string;
   };
   summary: {
-    todaySales: ProviderReportsMetric;
-    monthSales: ProviderReportsMetric;
-    yearSales: ProviderReportsMetric;
+    sales: ProviderReportsMetric;
+    orders: ProviderReportsMetric;
     averageOrderValue: ProviderReportsMetric;
+    itemsSold: ProviderReportsMetric;
   };
   banner: {
     title: string;
     text: string;
-    todayOrders: number;
-    deliveredToday: number;
+    ordersInRange: number;
+    deliveredOrders: number;
     pendingOrders: number;
   };
   charts: {
-    weeklySales: DashboardSeriesPoint[];
+    performance: DashboardSeriesPoint[];
     topProductsByQuantity: ProviderReportsProduct[];
     topProductsByRevenue: ProviderReportsProduct[];
   };
   insights: {
-    bestSalesDay: {
+    bestSalesPoint: {
       label: string;
       sales: number;
       orders: number;
@@ -233,13 +243,58 @@ export type ProviderReportsAnalytics = {
       sold: number;
       revenue: number;
     };
-    monthlyGrowth: {
+    growthNote: {
       title: string;
       change: number;
+      text: string;
     };
-    yearlyRevenue: {
-      value: number;
+    fulfillment: {
+      rate: number;
       note: string;
+    };
+  };
+};
+
+export type SuperAdminAnalyticsMetric = {
+  value: number;
+};
+
+export type SuperAdminAnalyticsDistribution = {
+  name: string;
+  value: number;
+};
+
+export type SuperAdminAnalytics = {
+  generatedAt: string;
+  periodLabel: string;
+  selectedPeriod: AnalyticsPeriod;
+  summary: {
+    totalRevenue: SuperAdminAnalyticsMetric;
+    activeVendors: SuperAdminAnalyticsMetric;
+    totalOrders: SuperAdminAnalyticsMetric;
+    conversionRate: SuperAdminAnalyticsMetric;
+  };
+  charts: {
+    performance: DashboardSeriesPoint[];
+    providerStatuses: SuperAdminAnalyticsDistribution[];
+    orderStatuses: SuperAdminAnalyticsDistribution[];
+  };
+  insights: {
+    providerHealth: {
+      pendingApplications: number;
+      rejectedProviders: number;
+      approvalRate: number;
+    };
+    bestRevenuePoint: {
+      label: string;
+      revenue: number;
+      orders: number;
+    };
+    topOrderStatus: SuperAdminAnalyticsDistribution;
+    paymentHealth: {
+      paidOrders: number;
+      unpaidOrders: number;
+      paidOrderRate: number;
     };
   };
 };
@@ -267,6 +322,12 @@ export type ProviderReportsAnalyticsResponse = {
   data: ProviderReportsAnalytics;
 };
 
+export type SuperAdminAnalyticsResponse = {
+  success: boolean;
+  message?: string;
+  data: SuperAdminAnalytics;
+};
+
 export const dashboardApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getDashboardOverview: builder.query<DashboardOverviewResponse, void>({
@@ -276,17 +337,27 @@ export const dashboardApi = baseApi.injectEndpoints({
       }),
     }),
     getAdminReportsAnalytics:
-      builder.query<AdminReportsAnalyticsResponse, void>({
-        query: () => ({
+      builder.query<AdminReportsAnalyticsResponse, AnalyticsFilterParams | void>({
+        query: (params) => ({
           url: "/reports/admin-analytics",
           method: "GET",
+          params,
         }),
       }),
     getProviderReportsAnalytics:
-      builder.query<ProviderReportsAnalyticsResponse, void>({
-        query: () => ({
+      builder.query<ProviderReportsAnalyticsResponse, AnalyticsFilterParams | void>({
+        query: (params) => ({
           url: "/reports/provider-analytics",
           method: "GET",
+          params,
+        }),
+      }),
+    getSuperAdminAnalytics:
+      builder.query<SuperAdminAnalyticsResponse, AnalyticsFilterParams | void>({
+        query: (params) => ({
+          url: "/reports/super-admin-analytics",
+          method: "GET",
+          params,
         }),
       }),
   }),
@@ -296,4 +367,5 @@ export const {
   useGetDashboardOverviewQuery,
   useGetAdminReportsAnalyticsQuery,
   useGetProviderReportsAnalyticsQuery,
+  useGetSuperAdminAnalyticsQuery,
 } = dashboardApi;
