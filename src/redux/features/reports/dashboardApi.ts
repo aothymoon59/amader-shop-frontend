@@ -135,6 +135,57 @@ export type SuperAdminDashboardOverview = {
   recentActivity: SuperAdminActivity[];
 };
 
+export type AdminAnalyticsMetric = {
+  value: number;
+  change: number;
+};
+
+export type AdminAnalyticsCategory = {
+  name: string;
+  value: number;
+  revenue: number;
+  quantitySold: number;
+};
+
+export type AdminAnalyticsProvider = {
+  name: string;
+  revenue: number;
+  orders: number;
+};
+
+export type AdminAnalyticsInsight = {
+  title?: string;
+  text?: string;
+  change?: number;
+  label?: string;
+  revenue?: number;
+  orders?: number;
+  name?: string;
+  share?: number;
+};
+
+export type AdminReportsAnalytics = {
+  generatedAt: string;
+  periodLabel: string;
+  summary: {
+    dailySales: AdminAnalyticsMetric;
+    monthlyRevenue: AdminAnalyticsMetric;
+    ordersToday: AdminAnalyticsMetric;
+    netProfit: AdminAnalyticsMetric;
+  };
+  charts: {
+    weeklySales: DashboardSeriesPoint[];
+    salesByCategory: AdminAnalyticsCategory[];
+    topProviders: AdminAnalyticsProvider[];
+  };
+  insights: {
+    bestSalesDay: AdminAnalyticsInsight;
+    topCategory: AdminAnalyticsInsight;
+    providerLeader: AdminAnalyticsInsight;
+    growthNote: AdminAnalyticsInsight;
+  };
+};
+
 export type DashboardOverviewData =
   | AdminDashboardOverview
   | ProviderDashboardOverview
@@ -146,6 +197,12 @@ export type DashboardOverviewResponse = {
   data: DashboardOverviewData;
 };
 
+export type AdminReportsAnalyticsResponse = {
+  success: boolean;
+  message?: string;
+  data: AdminReportsAnalytics;
+};
+
 export const dashboardApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getDashboardOverview: builder.query<DashboardOverviewResponse, void>({
@@ -154,7 +211,17 @@ export const dashboardApi = baseApi.injectEndpoints({
         method: "GET",
       }),
     }),
+    getAdminReportsAnalytics:
+      builder.query<AdminReportsAnalyticsResponse, void>({
+        query: () => ({
+          url: "/reports/admin-analytics",
+          method: "GET",
+        }),
+      }),
   }),
 });
 
-export const { useGetDashboardOverviewQuery } = dashboardApi;
+export const {
+  useGetDashboardOverviewQuery,
+  useGetAdminReportsAnalyticsQuery,
+} = dashboardApi;
