@@ -3,6 +3,7 @@ import dayjs, { type Dayjs } from "dayjs";
 import {
   Button,
   Card,
+  Popconfirm,
   DatePicker,
   Drawer,
   Form,
@@ -31,6 +32,7 @@ import {
   type ManualFinanceEntryPayload,
   type ManualFinanceEntryType,
   useCreateManualFinanceEntryMutation,
+  useDeleteManualFinanceEntryMutation,
   useGetManualFinanceDailyQuery,
   useGetManualFinanceDayDetailsQuery,
   useUpdateManualFinanceEntryMutation,
@@ -132,6 +134,8 @@ const ProviderExpenseTracker = () => {
   });
   const [createEntry, { isLoading: isCreating }] =
     useCreateManualFinanceEntryMutation();
+  const [deleteEntry, { isLoading: isDeleting }] =
+    useDeleteManualFinanceEntryMutation();
   const [updateEntry, { isLoading: isUpdating }] =
     useUpdateManualFinanceEntryMutation();
 
@@ -204,6 +208,25 @@ const ProviderExpenseTracker = () => {
     }
   };
 
+  const handleDeleteEntry = async (entryId: string) => {
+    try {
+      await deleteEntry(entryId).unwrap();
+      toast({
+        title: "Entry deleted",
+        description: "The daily summary has been recalculated.",
+      });
+    } catch (error) {
+      toast({
+        title: "Unable to delete entry",
+        description: getApiErrorMessage(
+          error,
+          "Please try again in a moment.",
+        ),
+        variant: "destructive",
+      });
+    }
+  };
+
   const summaryCards = [
     {
       title: "Total Expense",
@@ -229,7 +252,7 @@ const ProviderExpenseTracker = () => {
       isMobile
         ? [
             {
-              title: "Day",
+              title: view === "yearly" ? "Month" : "Day",
               dataIndex: "label",
               key: "label",
               render: (value: string, record: ManualFinanceDaySummary) => (
@@ -266,25 +289,29 @@ const ProviderExpenseTracker = () => {
                 </div>
               ),
             },
-            {
-              title: "",
-              key: "action",
-              width: 84,
-              render: (_: unknown, record: ManualFinanceDaySummary) => (
-                <Button
-                  type="link"
-                  className="px-0"
-                  icon={<Eye className="h-4 w-4" />}
-                  onClick={() => setSelectedDate(record.date)}
-                >
-                  View
-                </Button>
-              ),
-            },
+            ...(view === "monthly"
+              ? [
+                  {
+                    title: "",
+                    key: "action",
+                    width: 84,
+                    render: (_: unknown, record: ManualFinanceDaySummary) => (
+                      <Button
+                        type="link"
+                        className="px-0"
+                        icon={<Eye className="h-4 w-4" />}
+                        onClick={() => setSelectedDate(record.date)}
+                      >
+                        View
+                      </Button>
+                    ),
+                  },
+                ]
+              : []),
           ]
         : [
             {
-              title: "Date",
+              title: view === "yearly" ? "Month" : "Date",
               dataIndex: "label",
               key: "label",
             },
@@ -326,20 +353,24 @@ const ProviderExpenseTracker = () => {
                 </Space>
               ),
             },
-            {
-              title: "Action",
-              key: "action",
-              render: (_: unknown, record: ManualFinanceDaySummary) => (
-                <Button
-                  icon={<Eye className="h-4 w-4" />}
-                  onClick={() => setSelectedDate(record.date)}
-                >
-                  View
-                </Button>
-              ),
-            },
+            ...(view === "monthly"
+              ? [
+                  {
+                    title: "Action",
+                    key: "action",
+                    render: (_: unknown, record: ManualFinanceDaySummary) => (
+                      <Button
+                        icon={<Eye className="h-4 w-4" />}
+                        onClick={() => setSelectedDate(record.date)}
+                      >
+                        View
+                      </Button>
+                    ),
+                  },
+                ]
+              : []),
           ],
-    [currency, isMobile],
+    [currency, isMobile, view],
   );
 
   const detailColumns = useMemo(
@@ -375,6 +406,22 @@ const ProviderExpenseTracker = () => {
                     >
                       Edit
                     </Button>
+                    <Popconfirm
+                      title="Delete this entry?"
+                      description="This will remove the entry and update the totals."
+                      okText="Delete"
+                      cancelText="Cancel"
+                      okButtonProps={{ danger: true, loading: isDeleting }}
+                      onConfirm={() => handleDeleteEntry(record.id)}
+                    >
+                      <Button
+                        type="link"
+                        danger
+                        className="px-0"
+                      >
+                        Delete
+                      </Button>
+                    </Popconfirm>
                   </div>
                 </div>
               ),
@@ -421,16 +468,28 @@ const ProviderExpenseTracker = () => {
               title: "Action",
               key: "action",
               render: (_: unknown, record: ManualFinanceEntry) => (
-                <Button
-                  icon={<PencilLine className="h-4 w-4" />}
-                  onClick={() => handleEditClick(record)}
-                >
-                  Edit
-                </Button>
+                <Space>
+                  <Button
+                    icon={<PencilLine className="h-4 w-4" />}
+                    onClick={() => handleEditClick(record)}
+                  >
+                    Edit
+                  </Button>
+                  <Popconfirm
+                    title="Delete this entry?"
+                    description="This will remove the entry and update the totals."
+                    okText="Delete"
+                    cancelText="Cancel"
+                    okButtonProps={{ danger: true, loading: isDeleting }}
+                    onConfirm={() => handleDeleteEntry(record.id)}
+                  >
+                    <Button danger>Delete</Button>
+                  </Popconfirm>
+                </Space>
               ),
             },
           ],
-    [currency, isMobile],
+    [currency, isDeleting, isMobile],
   );
 
   return (
@@ -600,7 +659,7 @@ const ProviderExpenseTracker = () => {
                   {summary?.periodLabel || "Selected period"} {" · "}
                   {summary?.totalEntries || 0} entry
                   {summary?.totalEntries === 1 ? "" : "ies"} across{" "}
-                  {summary?.totalDays || 0} day
+                  {summary?.totalDays || 0} {view === "yearly" ? "month" : "day"}
                   {summary?.totalDays === 1 ? "" : "s"}
                 </Text>
               </div>

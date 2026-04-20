@@ -75,7 +75,7 @@ export type ManualFinanceDayDetailsResponse = {
 export type ManualFinanceEntryResponse = {
   success: boolean;
   message?: string;
-  data: ManualFinanceEntry;
+  data: ManualFinanceEntry | { id: string };
 };
 
 export type ManualFinanceFilterParams = {
@@ -145,6 +145,16 @@ export const manualFinanceApi = baseApi.injectEndpoints({
         { type: tagTypes.MANUAL_FINANCE, id: id },
       ],
     }),
+    deleteManualFinanceEntry: builder.mutation<
+      ManualFinanceEntryResponse,
+      string
+    >({
+      query: (id) => ({
+        url: `/manual-finance/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: [{ type: tagTypes.MANUAL_FINANCE, id: "LIST" }],
+    }),
   }),
 });
 
@@ -153,4 +163,5 @@ export const {
   useGetManualFinanceDayDetailsQuery,
   useCreateManualFinanceEntryMutation,
   useUpdateManualFinanceEntryMutation,
+  useDeleteManualFinanceEntryMutation,
 } = manualFinanceApi;
