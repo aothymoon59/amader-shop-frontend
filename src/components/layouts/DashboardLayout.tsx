@@ -81,6 +81,7 @@ const menuItems: Record<string, SidebarItem[]> = {
       ],
     },
     { title: "Wallet & Earnings", icon: Wallet, path: "/provider/wallet" },
+    { title: "Expense Tracker", icon: FileText, path: "/provider/expense-tracker" },
     { title: "POS", icon: CreditCard, path: "/provider/pos" },
     { title: "Receipts", icon: Receipt, path: "/provider/receipts" },
     { title: "Reports", icon: TrendingUp, path: "/provider/reports" },
