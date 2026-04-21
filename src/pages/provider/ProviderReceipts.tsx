@@ -1,59 +1,171 @@
 import { useMemo, useState } from "react";
-import { Eye, Printer, Search } from "lucide-react";
+import { Eye, FileDown, Printer, Search } from "lucide-react";
+import { Descriptions, Modal, Spin, Table, Tag } from "antd";
+import type { ColumnsType } from "antd/es/table";
 
 import DashboardLayout from "@/components/layouts/DashboardLayout";
+import ReceiptPaperPreview from "@/components/receipts/ReceiptPaperPreview";
+import { exportReceiptAsPdf } from "@/components/receipts/receiptPrint";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
-import { useProviderSales, type ReceiptRecord } from "@/context/ProviderSalesContext";
+import { useAuth } from "@/hooks/useAuth";
+import { useSystemCurrency } from "@/hooks/useSystemCurrency";
+import { defaultSystemCurrency } from "@/redux/features/generalApi/systemSettingsApi";
+import {
+  type ReceiptListItem,
+  useGetReceiptByNumberQuery,
+  useGetReceiptsQuery,
+} from "@/redux/features/receipts/receiptsApi";
+import { formatCurrencyAmount } from "@/utils/currency";
 
 const ProviderReceipts = () => {
-  const { receipts } = useProviderSales();
+  const { currency = defaultSystemCurrency } = useSystemCurrency();
+  const { userData } = useAuth();
   const [search, setSearch] = useState("");
-  const [selectedReceipt, setSelectedReceipt] = useState<ReceiptRecord | null>(null);
+  const [selectedReceiptNumber, setSelectedReceiptNumber] = useState<string | null>(null);
+  const { data, isLoading, isFetching } = useGetReceiptsQuery({
+    search,
+    page: 1,
+    limit: 50,
+  });
+  const { data: detailData, isFetching: isDetailFetching } =
+    useGetReceiptByNumberQuery(selectedReceiptNumber as string, {
+      skip: !selectedReceiptNumber,
+    });
 
-  const filteredReceipts = useMemo(
-    () =>
-      receipts.filter((receipt) =>
-        [
-          receipt.id,
-          receipt.customerName,
-          receipt.customerMobile,
-          receipt.customerEmail || "",
-          receipt.paymentMethod,
-          receipt.type,
-        ].some((value) => value.toLowerCase().includes(search.toLowerCase())),
-      ),
-    [receipts, search],
+  const receipts = data?.data || [];
+  const selectedReceipt = detailData?.data;
+
+  const buildPrintableReceipt = () => {
+    if (!selectedReceipt) {
+      return null;
+    }
+
+    return {
+      receiptNumber: selectedReceipt.receiptNumber,
+      issuedAt: selectedReceipt.issuedAt,
+      shopName: userData?.providerProfile?.shopName || userData?.name || "SHOP NAME",
+      address: String(userData?.personalAddress || "Amader Shop"),
+      phone: String(userData?.personalContact || ""),
+      customerName:
+        selectedReceipt.posSale?.customerName ||
+        selectedReceipt.order?.customerName ||
+        "Walk-in Customer",
+      customerMobile:
+        selectedReceipt.posSale?.customerMobile ||
+        selectedReceipt.order?.customerPhone ||
+        "",
+      paymentMethod:
+        selectedReceipt.posSale?.paymentMethod ||
+        selectedReceipt.order?.paymentMethod ||
+        "Cash",
+      subtotalAmount:
+        selectedReceipt.posSale?.subtotalAmount || selectedReceipt.totalAmount,
+      discountAmount: selectedReceipt.posSale?.discountAmount || 0,
+      totalAmount: selectedReceipt.totalAmount,
+      items: selectedReceipt.posSale?.items || selectedReceipt.order?.items || [],
+    };
+  };
+
+  const handleExportPdf = () => {
+    const printable = buildPrintableReceipt();
+
+    if (!printable) {
+      return;
+    }
+
+    const opened = exportReceiptAsPdf(printable);
+
+    if (!opened) {
+      toast({
+        title: "Popup blocked",
+        description: "Please allow popups to export the receipt as PDF.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const columns: ColumnsType<ReceiptListItem> = useMemo(
+    () => [
+      {
+        title: "Receipt",
+        dataIndex: "receiptNumber",
+        key: "receiptNumber",
+        render: (value: string) => <span className="font-medium">{value}</span>,
+      },
+      {
+        title: "Type",
+        key: "type",
+        render: (_, record) => (
+          <Tag color={record.posSale ? "green" : "blue"}>
+            {record.posSale ? "POS" : "Online"}
+          </Tag>
+        ),
+      },
+      {
+        title: "Customer",
+        key: "customer",
+        render: (_, record) =>
+          record.posSale?.customerName || record.order?.customerName || "Walk-in Customer",
+      },
+      {
+        title: "Mobile",
+        key: "mobile",
+        render: (_, record) =>
+          record.posSale?.customerMobile || record.order?.customerPhone || "-",
+      },
+      {
+        title: "Payment",
+        key: "payment",
+        render: (_, record) =>
+          record.posSale?.paymentMethod || record.order?.paymentMethod || "POS Checkout",
+      },
+      {
+        title: "Amount",
+        dataIndex: "totalAmount",
+        key: "totalAmount",
+        render: (value: number) => formatCurrencyAmount(value, currency),
+      },
+      {
+        title: "Issued At",
+        dataIndex: "issuedAt",
+        key: "issuedAt",
+        render: (value: string) => new Date(value).toLocaleString(),
+      },
+      {
+        title: "Actions",
+        key: "actions",
+        render: (_, record) => (
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSelectedReceiptNumber(record.receiptNumber)}
+            >
+              <Eye className="mr-1 h-4 w-4" /> View
+            </Button>
+          </div>
+        ),
+      },
+    ],
+    [currency],
   );
 
-  const handlePrint = (receiptId: string) => {
-    toast({
-      title: "Print ready",
-      description: `Receipt ${receiptId} is ready for printer integration.`,
-    });
-  };
+  const printableReceipt = buildPrintableReceipt();
 
   return (
     <DashboardLayout role="provider">
       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
             <h1 className="text-2xl font-bold">Receipts</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Review generated POS and online receipts, then open or print them.
+            <p className="mt-1 text-sm text-muted-foreground">
+              Review POS and online receipts, inspect details, and export a PDF copy.
             </p>
           </div>
-          <div className="relative max-w-sm w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <div className="relative w-full max-w-sm">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Search receipts..."
               className="pl-10"
@@ -63,105 +175,159 @@ const ProviderReceipts = () => {
           </div>
         </div>
 
-        <div className="grid gap-4">
-          {filteredReceipts.map((receipt) => (
-            <div key={receipt.id} className="flex items-center gap-4 p-4 rounded-xl border bg-card">
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold">{receipt.id}</span>
-                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">{receipt.type}</span>
-                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">{receipt.paymentMethod}</span>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  {receipt.date} · {receipt.itemCount} items · ${receipt.total.toFixed(2)} · {receipt.customerName}
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => setSelectedReceipt(receipt)}><Eye className="mr-1 h-4 w-4" /> View</Button>
-                <Button variant="ghost" size="sm" onClick={() => handlePrint(receipt.id)}><Printer className="mr-1 h-4 w-4" /> Print</Button>
-              </div>
-            </div>
-          ))}
+        <div className="rounded-2xl border bg-card p-4">
+          <Table
+            rowKey="receiptNumber"
+            loading={isLoading || isFetching}
+            columns={columns}
+            dataSource={receipts}
+            pagination={false}
+            scroll={{ x: 980 }}
+          />
         </div>
 
-        <Dialog open={Boolean(selectedReceipt)} onOpenChange={(open) => !open && setSelectedReceipt(null)}>
-          <DialogContent className="sm:max-w-2xl">
-            {selectedReceipt && (
-              <>
-                <DialogHeader>
-                  <DialogTitle>{selectedReceipt.id}</DialogTitle>
-                  <DialogDescription>
-                    Receipt details for {selectedReceipt.customerName}.
-                  </DialogDescription>
-                </DialogHeader>
+        <Modal
+          open={Boolean(selectedReceiptNumber)}
+          onCancel={() => setSelectedReceiptNumber(null)}
+          footer={null}
+          width={980}
+          title={selectedReceipt?.receiptNumber || "Receipt Details"}
+        >
+          {isDetailFetching ? (
+            <div className="flex min-h-[280px] items-center justify-center">
+              <Spin />
+            </div>
+          ) : selectedReceipt ? (
+            <div className="grid gap-6 lg:grid-cols-[1.1fr_360px]">
+              <div className="space-y-6">
+                <Descriptions
+                  bordered
+                  size="small"
+                  column={2}
+                  items={[
+                    {
+                      key: "type",
+                      label: "Type",
+                      children: selectedReceipt.posSale ? "POS" : "Online",
+                    },
+                    {
+                      key: "issuedAt",
+                      label: "Issued At",
+                      children: new Date(selectedReceipt.issuedAt).toLocaleString(),
+                    },
+                    {
+                      key: "customer",
+                      label: "Customer",
+                      children:
+                        selectedReceipt.posSale?.customerName ||
+                        selectedReceipt.order?.customerName ||
+                        "Walk-in Customer",
+                    },
+                    {
+                      key: "mobile",
+                      label: "Mobile",
+                      children:
+                        selectedReceipt.posSale?.customerMobile ||
+                        selectedReceipt.order?.customerPhone ||
+                        "-",
+                    },
+                    {
+                      key: "email",
+                      label: "Email",
+                      children:
+                        selectedReceipt.posSale?.customerEmail ||
+                        selectedReceipt.order?.customerEmail ||
+                        "Not provided",
+                    },
+                    {
+                      key: "paymentMethod",
+                      label: "Payment Method",
+                      children:
+                        selectedReceipt.posSale?.paymentMethod ||
+                        selectedReceipt.order?.paymentMethod ||
+                        "POS Checkout",
+                    },
+                  ]}
+                />
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                  <div className="rounded-lg border p-4">
-                    <div className="text-xs uppercase tracking-wide text-muted-foreground mb-2">Customer</div>
-                    <div className="font-medium">{selectedReceipt.customerName}</div>
-                  </div>
-                  <div className="rounded-lg border p-4">
-                    <div className="text-xs uppercase tracking-wide text-muted-foreground mb-2">Customer Mobile</div>
-                    <div className="font-medium">{selectedReceipt.customerMobile}</div>
-                  </div>
-                  <div className="rounded-lg border p-4">
-                    <div className="text-xs uppercase tracking-wide text-muted-foreground mb-2">Customer Email</div>
-                    <div className="font-medium">{selectedReceipt.customerEmail || "Not provided"}</div>
-                  </div>
-                  <div className="rounded-lg border p-4">
-                    <div className="text-xs uppercase tracking-wide text-muted-foreground mb-2">Payment Method</div>
-                    <div className="font-medium">{selectedReceipt.paymentMethod}</div>
-                  </div>
-                  <div className="rounded-lg border p-4">
-                    <div className="text-xs uppercase tracking-wide text-muted-foreground mb-2">Date</div>
-                    <div className="font-medium">{selectedReceipt.date}</div>
-                  </div>
-                  <div className="rounded-lg border p-4">
-                    <div className="text-xs uppercase tracking-wide text-muted-foreground mb-2">Cashier</div>
-                    <div className="font-medium">{selectedReceipt.cashier}</div>
-                  </div>
-                </div>
-
-                <div className="rounded-xl border overflow-hidden">
+                <div className="overflow-hidden rounded-xl border">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b bg-muted/50">
-                        <th className="text-left p-3 font-medium text-muted-foreground">Item</th>
-                        <th className="text-left p-3 font-medium text-muted-foreground">Qty</th>
-                        <th className="text-left p-3 font-medium text-muted-foreground">Unit Price</th>
-                        <th className="text-left p-3 font-medium text-muted-foreground">Line Total</th>
+                        <th className="p-3 text-left font-medium text-muted-foreground">Item</th>
+                        <th className="p-3 text-left font-medium text-muted-foreground">Qty</th>
+                        <th className="p-3 text-left font-medium text-muted-foreground">Unit Price</th>
+                        <th className="p-3 text-left font-medium text-muted-foreground">Line Total</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {selectedReceipt.items.map((item) => (
-                        <tr key={`${selectedReceipt.id}-${item.id}`} className="border-b last:border-0">
+                      {(selectedReceipt.posSale?.items || selectedReceipt.order?.items || []).map((item) => (
+                        <tr key={item.id} className="border-b last:border-0">
                           <td className="p-3">
-                            <div className="font-medium">{item.name}</div>
-                            <div className="text-xs text-muted-foreground">{item.sku}</div>
+                            <div className="font-medium">{item.product.name}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {item.product.sku || "No SKU"}
+                            </div>
                           </td>
-                          <td className="p-3">{item.qty}</td>
-                          <td className="p-3">${item.price.toFixed(2)}</td>
-                          <td className="p-3">${(item.price * item.qty).toFixed(2)}</td>
+                          <td className="p-3">{item.quantity}</td>
+                          <td className="p-3">
+                            {formatCurrencyAmount(item.unitPrice, currency)}
+                          </td>
+                          <td className="p-3">
+                            {formatCurrencyAmount(item.subtotal, currency)}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
 
-                <div className="space-y-2 text-sm mt-4">
-                  <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>${selectedReceipt.subtotal.toFixed(2)}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">Discount ({selectedReceipt.discountPercent.toFixed(2)}%)</span><span>${selectedReceipt.discountAmount.toFixed(2)}</span></div>
-                  <div className="flex justify-between font-bold text-base border-t pt-2"><span>Total</span><span className="text-primary">${selectedReceipt.total.toFixed(2)}</span></div>
+                <div className="ml-auto max-w-sm space-y-2 rounded-xl border bg-muted/20 p-4 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Subtotal</span>
+                    <span>
+                      {formatCurrencyAmount(
+                        selectedReceipt.posSale?.subtotalAmount || selectedReceipt.totalAmount,
+                        currency,
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Discount</span>
+                    <span>
+                      {formatCurrencyAmount(
+                        selectedReceipt.posSale?.discountAmount || 0,
+                        currency,
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex justify-between border-t pt-2 text-base font-bold">
+                    <span>Total</span>
+                    <span className="text-primary">
+                      {formatCurrencyAmount(selectedReceipt.totalAmount, currency)}
+                    </span>
+                  </div>
                 </div>
 
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setSelectedReceipt(null)}>Close</Button>
-                  <Button variant="hero" onClick={() => handlePrint(selectedReceipt.id)}><Printer className="mr-2 h-4 w-4" /> Print Receipt</Button>
-                </DialogFooter>
-              </>
-            )}
-          </DialogContent>
-        </Dialog>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => setSelectedReceiptNumber(null)}>
+                    Close
+                  </Button>
+                  <Button variant="outline" onClick={handleExportPdf}>
+                    <FileDown className="mr-2 h-4 w-4" /> Export PDF
+                  </Button>
+                  <Button variant="hero" onClick={handleExportPdf}>
+                    <Printer className="mr-2 h-4 w-4" /> Print Receipt
+                  </Button>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border bg-muted/20 p-4">
+                {printableReceipt ? <ReceiptPaperPreview {...printableReceipt} /> : null}
+              </div>
+            </div>
+          ) : null}
+        </Modal>
       </div>
     </DashboardLayout>
   );

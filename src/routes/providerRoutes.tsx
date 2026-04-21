@@ -3,6 +3,7 @@ import type { RouteObject } from "react-router-dom";
 import ProtectedRoute from "../components/auth/ProtectedRoute";
 import ProviderApply from "../pages/provider/ProviderApply";
 import ProviderDashboard from "../pages/provider/ProviderDashboard";
+import ProviderExpenseTracker from "../pages/provider/ProviderExpenseTracker";
 import ProviderOrders from "../pages/provider/ProviderOrders";
 import ProviderPayments from "../pages/provider/ProviderPayments";
 import ProviderPOS from "../pages/provider/ProviderPOS";
@@ -36,6 +37,10 @@ export const providerRoutes: RouteObject[] = [
   {
     path: "provider/wallet",
     element: <ProtectedRoute allowedRoles={["provider"]}><ProviderWallet /></ProtectedRoute>,
+  },
+  {
+    path: "provider/expense-tracker",
+    element: <ProtectedRoute allowedRoles={["provider"]}><ProviderExpenseTracker /></ProtectedRoute>,
   },
   {
     path: "provider/pos",
