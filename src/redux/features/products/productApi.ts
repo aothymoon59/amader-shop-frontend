@@ -39,6 +39,11 @@ export type ProductDeliveryZone = {
   };
 };
 
+export type ProductReviewSummary = {
+  averageRating: number;
+  totalReviews: number;
+};
+
 export type Product = {
   id: string;
   providerId: string;
@@ -64,6 +69,7 @@ export type Product = {
   provider: ProductProvider;
   images: ProductImage[];
   deliveryZones: ProductDeliveryZone[];
+  reviewSummary?: ProductReviewSummary;
 };
 
 export type ManagedProductsResponse = {

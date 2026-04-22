@@ -4,128 +4,27 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { Alert, Avatar, Divider, Dropdown, Typography } from "antd";
 import {
-  LayoutDashboard,
-  Package,
-  ShoppingCart,
-  Users,
-  BarChart3,
-  Settings,
   ChevronLeft,
   Menu,
   Store,
-  FileText,
-  CreditCard,
-  Wallet,
-  Shield,
-  UserCheck,
-  TrendingUp,
-  Receipt,
   LogOut,
   X,
   ChevronDown,
-  MapPinned,
 } from "lucide-react";
 import { useGetMyWalletQuery } from "@/redux/features/wallet/walletApi";
 import { useSystemCurrency } from "@/hooks/useSystemCurrency";
 import { defaultSystemCurrency } from "@/redux/features/generalApi/systemSettingsApi";
 import { formatCurrencyAmount } from "@/utils/currency";
-
-interface SidebarItem {
-  title: string;
-  icon: React.ElementType;
-  path?: string;
-  children?: SidebarItem[];
-}
+import {
+  dashboardMenuItems,
+  dashboardRoleLabels,
+  getOpenMenusForPath,
+} from "./dashboardMenuConfig";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
   role: "admin" | "provider" | "super-admin";
 }
-
-const menuItems: Record<string, SidebarItem[]> = {
-  admin: [
-    { title: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard" },
-    { title: "Manage Products", icon: Package, path: "/admin/manage-products" },
-    { title: "Delivery Zones", icon: MapPinned, path: "/admin/delivery-zones" },
-    {
-      title: "Order Management",
-      icon: ShoppingCart,
-      children: [
-        { title: "Orders", icon: ShoppingCart, path: "/admin/orders" },
-        { title: "Payments", icon: CreditCard, path: "/admin/payments" },
-      ],
-    },
-    { title: "Wallet & Earnings", icon: Wallet, path: "/admin/wallet" },
-    {
-      title: "User Management",
-      icon: Users,
-      children: [
-        { title: "Providers", icon: Store, path: "/admin/providers" },
-        { title: "Customers", icon: Users, path: "/admin/customers" },
-      ],
-    },
-    { title: "Reports", icon: BarChart3, path: "/admin/reports" },
-    { title: "Audit Log", icon: FileText, path: "/admin/audit-log" },
-    { title: "CMS", icon: FileText, path: "/admin/cms" },
-    { title: "Profile Settings", icon: Settings, path: "/admin/settings" },
-  ],
-  provider: [
-    { title: "Dashboard", icon: LayoutDashboard, path: "/provider/dashboard" },
-    { title: "Products", icon: Package, path: "/provider/products" },
-    {
-      title: "Order Management",
-      icon: ShoppingCart,
-      children: [
-        { title: "Orders", icon: ShoppingCart, path: "/provider/orders" },
-        { title: "Payments", icon: CreditCard, path: "/provider/payments" },
-      ],
-    },
-    { title: "Wallet & Earnings", icon: Wallet, path: "/provider/wallet" },
-    { title: "Expense Tracker", icon: FileText, path: "/provider/expense-tracker" },
-    { title: "POS", icon: CreditCard, path: "/provider/pos" },
-    { title: "Receipts", icon: Receipt, path: "/provider/receipts" },
-    { title: "Reports", icon: TrendingUp, path: "/provider/reports" },
-    { title: "Profile Settings", icon: Settings, path: "/provider/settings" },
-  ],
-  "super-admin": [
-    {
-      title: "Dashboard",
-      icon: LayoutDashboard,
-      path: "/super-admin/dashboard",
-    },
-    {
-      title: "User Management",
-      icon: Users,
-      children: [
-        { title: "Admins", icon: Shield, path: "/super-admin/admins" },
-        { title: "Providers", icon: UserCheck, path: "/super-admin/providers" },
-      ],
-    },
-    {
-      title: "Order Management",
-      icon: ShoppingCart,
-      children: [
-        { title: "Orders", icon: ShoppingCart, path: "/super-admin/orders" },
-        { title: "Payments", icon: CreditCard, path: "/super-admin/payments" },
-      ],
-    },
-    { title: "Delivery Zones", icon: MapPinned, path: "/super-admin/delivery-zones" },
-    { title: "Analytics", icon: BarChart3, path: "/super-admin/analytics" },
-    { title: "Audit Log", icon: FileText, path: "/super-admin/audit-log" },
-    { title: "CMS", icon: FileText, path: "/super-admin/cms" },
-    {
-      title: "Profile Settings",
-      icon: Settings,
-      path: "/super-admin/settings",
-    },
-  ],
-};
-
-const roleLabels: Record<string, string> = {
-  admin: "Admin Panel",
-  provider: "Vendor Panel",
-  "super-admin": "Super Admin",
-};
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   children,
@@ -141,35 +40,27 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const { data: walletData } = useGetMyWalletQuery(undefined, {
     skip: role !== "provider",
   });
-  const items = useMemo(() => menuItems[role] || [], [role]);
-  const activeSubmenuTitles = useMemo(
-    () =>
-      items
-        .filter((item) =>
-          item.children?.some((child) => child.path === location.pathname),
-        )
-        .map((item) => item.title),
-    [items, location.pathname],
+  const items = useMemo(() => dashboardMenuItems[role] || [], [role]);
+  const [openMenus, setOpenMenus] = useState<Record<string, boolean>>(() =>
+    getOpenMenusForPath(items, location.pathname),
   );
-  const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    if (activeSubmenuTitles.length === 0) return;
+    const activeMenus = getOpenMenusForPath(items, location.pathname);
+    const currentMenuTitles = new Set(items.map((item) => item.title));
 
     setOpenMenus((prev) => {
-      const next = { ...prev };
-      let changed = false;
+      const persistedMenus = Object.fromEntries(
+        Object.entries(prev).filter(([title]) => currentMenuTitles.has(title)),
+      );
+      const next = { ...activeMenus, ...persistedMenus };
+      const hasChanges =
+        Object.keys(next).length !== Object.keys(prev).length ||
+        Object.entries(next).some(([key, value]) => prev[key] !== value);
 
-      activeSubmenuTitles.forEach((title) => {
-        if (!next[title]) {
-          next[title] = true;
-          changed = true;
-        }
-      });
-
-      return changed ? next : prev;
+      return hasChanges ? next : prev;
     });
-  }, [activeSubmenuTitles]);
+  }, [items, location.pathname]);
 
   const handleLogout = useCallback(() => {
     logout();
@@ -244,7 +135,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             <Link to="/" className="flex items-center gap-2">
               <Store className="h-7 w-7 text-sidebar-primary" />
               <span className="text-lg font-bold text-sidebar-primary-foreground">
-                {roleLabels[role]}
+                {dashboardRoleLabels[role]}
               </span>
             </Link>
           )}
@@ -402,10 +293,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               dropdownRender={(menu) => (
                 <div className="min-w-[260px] rounded-xl border bg-card p-3 shadow-lg">
                   <div className="flex items-center gap-3">
-                    <Avatar
-                      src={userData?.profileImage || undefined}
-                      size={40}
-                    >
+                    <Avatar src={userData?.profileImage || undefined} size={40}>
                       {user?.name?.charAt(0).toUpperCase() || "U"}
                     </Avatar>
                     <div className="min-w-0">
@@ -421,12 +309,17 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                     <>
                       <Divider className="my-3" />
                       <div className="rounded-lg bg-secondary/40 px-3 py-2">
-                        <Typography.Text type="secondary" className="block text-xs">
+                        <Typography.Text
+                          type="secondary"
+                          className="block text-xs"
+                        >
                           Available Balance
                         </Typography.Text>
                         <Typography.Text strong>
                           {formatCurrencyAmount(
-                            Number(walletData?.data?.wallet?.availableBalance || 0),
+                            Number(
+                              walletData?.data?.wallet?.availableBalance || 0,
+                            ),
                             currency,
                           )}
                         </Typography.Text>
@@ -447,7 +340,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                     {userData?.name || user?.name || "User"}
                   </div>
                   <div className="mt-1 text-xs text-muted-foreground">
-                    {roleLabels[role]}
+                    {dashboardRoleLabels[role]}
                   </div>
                 </div>
               </button>
