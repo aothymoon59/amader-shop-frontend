@@ -3,6 +3,7 @@ import PublicLayout from "@/components/layouts/PublicLayout";
 import FeaturedProductsSection from "@/components/products/FeaturedProductsSection";
 import HomeCategoriesSection from "@/components/products/HomeCategoriesSection";
 import { Button } from "@/components/ui/button";
+import { useGetFeaturedReviewsQuery } from "@/redux/features/reviews/reviewApi";
 import {
   ArrowRight,
   ShoppingCart,
@@ -118,22 +119,13 @@ const steps = [
   },
 ];
 
-const testimonials = [
-  {
-    name: "Nusrat Jahan",
-    text: "This feels like a real neighborhood grocery app. Ordering vegetables and milk is super easy.",
-  },
-  {
-    name: "Rahim Ahmed",
-    text: "I like the fast delivery and the clean product sections. Very practical for daily shopping.",
-  },
-  {
-    name: "Tanvir Hasan",
-    text: "The local vendor concept is excellent. It gives both trust and variety in one place.",
-  },
-];
-
 const Index = () => {
+  const { data: featuredReviewsResponse } = useGetFeaturedReviewsQuery({ limit: 6 });
+  const testimonials = (featuredReviewsResponse?.data || []).map((review) => ({
+    ...review,
+    text: review.comment,
+  }));
+
   return (
     <PublicLayout>
       {/* Top Promo Bar */}
@@ -474,22 +466,27 @@ const Index = () => {
           </div>
 
           <div className="grid gap-6 md:grid-cols-3">
-            {testimonials.map((item) => (
+            {testimonials.length ? testimonials.map((item) => (
               <div
-                key={item.name}
+                key={item.id}
                 className="rounded-3xl border bg-card p-6 shadow-sm"
               >
                 <div className="mb-4 flex items-center gap-1 text-yellow-500">
-                  <Star className="h-4 w-4 fill-current" />
-                  <Star className="h-4 w-4 fill-current" />
-                  <Star className="h-4 w-4 fill-current" />
-                  <Star className="h-4 w-4 fill-current" />
-                  <Star className="h-4 w-4 fill-current" />
+                  {Array.from({ length: item.rating }).map((_, index) => (
+                    <Star key={index} className="h-4 w-4 fill-current" />
+                  ))}
                 </div>
                 <p className="mb-5 text-muted-foreground">“{item.text}”</p>
-                <h4 className="font-semibold">{item.name}</h4>
+                <h4 className="font-semibold">{item.customer.name}</h4>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {item.product?.shopName || "Purchased shop"}
+                </p>
               </div>
-            ))}
+            )) : (
+              <div className="rounded-3xl border bg-card p-6 text-center text-muted-foreground md:col-span-3">
+                Featured customer reviews will appear here after an admin marks them as featured.
+              </div>
+            )}
           </div>
         </div>
       </section>

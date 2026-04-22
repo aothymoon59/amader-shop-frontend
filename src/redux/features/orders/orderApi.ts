@@ -58,6 +58,7 @@ export type OrderItemRecord = {
   product?: {
     id: string;
     name: string;
+    slug?: string;
     images?: { id: string; url: string }[];
   };
 };
