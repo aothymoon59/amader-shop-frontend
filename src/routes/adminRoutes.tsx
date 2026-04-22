@@ -11,6 +11,7 @@ import AdminPayments from "../pages/admin/AdminPayments";
 import AdminProducts from "../pages/admin/AdminProducts";
 import AdminProviders from "../pages/admin/AdminProviders";
 import AdminReports from "../pages/admin/AdminReports";
+import AdminSiteConfig from "../pages/admin/AdminSiteConfig";
 import AdminSettings from "../pages/admin/AdminSettings";
 import AdminWallet from "../pages/admin/AdminWallet";
 
@@ -58,6 +59,14 @@ export const adminRoutes: RouteObject[] = [
   {
     path: "admin/cms",
     element: <ProtectedRoute allowedRoles={["admin"]}><AdminCMS /></ProtectedRoute>,
+  },
+  {
+    path: "admin/cms/management",
+    element: <ProtectedRoute allowedRoles={["admin"]}><AdminCMS /></ProtectedRoute>,
+  },
+  {
+    path: "admin/cms/site-config",
+    element: <ProtectedRoute allowedRoles={["admin"]}><AdminSiteConfig /></ProtectedRoute>,
   },
   {
     path: "admin/settings",

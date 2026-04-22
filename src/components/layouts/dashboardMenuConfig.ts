@@ -48,7 +48,14 @@ export const dashboardMenuItems: Record<string, SidebarItem[]> = {
     },
     { title: "Reports", icon: BarChart3, path: "/admin/reports" },
     { title: "Audit Log", icon: FileText, path: "/admin/audit-log" },
-    { title: "CMS", icon: FileText, path: "/admin/cms" },
+    {
+      title: "CMS",
+      icon: FileText,
+      children: [
+        { title: "CMS Management", icon: FileText, path: "/admin/cms/management" },
+        { title: "Site Config", icon: Settings, path: "/admin/cms/site-config" },
+      ],
+    },
     { title: "Profile Settings", icon: Settings, path: "/admin/settings" },
   ],
   provider: [
@@ -102,7 +109,22 @@ export const dashboardMenuItems: Record<string, SidebarItem[]> = {
     },
     { title: "Analytics", icon: BarChart3, path: "/super-admin/analytics" },
     { title: "Audit Log", icon: FileText, path: "/super-admin/audit-log" },
-    { title: "CMS", icon: FileText, path: "/super-admin/cms" },
+    {
+      title: "CMS",
+      icon: FileText,
+      children: [
+        {
+          title: "CMS Management",
+          icon: FileText,
+          path: "/super-admin/cms/management",
+        },
+        {
+          title: "Site Config",
+          icon: Settings,
+          path: "/super-admin/cms/site-config",
+        },
+      ],
+    },
     {
       title: "Settings",
       icon: Settings,
