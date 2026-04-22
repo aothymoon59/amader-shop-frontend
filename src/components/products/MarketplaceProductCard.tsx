@@ -1,6 +1,6 @@
 import type { MouseEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { PackageOpen, ShoppingCart, Store } from "lucide-react";
+import { PackageOpen, ShoppingCart, Star, Store } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
@@ -28,6 +28,7 @@ const MarketplaceProductCard = ({ product }: MarketplaceProductCardProps) => {
   const productImage = getProductImage(product);
   const discountedPrice = getDiscountedPrice(product);
   const hasDiscount = discountedPrice < product.price;
+  const reviewSummary = product.reviewSummary;
   const isPurchaseDisabled =
     user?.role === "admin" ||
     user?.role === "super-admin" ||
@@ -102,6 +103,15 @@ const MarketplaceProductCard = ({ product }: MarketplaceProductCardProps) => {
               {formatCurrencyAmount(Number(product.price), currency)}
             </span>
           ) : null}
+        </div>
+
+        <div className="mb-3 flex items-center justify-between text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-1">
+            <Star className="h-3.5 w-3.5 fill-warning text-warning" />
+            {reviewSummary?.totalReviews
+              ? `${reviewSummary.averageRating.toFixed(1)} (${reviewSummary.totalReviews})`
+              : "No reviews yet"}
+          </span>
         </div>
 
         <div className="flex items-center justify-between text-xs text-muted-foreground">

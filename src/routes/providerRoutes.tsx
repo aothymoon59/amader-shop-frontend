@@ -9,6 +9,7 @@ import ProviderPayments from "../pages/provider/ProviderPayments";
 import ProviderPOS from "../pages/provider/ProviderPOS";
 import ProviderProducts from "../pages/provider/ProviderProducts";
 import ProviderReceipts from "../pages/provider/ProviderReceipts";
+import ProviderReviews from "../pages/provider/ProviderReviews";
 import ProviderReports from "../pages/provider/ProviderReports";
 import ProviderSettings from "../pages/provider/ProviderSettings";
 import ProviderWallet from "../pages/provider/ProviderWallet";
@@ -37,6 +38,10 @@ export const providerRoutes: RouteObject[] = [
   {
     path: "provider/wallet",
     element: <ProtectedRoute allowedRoles={["provider"]}><ProviderWallet /></ProtectedRoute>,
+  },
+  {
+    path: "provider/reviews",
+    element: <ProtectedRoute allowedRoles={["provider"]}><ProviderReviews /></ProtectedRoute>,
   },
   {
     path: "provider/expense-tracker",

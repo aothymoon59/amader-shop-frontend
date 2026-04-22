@@ -4,6 +4,7 @@ import { Empty, Skeleton } from "antd";
 import { ArrowLeft, Shield, ShoppingCart, Star, Truck } from "lucide-react";
 
 import PublicLayout from "@/components/layouts/PublicLayout";
+import ProductReviewsSection from "@/components/reviews/ProductReviewsSection";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { useCart } from "@/context/CartContext";
@@ -123,6 +124,7 @@ const ProductDetailPage = () => {
     "https://placehold.co/800x600/e5e7eb/6b7280?text=No+Image";
   const providerName =
     product.provider?.providerProfile?.shopName || product.provider?.name;
+  const reviewSummary = product.reviewSummary;
   const isPurchaseDisabled =
     user?.role === "admin" ||
     user?.role === "super-admin" ||
@@ -339,6 +341,17 @@ const ProductDetailPage = () => {
               ) : null}
             </div>
 
+            <div className="mb-6 rounded-xl border bg-card p-4 text-sm">
+              <div className="flex items-center gap-2">
+                <Star className="h-4 w-4 fill-warning text-warning" />
+                <span className="font-medium">
+                  {reviewSummary?.totalReviews
+                    ? `${reviewSummary.averageRating.toFixed(1)} average rating from ${reviewSummary.totalReviews} review(s)`
+                    : "No customer reviews yet"}
+                </span>
+              </div>
+            </div>
+
             {product.shortDescription ? (
               <p className="mb-4 text-base font-medium text-foreground">
                 {product.shortDescription}
@@ -413,6 +426,8 @@ const ProductDetailPage = () => {
             </div>
           </div>
         </div>
+
+        <ProductReviewsSection productId={product.id} />
       </div>
     </PublicLayout>
   );

@@ -10,6 +10,7 @@ import {
   Settings,
   Shield,
   ShoppingCart,
+  Star,
   Store,
   TrendingUp,
   UserCheck,
@@ -38,6 +39,7 @@ export const dashboardMenuItems: Record<string, SidebarItem[]> = {
       ],
     },
     { title: "Wallet & Earnings", icon: Wallet, path: "/admin/wallet" },
+    { title: "Reviews", icon: Star, path: "/admin/reviews" },
     {
       title: "User Management",
       icon: Users,
@@ -70,6 +72,7 @@ export const dashboardMenuItems: Record<string, SidebarItem[]> = {
       ],
     },
     { title: "Wallet & Earnings", icon: Wallet, path: "/provider/wallet" },
+    { title: "Reviews", icon: Star, path: "/provider/reviews" },
     {
       title: "Expense Tracker",
       icon: FileText,

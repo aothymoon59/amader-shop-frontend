@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Store, ShoppingCart, Menu, X } from "lucide-react";
+import { Avatar, Divider, Dropdown, Typography } from "antd";
 
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -18,7 +19,10 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   const [mobileNav, setMobileNav] = useState(false);
   const location = useLocation();
   const { itemCount } = useCart();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, userData, isAuthenticated, logout } = useAuth();
+  const canUseCart =
+    !isAuthenticated ||
+    user?.role === "customer";
 
   const dashboardPath =
     user?.role === "provider"
@@ -28,6 +32,50 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
         : user?.role === "super-admin"
           ? "/super-admin/dashboard"
           : "/account/settings";
+
+  const accountMenuItems = (() => {
+    const baseItems = [
+      {
+        key: "account",
+        label: "My Account",
+        href: user?.role === "customer" ? "/account/settings" : dashboardPath,
+      },
+      {
+        key: "orders",
+        label: user?.role === "customer" ? "Order History" : "Orders",
+        href: user?.role === "customer" ? "/account/orders" : `/${user?.role}/orders`,
+      },
+      {
+        key: "payments",
+        label: user?.role === "customer" ? "Payment History" : "Payments",
+        href:
+          user?.role === "customer" ? "/account/payments" : `/${user?.role}/payments`,
+      },
+    ];
+
+    if (user?.role === "provider") {
+      baseItems.push(
+        { key: "products", label: "Products", href: "/provider/products" },
+        { key: "reviews", label: "Reviews", href: "/provider/reviews" },
+      );
+    }
+
+    if (user?.role === "admin") {
+      baseItems.push(
+        { key: "products", label: "Manage Products", href: "/admin/manage-products" },
+        { key: "reviews", label: "Reviews", href: "/admin/reviews" },
+      );
+    }
+
+    if (user?.role === "super-admin") {
+      baseItems.push(
+        { key: "providers", label: "Providers", href: "/super-admin/providers" },
+        { key: "analytics", label: "Analytics", href: "/super-admin/analytics" },
+      );
+    }
+
+    return baseItems;
+  })();
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -54,22 +102,68 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
           </nav>
 
           <div className="hidden md:flex items-center gap-3">
-            <Link to="/cart" className="relative">
-              <Button variant="ghost" size="icon">
-                <ShoppingCart className="h-5 w-5" />
-              </Button>
-              {itemCount > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-primary text-primary-foreground text-[11px] flex items-center justify-center font-semibold">
-                  {itemCount}
-                </span>
-              )}
-            </Link>
+            {canUseCart ? (
+              <Link to="/cart" className="relative">
+                <Button variant="ghost" size="icon">
+                  <ShoppingCart className="h-5 w-5" />
+                </Button>
+                {itemCount > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-primary text-primary-foreground text-[11px] flex items-center justify-center font-semibold">
+                    {itemCount}
+                  </span>
+                )}
+              </Link>
+            ) : null}
             {isAuthenticated ? (
               <>
-                <Link to={dashboardPath}>
-                  <Button variant="outline" size="sm">{user?.role === "customer" ? "My Account" : "Dashboard"}</Button>
-                </Link>
-                <Button variant="hero" size="sm" onClick={logout}>Logout</Button>
+                <Dropdown
+                  trigger={["click"]}
+                  menu={{
+                    items: [
+                      ...accountMenuItems.map((item) => ({
+                        key: item.key,
+                        label: <Link to={item.href}>{item.label}</Link>,
+                      })),
+                      {
+                        key: "logout",
+                        label: <button type="button" onClick={logout}>Logout</button>,
+                      },
+                    ],
+                  }}
+                  dropdownRender={(menu) => (
+                    <div className="min-w-[250px] rounded-xl border bg-card p-3 shadow-lg">
+                      <div className="flex items-center gap-3">
+                        <Avatar src={userData?.profileImage || undefined} size={40}>
+                          {user?.name?.charAt(0).toUpperCase() || "U"}
+                        </Avatar>
+                        <div className="min-w-0">
+                          <Typography.Text strong className="block truncate">
+                            {userData?.name || user?.name || "User"}
+                          </Typography.Text>
+                          <Typography.Text type="secondary" className="text-xs">
+                            {userData?.email || user?.email || ""}
+                          </Typography.Text>
+                        </div>
+                      </div>
+                      <Divider className="my-3" />
+                      {menu}
+                    </div>
+                  )}
+                >
+                  <button className="flex items-center gap-3 rounded-full border border-border/70 bg-background px-2 py-1 pr-3 transition hover:bg-muted">
+                    <Avatar src={userData?.profileImage || undefined} size={32}>
+                      {user?.name?.charAt(0).toUpperCase() || "U"}
+                    </Avatar>
+                    <div className="hidden text-left lg:block">
+                      <div className="text-sm font-medium leading-none">
+                        {userData?.name || user?.name || "User"}
+                      </div>
+                      <div className="mt-1 text-xs text-muted-foreground">
+                        {user?.role === "customer" ? "My Account" : "Dashboard"}
+                      </div>
+                    </div>
+                  </button>
+                </Dropdown>
               </>
             ) : (
               <>
@@ -104,22 +198,54 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                   {link.title}
                 </Link>
               ))}
-              <Link
-                to="/cart"
-                onClick={() => setMobileNav(false)}
-                className={cn(
-                  "block text-sm font-medium py-2",
-                  location.pathname === "/cart" ? "text-primary" : "text-muted-foreground",
-                )}
-              >
-                Cart ({itemCount})
-              </Link>
+              {canUseCart ? (
+                <Link
+                  to="/cart"
+                  onClick={() => setMobileNav(false)}
+                  className={cn(
+                    "block text-sm font-medium py-2",
+                    location.pathname === "/cart" ? "text-primary" : "text-muted-foreground",
+                  )}
+                >
+                  Cart ({itemCount})
+                </Link>
+              ) : null}
               {isAuthenticated ? (
-                <div className="flex gap-2 pt-2">
-                  <Link to={dashboardPath} className="flex-1" onClick={() => setMobileNav(false)}>
-                    <Button variant="outline" className="w-full" size="sm">{user?.role === "customer" ? "My Account" : "Dashboard"}</Button>
-                  </Link>
-                  <Button variant="hero" className="flex-1" size="sm" onClick={() => { logout(); setMobileNav(false); }}>Logout</Button>
+                <div className="space-y-2 pt-2">
+                  <div className="flex items-center gap-3 rounded-xl border bg-secondary/30 p-3">
+                    <Avatar src={userData?.profileImage || undefined} size={36}>
+                      {user?.name?.charAt(0).toUpperCase() || "U"}
+                    </Avatar>
+                    <div className="min-w-0">
+                      <div className="truncate text-sm font-medium">
+                        {userData?.name || user?.name || "User"}
+                      </div>
+                      <div className="truncate text-xs text-muted-foreground">
+                        {userData?.email || user?.email || ""}
+                      </div>
+                    </div>
+                  </div>
+                  {accountMenuItems.map((item) => (
+                    <Link
+                      key={item.key}
+                      to={item.href}
+                      onClick={() => setMobileNav(false)}
+                      className="block text-sm font-medium py-2 text-muted-foreground hover:text-primary"
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                  <Button
+                    variant="hero"
+                    className="w-full"
+                    size="sm"
+                    onClick={() => {
+                      logout();
+                      setMobileNav(false);
+                    }}
+                  >
+                    Logout
+                  </Button>
                 </div>
               ) : (
                 <div className="flex gap-2 pt-2">

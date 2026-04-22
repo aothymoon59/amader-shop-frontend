@@ -37,16 +37,30 @@ const OrderHistory = () => {
       ),
     },
     {
-      title: "Items",
+      title: "Products",
       key: "items",
       render: (_: unknown, order: (typeof orders)[number]) => (
-        <div>
+        <div className="space-y-2">
           <div className="font-medium">{order.items.length} item(s)</div>
-          <div className="text-xs text-muted-foreground">
-            {order.items
-              .slice(0, 2)
-              .map((item) => item.product?.name || item.productName)
-              .join(", ") || "Order items"}
+          <div className="space-y-1.5">
+            {order.items.slice(0, 3).map((item) => (
+              <div key={item.id} className="text-xs text-muted-foreground">
+                <Link
+                  to={`/products/${item.product?.slug || item.productId}`}
+                  className="font-medium text-primary hover:underline"
+                >
+                  {item.product?.name || item.productName}
+                </Link>
+                <span className="ml-2">
+                  Qty: {item.quantity} • {formatCurrencyAmount(item.subtotal, currency)}
+                </span>
+              </div>
+            ))}
+            {order.items.length > 3 ? (
+              <div className="text-xs text-muted-foreground">
+                +{order.items.length - 3} more item(s)
+              </div>
+            ) : null}
           </div>
         </div>
       ),
