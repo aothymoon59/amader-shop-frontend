@@ -1,12 +1,12 @@
 import { Link } from "react-router-dom";
 import PublicLayout from "@/components/layouts/PublicLayout";
-import FeaturedProductsSection from "@/components/products/FeaturedProductsSection";
-import HomeCategoriesSection from "@/components/products/HomeCategoriesSection";
+import FeaturedProductsSection from "@/components/home/FeaturedProductsSection";
+import HomeCategoriesSection from "@/components/home/HomeCategoriesSection";
+import HomePopularProductsSection from "@/components/home/HomePopularProductsSection";
 import { Button } from "@/components/ui/button";
 import { useGetFeaturedReviewsQuery } from "@/redux/features/reviews/reviewApi";
 import {
   ArrowRight,
-  ShoppingCart,
   Truck,
   ShieldCheck,
   Star,
@@ -36,41 +36,6 @@ const highlights = [
     subtitle: "Get it in as little as 30 mins",
     image: "🚚",
     bg: "from-primary/20 via-background to-accent/10",
-  },
-];
-
-const popularProducts = [
-  {
-    id: 1,
-    name: "Fresh Red Apples",
-    price: "$2.99/kg",
-    rating: 4.8,
-    shop: "Green Basket",
-    image: "🍎",
-  },
-  {
-    id: 2,
-    name: "Farm Eggs (12 pcs)",
-    price: "$3.49",
-    rating: 4.7,
-    shop: "Daily Mart",
-    image: "🥚",
-  },
-  {
-    id: 3,
-    name: "Fresh Milk 1L",
-    price: "$1.99",
-    rating: 4.9,
-    shop: "Milk House",
-    image: "🥛",
-  },
-  {
-    id: 4,
-    name: "Chicken Breast",
-    price: "$5.99/kg",
-    rating: 4.6,
-    shop: "Fresh Protein",
-    image: "🍗",
   },
 ];
 
@@ -120,7 +85,9 @@ const steps = [
 ];
 
 const Index = () => {
-  const { data: featuredReviewsResponse } = useGetFeaturedReviewsQuery({ limit: 6 });
+  const { data: featuredReviewsResponse } = useGetFeaturedReviewsQuery({
+    limit: 6,
+  });
   const testimonials = (featuredReviewsResponse?.data || []).map((review) => ({
     ...review,
     text: review.comment,
@@ -261,7 +228,12 @@ const Index = () => {
           </div>
         </div>
       </section>
+      <HomePopularProductsSection />
 
+      <HomeCategoriesSection />
+
+      {/* Existing featured products component */}
+      <FeaturedProductsSection />
       {/* Promo Cards */}
       <section className="py-14 lg:py-20">
         <div className="container">
@@ -291,64 +263,6 @@ const Index = () => {
           </div>
         </div>
       </section>
-
-      <HomeCategoriesSection />
-
-      {/* Popular Items */}
-      <section className="py-16 lg:py-24">
-        <div className="container">
-          <div className="mb-10 flex items-end justify-between gap-4">
-            <div>
-              <h2 className="text-3xl font-bold md:text-4xl">
-                Popular daily essentials
-              </h2>
-              <p className="mt-2 text-muted-foreground">
-                Frequently bought grocery items from trusted shops.
-              </p>
-            </div>
-            <Link to="/products" className="hidden md:inline-flex">
-              <Button variant="outline">View all products</Button>
-            </Link>
-          </div>
-
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {popularProducts.map((product) => (
-              <div
-                key={product.id}
-                className="group rounded-3xl border bg-card p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
-              >
-                <div className="mb-4 flex h-40 items-center justify-center rounded-2xl bg-muted/40 text-6xl">
-                  {product.image}
-                </div>
-
-                <div className="mb-2 flex items-center justify-between gap-3">
-                  <h3 className="font-semibold">{product.name}</h3>
-                  <span className="text-sm font-bold text-primary">
-                    {product.price}
-                  </span>
-                </div>
-
-                <div className="mb-4 flex items-center justify-between text-sm text-muted-foreground">
-                  <span>{product.shop}</span>
-                  <span className="flex items-center gap-1">
-                    <Star className="h-4 w-4 fill-current text-yellow-500" />
-                    {product.rating}
-                  </span>
-                </div>
-
-                <Button className="w-full">
-                  <ShoppingCart className="mr-2 h-4 w-4" />
-                  Add to Cart
-                </Button>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Existing featured products component */}
-      <FeaturedProductsSection />
-
       {/* Why choose us */}
       <section className="bg-secondary/40 py-16 lg:py-24">
         <div className="container">
@@ -466,25 +380,28 @@ const Index = () => {
           </div>
 
           <div className="grid gap-6 md:grid-cols-3">
-            {testimonials.length ? testimonials.map((item) => (
-              <div
-                key={item.id}
-                className="rounded-3xl border bg-card p-6 shadow-sm"
-              >
-                <div className="mb-4 flex items-center gap-1 text-yellow-500">
-                  {Array.from({ length: item.rating }).map((_, index) => (
-                    <Star key={index} className="h-4 w-4 fill-current" />
-                  ))}
+            {testimonials.length ? (
+              testimonials.map((item) => (
+                <div
+                  key={item.id}
+                  className="rounded-3xl border bg-card p-6 shadow-sm"
+                >
+                  <div className="mb-4 flex items-center gap-1 text-yellow-500">
+                    {Array.from({ length: item.rating }).map((_, index) => (
+                      <Star key={index} className="h-4 w-4 fill-current" />
+                    ))}
+                  </div>
+                  <p className="mb-5 text-muted-foreground">“{item.text}”</p>
+                  <h4 className="font-semibold">{item.customer.name}</h4>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {item.product?.shopName || "Purchased shop"}
+                  </p>
                 </div>
-                <p className="mb-5 text-muted-foreground">“{item.text}”</p>
-                <h4 className="font-semibold">{item.customer.name}</h4>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {item.product?.shopName || "Purchased shop"}
-                </p>
-              </div>
-            )) : (
+              ))
+            ) : (
               <div className="rounded-3xl border bg-card p-6 text-center text-muted-foreground md:col-span-3">
-                Featured customer reviews will appear here after an admin marks them as featured.
+                Featured customer reviews will appear here after an admin marks
+                them as featured.
               </div>
             )}
           </div>
