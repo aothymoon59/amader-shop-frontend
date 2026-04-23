@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
 import { Select } from "antd";
 
-import PublicLayout from "@/components/layouts/PublicLayout";
+
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/hooks/useAuth";
@@ -50,7 +50,7 @@ const CartPage = () => {
   console.log("eligibleDeliveryZones:", eligibleDeliveryZones);
 
   return (
-    <PublicLayout>
+    
       <div className="container py-8 lg:py-12 max-w-4xl">
         <h1 className="text-3xl font-bold mb-8">Shopping Cart</h1>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -214,7 +214,7 @@ const CartPage = () => {
           </div>
         </div>
       </div>
-    </PublicLayout>
+    
   );
 };
 

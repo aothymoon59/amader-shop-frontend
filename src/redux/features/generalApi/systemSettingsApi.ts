@@ -1,5 +1,6 @@
 import { baseApi } from "@/redux/api/baseApi";
 import { tagTypes } from "@/redux/tagTypes";
+import type { HomePageSection } from "@/types/homePageCms";
 
 export type SystemCurrency = {
   code: string;
@@ -23,6 +24,7 @@ export type SystemSettings = {
     logoUrl: string;
     faviconUrl: string;
   };
+  homePageSections: HomePageSection[];
   seoConfigs: SeoConfigRecord[];
   gaGtmConfig: {
     googleAnalyticsMeasurementId: string;

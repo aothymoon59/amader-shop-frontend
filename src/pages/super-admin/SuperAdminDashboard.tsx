@@ -1,4 +1,3 @@
-import DashboardLayout from "@/components/layouts/DashboardLayout";
 import {
   type SuperAdminActivity,
   type SuperAdminDashboardOverview,
@@ -28,7 +27,7 @@ const SuperAdminDashboard = () => {
   ];
 
   return (
-    <DashboardLayout role="super-admin">
+    
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold">System Overview</h1>
@@ -114,7 +113,7 @@ const SuperAdminDashboard = () => {
           </>
         )}
       </div>
-    </DashboardLayout>
+    
   );
 };
 

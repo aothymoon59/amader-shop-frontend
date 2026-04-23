@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { CheckCircle2, ReceiptText, XCircle } from "lucide-react";
 
-import PublicLayout from "@/components/layouts/PublicLayout";
+
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
 
@@ -28,7 +28,7 @@ const CheckoutPaymentStatusPage = () => {
   }, [clearCart, isSuccess]);
 
   return (
-    <PublicLayout>
+    
       <div className="container max-w-3xl py-10">
         <div className="rounded-2xl border bg-card p-8">
           {isSuccess ? (
@@ -111,7 +111,7 @@ const CheckoutPaymentStatusPage = () => {
           )}
         </div>
       </div>
-    </PublicLayout>
+    
   );
 };
 

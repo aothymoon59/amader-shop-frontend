@@ -1,6 +1,6 @@
 import { Shield, Store, Users } from "lucide-react";
 
-import PublicLayout from "@/components/layouts/PublicLayout";
+
 import { useCms } from "@/context/CmsContext";
 
 const About = () => {
@@ -12,7 +12,7 @@ const About = () => {
   }
 
   return (
-    <PublicLayout>
+    
       <div className="container max-w-4xl py-16">
         <div className="mb-16 text-center">
           <h1 className="mb-4 text-4xl font-bold">{page.heroTitle}</h1>
@@ -46,7 +46,7 @@ const About = () => {
           </div>
         </div>
       </div>
-    </PublicLayout>
+    
   );
 };
 

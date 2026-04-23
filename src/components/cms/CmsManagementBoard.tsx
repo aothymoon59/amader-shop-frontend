@@ -1,148 +1,298 @@
 import { useMemo, useState } from "react";
-import { Edit, Eye, FileText, Globe, Search } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  Edit,
+  LayoutTemplate,
+  Loader2,
+  Search,
+} from "lucide-react";
 
 import CmsPageFormDialog from "@/components/cms/CmsPageFormDialog";
-import DashboardLayout from "@/components/layouts/DashboardLayout";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "@/components/ui/use-toast";
-import { useAuth } from "@/hooks/useAuth";
-import { useCms, type CmsPage } from "@/context/CmsContext";
+import {
+  useGetAdminHomePageSectionsQuery,
+  useUpdateHomePageSectionsMutation,
+} from "@/redux/features/generalApi/homePageCmsApi";
+import {
+  defaultHomePageSections,
+  type HomePageSection,
+} from "@/types/homePageCms";
 
 type CmsManagementBoardProps = {
   role: "admin" | "super-admin";
 };
 
-const CmsManagementBoard = ({ role }: CmsManagementBoardProps) => {
-  const { pages, updatePage } = useCms();
-  const { user } = useAuth();
-  const [search, setSearch] = useState("");
-  const [editingPage, setEditingPage] = useState<CmsPage | null>(null);
+type CmsPageDefinition = {
+  key: "home";
+  name: string;
+  route: string;
+  description: string;
+};
 
-  const filteredPages = useMemo(
+const cmsPages: CmsPageDefinition[] = [
+  {
+    key: "home",
+    name: "Home Page",
+    route: "/",
+    description:
+      "Manage the public home page section order, titles, subtitles, and section content.",
+  },
+];
+
+const CmsManagementBoard = ({ role }: CmsManagementBoardProps) => {
+  const { data, isLoading, isError, refetch } = useGetAdminHomePageSectionsQuery();
+  const [updateHomePageSections, { isLoading: isSaving }] =
+    useUpdateHomePageSectionsMutation();
+  const [search, setSearch] = useState("");
+  const [selectedPageKey, setSelectedPageKey] = useState<CmsPageDefinition["key"]>("home");
+  const [editingSection, setEditingSection] = useState<HomePageSection | null>(null);
+
+  const selectedPage = cmsPages.find((page) => page.key === selectedPageKey) || cmsPages[0];
+
+  const homeSections = useMemo(
     () =>
-      pages.filter((page) =>
-        [page.name, page.path, page.status, page.heroTitle].some((value) =>
-          value.toLowerCase().includes(search.toLowerCase()),
-        ),
+      [...(data?.data.sections ?? defaultHomePageSections)].sort(
+        (a, b) => a.order - b.order,
       ),
-    [pages, search],
+    [data],
   );
 
-  const publishedCount = pages.filter((page) => page.status === "Published").length;
-  const draftCount = pages.length - publishedCount;
+  const filteredSections = useMemo(
+    () =>
+      homeSections.filter((section) =>
+        [section.name, section.key, section.title, section.subtitle, section.description]
+          .join(" ")
+          .toLowerCase()
+          .includes(search.toLowerCase()),
+      ),
+    [homeSections, search],
+  );
 
-  const handleSave = (values: Partial<CmsPage>) => {
-    if (!editingPage) {
+  const handlePersist = async (
+    nextSections: HomePageSection[],
+    successMessage: string,
+  ) => {
+    try {
+      await updateHomePageSections({ sections: nextSections }).unwrap();
+      toast({
+        title: "CMS updated",
+        description: successMessage,
+      });
+    } catch (error) {
+      toast({
+        title: "Update failed",
+        description: "The CMS changes could not be saved.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleMove = async (
+    sectionKey: HomePageSection["key"],
+    direction: "up" | "down",
+  ) => {
+    const currentIndex = homeSections.findIndex((section) => section.key === sectionKey);
+
+    if (currentIndex === -1) {
       return;
     }
 
-    updatePage(editingPage.slug, values, user?.name ?? "Admin User");
-    setEditingPage(null);
-    toast({
-      title: "Page updated",
-      description: `${editingPage.name} content has been saved to the CMS demo store.`,
-    });
+    const targetIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+
+    if (targetIndex < 0 || targetIndex >= homeSections.length) {
+      return;
+    }
+
+    const nextSections = [...homeSections];
+    const [currentSection] = nextSections.splice(currentIndex, 1);
+    nextSections.splice(targetIndex, 0, currentSection);
+
+    await handlePersist(
+      nextSections.map((section, index) => ({
+        ...section,
+        order: index + 1,
+      })),
+      `${currentSection.name} has been moved ${direction}.`,
+    );
   };
 
+  const handleSave = async (section: HomePageSection) => {
+    const nextSections = homeSections.map((currentSection) =>
+      currentSection.key === section.key ? section : currentSection,
+    );
+
+    await handlePersist(nextSections, `${section.name} content has been saved.`);
+    setEditingSection(null);
+  };
+
+  const enabledCount = homeSections.filter((section) => section.enabled).length;
+
   return (
-    <DashboardLayout role={role}>
+    <>
       <div className="space-y-6">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h1 className="text-2xl font-bold">CMS Management</h1>
+            <h1 className="text-2xl font-bold">Page CMS</h1>
             <p className="text-sm text-muted-foreground">
-              Manage public page content, draft status, and basic SEO fields from one place.
+              Manage CMS content page by page from the {role} panel. Home page is ready now, and
+              more CMS pages can be added later in the same flow.
             </p>
-          </div>
-          <div className="flex w-full max-w-md items-center gap-2">
-            <Search className="h-4 w-4 text-muted-foreground" />
-            <Input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search pages, paths, or content"
-            />
           </div>
         </div>
 
         <div className="grid gap-4 md:grid-cols-3">
           <div className="rounded-xl border bg-card p-5">
             <div className="mb-2 flex items-center gap-2 text-muted-foreground">
-              <FileText className="h-4 w-4" />
-              <span className="text-sm">Total Pages</span>
+              <LayoutTemplate className="h-4 w-4" />
+              <span className="text-sm">CMS Pages</span>
             </div>
-            <div className="text-3xl font-bold">{pages.length}</div>
+            <div className="text-3xl font-bold">{cmsPages.length}</div>
           </div>
           <div className="rounded-xl border bg-card p-5">
-            <div className="mb-2 flex items-center gap-2 text-muted-foreground">
-              <Globe className="h-4 w-4" />
-              <span className="text-sm">Published</span>
-            </div>
-            <div className="text-3xl font-bold">{publishedCount}</div>
+            <div className="mb-2 text-sm text-muted-foreground">Home Sections</div>
+            <div className="text-3xl font-bold">{homeSections.length}</div>
           </div>
           <div className="rounded-xl border bg-card p-5">
-            <div className="mb-2 flex items-center gap-2 text-muted-foreground">
-              <Eye className="h-4 w-4" />
-              <span className="text-sm">Draft Pages</span>
-            </div>
-            <div className="text-3xl font-bold">{draftCount}</div>
+            <div className="mb-2 text-sm text-muted-foreground">Enabled Sections</div>
+            <div className="text-3xl font-bold">{enabledCount}</div>
           </div>
         </div>
 
         <div className="grid gap-4">
-          {filteredPages.map((page) => (
-            <div
-              key={page.slug}
-              className="rounded-xl border bg-card p-5"
+          {cmsPages.map((page) => (
+            <button
+              key={page.key}
+              type="button"
+              onClick={() => setSelectedPageKey(page.key)}
+              className={`rounded-xl border p-5 text-left transition-colors ${
+                selectedPageKey === page.key
+                  ? "border-primary bg-primary/5"
+                  : "bg-card hover:border-primary/40"
+              }`}
             >
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div className="space-y-2">
                   <div className="flex flex-wrap items-center gap-2">
                     <h2 className="text-lg font-semibold">{page.name}</h2>
-                    <Badge variant={page.status === "Published" ? "default" : "secondary"}>
-                      {page.status}
-                    </Badge>
+                    <Badge variant="outline">{page.route}</Badge>
+                    <Badge>{page.key === "home" ? "Ready" : "Coming Soon"}</Badge>
                   </div>
-                  <div className="text-sm text-muted-foreground">{page.path}</div>
-                  <p className="max-w-2xl text-sm text-muted-foreground">
-                    {page.heroSubtitle}
-                  </p>
-                  <div className="text-xs text-muted-foreground">
-                    Last updated {page.lastUpdated} by {page.updatedBy}
-                  </div>
+                  <p className="text-sm text-muted-foreground">{page.description}</p>
                 </div>
-
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => window.open(page.path, "_self")}
-                  >
-                    <Eye className="mr-2 h-4 w-4" />
-                    View Page
-                  </Button>
-                  <Button onClick={() => setEditingPage(page)}>
-                    <Edit className="mr-2 h-4 w-4" />
-                    Edit Content
-                  </Button>
+                <div className="text-sm text-muted-foreground">
+                  {page.key === "home" ? `${homeSections.length} sections` : "0 sections"}
                 </div>
               </div>
-            </div>
+            </button>
           ))}
         </div>
+
+        <div className="rounded-xl border bg-card p-5">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <h2 className="text-xl font-semibold">{selectedPage.name}</h2>
+              <p className="text-sm text-muted-foreground">{selectedPage.description}</p>
+            </div>
+            <div className="flex w-full max-w-md items-center gap-2">
+              <Search className="h-4 w-4 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Search sections"
+              />
+            </div>
+          </div>
+        </div>
+
+        {isLoading ? (
+          <div className="flex min-h-[220px] items-center justify-center rounded-xl border bg-card">
+            <div className="flex items-center gap-3 text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>Loading page CMS sections...</span>
+            </div>
+          </div>
+        ) : isError ? (
+          <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-6">
+            <p className="font-semibold text-destructive">Failed to load page CMS sections.</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Refresh and try again to reconnect the CMS manager.
+            </p>
+            <Button className="mt-4" variant="outline" onClick={() => refetch()}>
+              Retry
+            </Button>
+          </div>
+        ) : (
+          <div className="grid gap-4">
+            {filteredSections.map((section, index) => (
+              <div key={section.key} className="rounded-xl border bg-card p-5">
+                <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge variant="outline">#{section.order}</Badge>
+                      <h3 className="text-lg font-semibold">{section.name}</h3>
+                      <Badge variant={section.enabled ? "default" : "secondary"}>
+                        {section.enabled ? "Enabled" : "Hidden"}
+                      </Badge>
+                    </div>
+                    <p className="text-sm font-medium">{section.title || "No title set"}</p>
+                    <p className="max-w-3xl text-sm text-muted-foreground">
+                      {section.subtitle || section.description || "No subtitle or description set."}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Sequence position {index + 1} on the {selectedPage.name.toLowerCase()}.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => handleMove(section.key, "up")}
+                      disabled={isSaving || index === 0}
+                    >
+                      <ArrowUp className="mr-2 h-4 w-4" />
+                      Move Up
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => handleMove(section.key, "down")}
+                      disabled={isSaving || index === homeSections.length - 1}
+                    >
+                      <ArrowDown className="mr-2 h-4 w-4" />
+                      Move Down
+                    </Button>
+                    <Button onClick={() => setEditingSection(section)} disabled={isSaving}>
+                      <Edit className="mr-2 h-4 w-4" />
+                      Edit Section
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {filteredSections.length === 0 ? (
+              <div className="rounded-xl border bg-card p-6 text-center text-sm text-muted-foreground">
+                No sections matched your search.
+              </div>
+            ) : null}
+          </div>
+        )}
       </div>
 
       <CmsPageFormDialog
-        open={Boolean(editingPage)}
-        page={editingPage}
+        open={Boolean(editingSection)}
+        section={editingSection}
         onOpenChange={(open) => {
           if (!open) {
-            setEditingPage(null);
+            setEditingSection(null);
           }
         }}
         onSave={handleSave}
       />
-    </DashboardLayout>
+    </>
   );
 };
 

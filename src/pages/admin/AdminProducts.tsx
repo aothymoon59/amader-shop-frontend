@@ -1,12 +1,7 @@
-import DashboardLayout from "@/components/layouts/DashboardLayout";
 import ProductManagementPage from "@/components/products/ProductManagementPage";
 
 const AdminProducts = () => {
-  return (
-    <DashboardLayout role="admin">
-      <ProductManagementPage role="admin" />
-    </DashboardLayout>
-  );
+  return <ProductManagementPage role="admin" />;
 };
 
 export default AdminProducts;

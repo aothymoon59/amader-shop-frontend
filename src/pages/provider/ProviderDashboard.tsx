@@ -1,4 +1,3 @@
-import DashboardLayout from "@/components/layouts/DashboardLayout";
 import {
   type ProviderDashboardOverview,
   type ProviderRecentSale,
@@ -72,7 +71,7 @@ const ProviderDashboard = () => {
   ];
 
   return (
-    <DashboardLayout role="provider">
+    
       <div className="space-y-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
@@ -297,7 +296,7 @@ const ProviderDashboard = () => {
           </>
         )}
       </div>
-    </DashboardLayout>
+    
   );
 };
 

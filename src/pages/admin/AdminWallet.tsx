@@ -13,7 +13,6 @@ import {
   Typography,
 } from "antd";
 
-import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { toast } from "@/components/ui/use-toast";
 import { useSystemCurrency } from "@/hooks/useSystemCurrency";
 import { defaultSystemCurrency } from "@/redux/features/generalApi/systemSettingsApi";
@@ -85,7 +84,7 @@ const AdminWallet = () => {
   };
 
   return (
-    <DashboardLayout role="admin">
+    <>
       <div className="space-y-6">
         <div>
           <Title level={2} className="!mb-2">
@@ -299,7 +298,7 @@ const AdminWallet = () => {
           </div>
         </Modal>
       </div>
-    </DashboardLayout>
+    </>
   );
 };
 

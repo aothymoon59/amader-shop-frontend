@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Empty, Pagination, Skeleton } from "antd";
 
-import PublicLayout from "@/components/layouts/PublicLayout";
+
 import MarketplaceProductCard from "@/components/products/MarketplaceProductCard";
 import MarketplaceProductFilters from "@/components/products/MarketplaceProductFilters";
 import { useGetCategoriesQuery } from "@/redux/features/generalApi/categoriesApi";
@@ -107,7 +107,7 @@ const Products = () => {
   };
 
   return (
-    <PublicLayout>
+    
       <div className="container py-8 lg:py-12">
         <MarketplaceProductFilters
           categories={categories}
@@ -200,7 +200,7 @@ const Products = () => {
           </div>
         ) : null}
       </div>
-    </PublicLayout>
+    
   );
 };
 

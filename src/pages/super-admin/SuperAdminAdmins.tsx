@@ -15,7 +15,6 @@ import type { ColumnsType } from "antd/es/table";
 import AdminDetailsModal from "@/components/admins/adminManagement/AdminDetailsModal";
 import CreateAdminModal from "@/components/admins/adminManagement/CreateAdminModal";
 import EditAdminModal from "@/components/admins/adminManagement/EditAdminModal";
-import DashboardLayout from "@/components/layouts/DashboardLayout";
 import RefreshButton from "@/components/shared/button/RefreshButton";
 import CustomTable from "@/components/shared/table/CustomTable";
 import TableActionMenu from "@/components/shared/table/TableActionMenu";
@@ -304,7 +303,7 @@ const SuperAdminAdmins = () => {
   ];
 
   return (
-    <DashboardLayout role="super-admin">
+    <>
       <div className="w-full space-y-5 lg:space-y-6">
         <Card bordered={false} className="shadow-sm">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -432,7 +431,7 @@ const SuperAdminAdmins = () => {
         closeModal={() => setIsEditModalOpen(false)}
         admin={selectedAdmin}
       />
-    </DashboardLayout>
+    </>
   );
 };
 

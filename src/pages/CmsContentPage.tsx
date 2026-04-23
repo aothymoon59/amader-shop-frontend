@@ -1,4 +1,4 @@
-import PublicLayout from "@/components/layouts/PublicLayout";
+
 import { useCms, type CmsPageSlug } from "@/context/CmsContext";
 
 type CmsContentPageProps = {
@@ -14,7 +14,7 @@ const CmsContentPage = ({ slug }: CmsContentPageProps) => {
   }
 
   return (
-    <PublicLayout>
+    <>
       <section className="border-b bg-secondary/40">
         <div className="container max-w-5xl py-16 text-center">
           <h1 className="mb-4 text-4xl font-bold">{page.heroTitle}</h1>
@@ -34,7 +34,7 @@ const CmsContentPage = ({ slug }: CmsContentPageProps) => {
           </div>
         </div>
       </section>
-    </PublicLayout>
+    </>
   );
 };
 

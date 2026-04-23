@@ -1,5 +1,5 @@
-import CmsManagementBoard from "@/components/cms/CmsManagementBoard";
+import CmsPagesBoard from "@/components/cms/CmsPagesBoard";
 
-const AdminCMS = () => <CmsManagementBoard role="admin" />;
+const AdminCMS = () => <CmsPagesBoard role="admin" />;
 
 export default AdminCMS;

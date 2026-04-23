@@ -12,7 +12,6 @@ import {
 import { Button, Card, Select, Space, Tag, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
-import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { toast } from "@/components/ui/use-toast";
 import {
   useGetAllProvidersQuery,
@@ -309,7 +308,7 @@ const AdminProviders = () => {
   ];
 
   return (
-    <DashboardLayout role="admin">
+    <>
       <div className="w-full space-y-5 lg:space-y-6">
         <Card bordered={false} className="shadow-sm">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -426,7 +425,7 @@ const AdminProviders = () => {
         closeModal={() => setIsEditModalOpen(false)}
         provider={selectedProvider}
       />
-    </DashboardLayout>
+    </>
   );
 };
 
