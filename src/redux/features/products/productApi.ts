@@ -99,7 +99,7 @@ export type ManagedProductQuery = {
   isFeatured?: boolean;
   isDiscount?: boolean;
   status?: "published" | "draft";
-  sortBy?: "price" | "date" | "name";
+  sortBy?: "price" | "date" | "name" | "popular";
   sortOrder?: "asc" | "desc";
   priceSort?: "low-to-high" | "high-to-low";
   dateSort?: "new-to-old" | "old-to-new";

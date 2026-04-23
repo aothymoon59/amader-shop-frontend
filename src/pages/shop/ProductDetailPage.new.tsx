@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { Empty, Skeleton } from "antd";
 import { ArrowLeft, Shield, ShoppingCart, Star, Truck } from "lucide-react";
 
-import PublicLayout from "@/components/layouts/PublicLayout";
+
 import ProductReviewsSection from "@/components/reviews/ProductReviewsSection";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
@@ -62,7 +62,7 @@ const ProductDetailPage = () => {
 
   if (isLoading) {
     return (
-      <PublicLayout>
+      
         <div className="container py-8 lg:py-12">
           <div className="mb-6">
             <Skeleton.Button active className="!h-6 !w-40" />
@@ -72,13 +72,13 @@ const ProductDetailPage = () => {
             <Skeleton active paragraph={{ rows: 10 }} />
           </div>
         </div>
-      </PublicLayout>
+      
     );
   }
 
   if (isError || !product) {
     return (
-      <PublicLayout>
+      
         <div className="container py-8 lg:py-12">
           <Link
             to="/products"
@@ -98,7 +98,7 @@ const ProductDetailPage = () => {
             </Link>
           </div>
         </div>
-      </PublicLayout>
+      
     );
   }
 
@@ -182,7 +182,7 @@ const ProductDetailPage = () => {
   };
 
   return (
-    <PublicLayout>
+    
       <div className="container py-8 lg:py-12">
         <Link
           to="/products"
@@ -319,7 +319,7 @@ const ProductDetailPage = () => {
             <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
               <Star className="h-4 w-4 fill-warning text-warning" />
               <span>Featured marketplace item</span>
-              <span>·</span>
+              <span>ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â·</span>
               <span>{product.stock} in stock</span>
             </div>
 
@@ -422,14 +422,14 @@ const ProductDetailPage = () => {
             <div className="mt-6 rounded-lg bg-secondary/50 p-4 text-sm">
               <span className="text-muted-foreground">Sold by </span>
               <span className="font-semibold text-primary">{providerName}</span>
-              <span className="text-muted-foreground"> · Verified Vendor</span>
+              <span className="text-muted-foreground"> ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· Verified Vendor</span>
             </div>
           </div>
         </div>
 
         <ProductReviewsSection productId={product.id} />
       </div>
-    </PublicLayout>
+    
   );
 };
 

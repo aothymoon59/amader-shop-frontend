@@ -22,7 +22,6 @@ import {
 } from "antd";
 import { Eye, PencilLine } from "lucide-react";
 
-import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { toast } from "@/hooks/use-toast";
 import { useSystemCurrency } from "@/hooks/useSystemCurrency";
 import { defaultSystemCurrency } from "@/redux/features/generalApi/systemSettingsApi";
@@ -493,7 +492,7 @@ const ProviderExpenseTracker = () => {
   );
 
   return (
-    <DashboardLayout role="provider">
+    <>
       <div className="space-y-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
@@ -799,7 +798,7 @@ const ProviderExpenseTracker = () => {
           </Form>
         </Modal>
       </div>
-    </DashboardLayout>
+    </>
   );
 };
 

@@ -1,8 +1,10 @@
 import type { RouteObject } from "react-router-dom";
 
 import ProtectedRoute from "../components/auth/ProtectedRoute";
+import DashboardLayout from "../components/layouts/DashboardLayout";
 import AdminAuditLog from "../pages/admin/AdminAuditLog";
 import AdminCMS from "../pages/admin/AdminCMS";
+import AdminCMSHome from "../pages/admin/AdminCMSHome";
 import AdminCustomers from "../pages/admin/AdminCustomers";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import AdminDeliveryZones from "../pages/admin/AdminDeliveryZones";
@@ -18,67 +20,30 @@ import AdminWallet from "../pages/admin/AdminWallet";
 
 export const adminRoutes: RouteObject[] = [
   {
-    path: "admin/dashboard",
-    element: <ProtectedRoute allowedRoles={["admin"]}><AdminDashboard /></ProtectedRoute>,
-  },
-  {
-    path: "admin/products",
-    element: <ProtectedRoute allowedRoles={["admin"]}><AdminProducts /></ProtectedRoute>,
-  },
-  {
-    path: "admin/manage-products",
-    element: <ProtectedRoute allowedRoles={["admin"]}><AdminProducts /></ProtectedRoute>,
-  },
-  {
-    path: "admin/orders",
-    element: <ProtectedRoute allowedRoles={["admin"]}><AdminOrders /></ProtectedRoute>,
-  },
-  {
-    path: "admin/delivery-zones",
-    element: <ProtectedRoute allowedRoles={["admin"]}><AdminDeliveryZones /></ProtectedRoute>,
-  },
-  {
-    path: "admin/payments",
-    element: <ProtectedRoute allowedRoles={["admin"]}><AdminPayments /></ProtectedRoute>,
-  },
-  {
-    path: "admin/wallet",
-    element: <ProtectedRoute allowedRoles={["admin"]}><AdminWallet /></ProtectedRoute>,
-  },
-  {
-    path: "admin/providers",
-    element: <ProtectedRoute allowedRoles={["admin"]}><AdminProviders /></ProtectedRoute>,
-  },
-  {
-    path: "admin/customers",
-    element: <ProtectedRoute allowedRoles={["admin"]}><AdminCustomers /></ProtectedRoute>,
-  },
-  {
-    path: "admin/reports",
-    element: <ProtectedRoute allowedRoles={["admin"]}><AdminReports /></ProtectedRoute>,
-  },
-  {
-    path: "admin/reviews",
-    element: <ProtectedRoute allowedRoles={["admin"]}><AdminReviews /></ProtectedRoute>,
-  },
-  {
-    path: "admin/cms",
-    element: <ProtectedRoute allowedRoles={["admin"]}><AdminCMS /></ProtectedRoute>,
-  },
-  {
-    path: "admin/cms/management",
-    element: <ProtectedRoute allowedRoles={["admin"]}><AdminCMS /></ProtectedRoute>,
-  },
-  {
-    path: "admin/cms/site-config",
-    element: <ProtectedRoute allowedRoles={["admin"]}><AdminSiteConfig /></ProtectedRoute>,
-  },
-  {
-    path: "admin/settings",
-    element: <ProtectedRoute allowedRoles={["admin"]}><AdminSettings /></ProtectedRoute>,
-  },
-  {
-    path: "admin/audit-log",
-    element: <ProtectedRoute allowedRoles={["admin"]}><AdminAuditLog /></ProtectedRoute>,
+    path: "admin",
+    element: (
+      <ProtectedRoute allowedRoles={["admin"]}>
+        <DashboardLayout role="admin" />
+      </ProtectedRoute>
+    ),
+    children: [
+      { path: "dashboard", element: <AdminDashboard /> },
+      { path: "products", element: <AdminProducts /> },
+      { path: "manage-products", element: <AdminProducts /> },
+      { path: "orders", element: <AdminOrders /> },
+      { path: "delivery-zones", element: <AdminDeliveryZones /> },
+      { path: "payments", element: <AdminPayments /> },
+      { path: "wallet", element: <AdminWallet /> },
+      { path: "providers", element: <AdminProviders /> },
+      { path: "customers", element: <AdminCustomers /> },
+      { path: "reports", element: <AdminReports /> },
+      { path: "reviews", element: <AdminReviews /> },
+      { path: "cms", element: <AdminCMS /> },
+      { path: "cms/management", element: <AdminCMS /> },
+      { path: "cms/management/home", element: <AdminCMSHome /> },
+      { path: "cms/site-config", element: <AdminSiteConfig /> },
+      { path: "settings", element: <AdminSettings /> },
+      { path: "audit-log", element: <AdminAuditLog /> },
+    ],
   },
 ];

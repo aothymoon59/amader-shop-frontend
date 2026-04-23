@@ -70,7 +70,8 @@ const SiteOverviewSettingsSection = () => {
 
       toast({
         title: "Site overview updated",
-        description: "Name, description, logo, and favicon settings have been saved.",
+        description:
+          "Name, description, logo, and favicon settings have been saved.",
       });
 
       form.setFieldValue("logo", []);
@@ -144,7 +145,9 @@ const SiteOverviewSettingsSection = () => {
                 preview={false}
               />
             ) : (
-              <div className="text-sm text-muted-foreground">No logo uploaded yet.</div>
+              <div className="text-sm text-muted-foreground">
+                No logo uploaded yet.
+              </div>
             )}
             <Form.Item
               className="mt-4 mb-0"
@@ -174,7 +177,9 @@ const SiteOverviewSettingsSection = () => {
                 preview={false}
               />
             ) : (
-              <div className="text-sm text-muted-foreground">No favicon uploaded yet.</div>
+              <div className="text-sm text-muted-foreground">
+                No favicon uploaded yet.
+              </div>
             )}
             <Form.Item
               className="mt-4 mb-0"
@@ -195,8 +200,12 @@ const SiteOverviewSettingsSection = () => {
           </div>
         </div>
 
-        <div className="flex justify-end">
-          <Button type="primary" onClick={() => form.submit()} loading={isUpdating}>
+        <div className="flex justify-end mt-3">
+          <Button
+            type="primary"
+            onClick={() => form.submit()}
+            loading={isUpdating}
+          >
             Save Site Overview
           </Button>
         </div>

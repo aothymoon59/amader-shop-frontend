@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Col, Form, Input as AntInput, InputNumber, Row, Select, Spin } from "antd";
 
-import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
@@ -185,7 +184,7 @@ const ProviderPOS = () => {
   };
 
   return (
-    <DashboardLayout role="provider">
+    
       <div className="space-y-6">
         <h1 className="text-2xl font-bold">Point of Sale</h1>
         {isLoading || isFetching ? (
@@ -390,7 +389,7 @@ const ProviderPOS = () => {
           </div>
         )}
       </div>
-    </DashboardLayout>
+    
   );
 };
 

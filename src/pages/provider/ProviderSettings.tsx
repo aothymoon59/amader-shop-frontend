@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import DashboardLayout from "@/components/layouts/DashboardLayout";
 import ChangePasswordSection from "@/components/settings/ChangePasswordSection";
 import ProfileSettingsSection from "@/components/settings/ProfileSettingsSection";
 import SettingsTabs from "@/components/settings/SettingsTabs";
@@ -276,7 +275,7 @@ const ProviderSettings = () => {
 
   if (!providerProfile) {
     return (
-      <DashboardLayout role="provider">
+      
         <div className="mx-auto max-w-3xl">
           <Card bordered={false} className="shadow-sm">
             <Title level={3} className="!mb-2">
@@ -287,7 +286,7 @@ const ProviderSettings = () => {
             </Paragraph>
           </Card>
         </div>
-      </DashboardLayout>
+      
     );
   }
 
@@ -297,7 +296,7 @@ const ProviderSettings = () => {
     ];
 
   return (
-    <DashboardLayout role="provider">
+    
       <div className="mx-auto space-y-4 lg:space-y-6">
         <Card bordered={false} className="shadow-sm">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -883,7 +882,7 @@ const ProviderSettings = () => {
           ]}
         />
       </div>
-    </DashboardLayout>
+    
   );
 };
 
