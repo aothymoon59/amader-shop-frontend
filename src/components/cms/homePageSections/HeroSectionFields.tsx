@@ -17,7 +17,6 @@ const HeroSectionFields = ({
   bannerFileList,
   isUploadingBanners,
   onBannerFileListChange,
-  renderArrayTextArea,
   renderButtonFields,
 }: HeroSectionFieldsProps) => (
   <>
@@ -34,7 +33,7 @@ const HeroSectionFields = ({
     <Form.List name="bannerImageUrls">
       {(fields, { remove }) => (
         <Space direction="vertical" size={16} style={{ width: "100%" }}>
-          <Card size="small" title="Hero Banner Images">
+          <Card size="small" title="Hero Banner Images" className="mb-4">
             <Space direction="vertical" size={12} style={{ width: "100%" }}>
               <Typography.Text type="secondary">
                 These images rotate in the homepage hero banner.
@@ -86,39 +85,47 @@ const HeroSectionFields = ({
       )}
     </Form.List>
 
-    {renderArrayTextArea(
-      "highlights",
-      "Quick Benefit Points",
-      "Add one short customer-facing benefit per line",
-    )}
+    <Card title="Quick Benefit Points" size="small" className="mb-4">
+      <StringListField
+        name="highlights"
+        label={null}
+        itemLabel="Benefit Point"
+        placeholder="Fresh produce from nearby stores"
+        addButtonText="Add Benefit Point"
+      />
+    </Card>
 
-    <Form.Item label="Promo Card Eyebrow" name="promoCardSubtitle">
-      <Input placeholder="Today's essentials" />
-    </Form.Item>
-    <Form.Item label="Promo Card Heading" name="promoCardTitle">
-      <Input placeholder="Up to 25% off" />
-    </Form.Item>
+    <Card title="Promo Card Content" size="small" className="mb-4">
+      <Form.Item label="Promo Card Eyebrow" name="promoCardSubtitle">
+        <Input placeholder="Today's essentials" />
+      </Form.Item>
+      <Form.Item label="Promo Card Heading" name="promoCardTitle">
+        <Input placeholder="Up to 25% off" />
+      </Form.Item>
 
-    <StringListField
-      name="promoCardItems"
-      label="Promo Card Bullet Points"
-      itemLabel="Bullet Point"
-      placeholder="Fresh fruits"
-      addButtonText="Add Bullet Point"
-    />
+      <StringListField
+        name="promoCardItems"
+        label="Promo Card Bullet Points"
+        itemLabel="Bullet Point"
+        placeholder="Fresh fruits"
+        addButtonText="Add Bullet Point"
+      />
+    </Card>
 
-    <Form.Item label="Delivery Label" name="deliverySubtitle">
-      <Input placeholder="Delivery" />
-    </Form.Item>
-    <Form.Item label="Delivery Value" name="deliveryTitle">
-      <Input placeholder="30-60 min" />
-    </Form.Item>
-    <Form.Item label="Trust Label" name="trustedSubtitle">
-      <Input placeholder="Trusted by" />
-    </Form.Item>
-    <Form.Item label="Trust Value" name="trustedTitle">
-      <Input placeholder="10K+ families" />
-    </Form.Item>
+    <Card title="Trust & Delivery Info" size="small">
+      <Form.Item label="Delivery Label" name="deliverySubtitle">
+        <Input placeholder="Delivery" />
+      </Form.Item>
+      <Form.Item label="Delivery Value" name="deliveryTitle">
+        <Input placeholder="30-60 min" />
+      </Form.Item>
+      <Form.Item label="Trust Label" name="trustedSubtitle">
+        <Input placeholder="Trusted by" />
+      </Form.Item>
+      <Form.Item label="Trust Value" name="trustedTitle">
+        <Input placeholder="10K+ families" />
+      </Form.Item>
+    </Card>
   </>
 );
 

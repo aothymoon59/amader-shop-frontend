@@ -41,12 +41,6 @@ export type FormValues = {
   items?: RepeaterItem[];
 };
 
-export type ArrayTextAreaFieldRenderer = (
-  name: keyof FormValues,
-  label: string,
-  placeholder: string,
-) => ReactNode;
-
 export type ButtonFieldsProps = {
   primaryTextLabel?: string;
   primaryTextPlaceholder?: string;
@@ -63,6 +57,5 @@ export type HeroSectionFieldsProps = {
   bannerFileList: UploadFile[];
   isUploadingBanners: boolean;
   onBannerFileListChange: (files: UploadFile[]) => void;
-  renderArrayTextArea: ArrayTextAreaFieldRenderer;
   renderButtonFields: (props?: ButtonFieldsProps) => ReactNode;
 };

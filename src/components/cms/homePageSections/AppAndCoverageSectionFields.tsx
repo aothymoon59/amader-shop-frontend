@@ -1,14 +1,13 @@
 import type { ReactNode } from "react";
 import { Form, Input } from "antd";
-import type { ArrayTextAreaFieldRenderer, ButtonFieldsProps } from "./types";
+import StringListField from "./StringListField";
+import type { ButtonFieldsProps } from "./types";
 
 type AppAndCoverageSectionFieldsProps = {
-  renderArrayTextArea: ArrayTextAreaFieldRenderer;
   renderButtonFields: (props?: ButtonFieldsProps) => ReactNode;
 };
 
 const AppAndCoverageSectionFields = ({
-  renderArrayTextArea,
   renderButtonFields,
 }: AppAndCoverageSectionFieldsProps) => (
   <>
@@ -28,11 +27,13 @@ const AppAndCoverageSectionFields = ({
         placeholder="Explain your delivery coverage, vendors, or service area"
       />
     </Form.Item>
-    {renderArrayTextArea(
-      "coverageItems",
-      "Coverage Highlights",
-      "Add one short coverage point per line",
-    )}
+    <StringListField
+      name="coverageItems"
+      label="Coverage Highlights"
+      itemLabel="Coverage Point"
+      placeholder="Same-day delivery in key neighborhoods"
+      addButtonText="Add Coverage Point"
+    />
   </>
 );
 

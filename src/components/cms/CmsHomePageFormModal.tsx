@@ -1,5 +1,18 @@
 import { useEffect, useState } from "react";
-import { Form, Input, Modal, Switch, Typography, message } from "antd";
+import {
+  Alert,
+  Card,
+  Col,
+  Form,
+  Input,
+  Modal,
+  Row,
+  Switch,
+  Tabs,
+  Tag,
+  Typography,
+  message,
+} from "antd";
 import type { UploadFile } from "antd/es/upload/interface";
 import type { HomePageSection } from "@/types/homePageCms";
 import { useUploadHeroBannerImagesMutation } from "@/redux/features/generalApi/homePageCmsApi";
@@ -26,11 +39,28 @@ type CmsHomePageFormModalProps = {
   onSave: (section: HomePageSection) => void;
 };
 
-const splitLines = (value: string) =>
-  value
-    .split("\n")
-    .map((item) => item.trim())
-    .filter(Boolean);
+const sectionDescriptions: Partial<Record<HomePageSection["key"], string>> = {
+  topPromoBar:
+    "Update the short announcement that appears at the very top of the homepage.",
+  hero: "Manage the main first-impression area including messaging, actions, and rotating banners.",
+  stats: "Edit the quick trust signals and headline metrics shown to visitors.",
+  popularProducts:
+    "Control CTA and fallback copy for the popular products module.",
+  featuredProducts:
+    "Control CTA and fallback copy for the featured products module.",
+  categories: "Adjust supporting copy and CTA messaging for category browsing.",
+  promo:
+    "Maintain the promotional cards that highlight key offers or campaigns.",
+  whyChooseUs:
+    "Refine the value propositions that explain why shoppers should trust the platform.",
+  howItWorks:
+    "Keep the step-by-step onboarding or shopping guidance clear and concise.",
+  appAndCoverage:
+    "Manage app download actions and area coverage messaging in one place.",
+  testimonials: "Set fallback text for the testimonials experience.",
+  vendorCta:
+    "Configure the call-to-action that encourages new vendors to join.",
+};
 
 const CmsHomePageFormModal = ({
   open,
@@ -276,23 +306,6 @@ const CmsHomePageFormModal = ({
     });
   };
 
-  const renderArrayTextArea = (
-    name: keyof FormValues,
-    label: string,
-    placeholder: string,
-  ) => (
-    <Form.Item
-      label={label}
-      getValueFromEvent={(event) => splitLines(event.target.value)}
-      getValueProps={(value) => ({
-        value: Array.isArray(value) ? value.join("\n") : "",
-      })}
-      name={name}
-    >
-      <Input.TextArea rows={4} placeholder={placeholder} />
-    </Form.Item>
-  );
-
   const renderButtonFields = (props?: ButtonFieldsProps) => (
     <>
       <Form.Item
@@ -361,7 +374,6 @@ const CmsHomePageFormModal = ({
             bannerFileList={bannerFileList}
             isUploadingBanners={isUploadingBanners}
             onBannerFileListChange={setBannerFileList}
-            renderArrayTextArea={renderArrayTextArea}
             renderButtonFields={renderButtonFields}
           />
         );
@@ -378,7 +390,6 @@ const CmsHomePageFormModal = ({
       case "appAndCoverage":
         return (
           <AppAndCoverageSectionFields
-            renderArrayTextArea={renderArrayTextArea}
             renderButtonFields={renderButtonFields}
           />
         );
@@ -393,52 +404,157 @@ const CmsHomePageFormModal = ({
     }
   };
 
+  const sectionDescription = section
+    ? sectionDescriptions[section.key] ||
+      "Update the content and settings for this homepage section."
+    : "Update the content and settings for this homepage section.";
+
   return (
     <Modal
       open={open}
-      title={section ? `Edit ${section.name}` : "Edit Section"}
+      title={null}
       onCancel={onClose}
       onOk={submit}
-      width={900}
+      width={980}
       okText="Save Changes"
       okButtonProps={{ loading: isUploadingBanners }}
       destroyOnClose
       maskClosable={false}
+      styles={{
+        body: { paddingTop: 12 },
+      }}
     >
-      <div className="max-h-[70vh] overflow-y-auto">
-        <Form form={form} layout="vertical" initialValues={{ enabled: true }}>
-          <Form.Item
-            label="Section Enabled"
-            name="enabled"
-            valuePropName="checked"
-          >
-            <Switch />
-          </Form.Item>
-          <Form.Item
-            label="Section Name"
-            name="name"
-            rules={[{ required: true }]}
-          >
-            <Input placeholder="Internal section name for admins" />
-          </Form.Item>
-          <Form.Item label="Title" name="title">
-            <Input placeholder="Main heading shown on the homepage" />
-          </Form.Item>
-          <Form.Item label="Subtitle" name="subtitle">
-            <Input.TextArea
-              rows={3}
-              placeholder="Short supporting text under the main heading"
-            />
-          </Form.Item>
-          <Form.Item label="Description" name="description">
-            <Input.TextArea
-              rows={3}
-              placeholder="Optional extra description or SEO-friendly summary"
-            />
-          </Form.Item>
+      <div className="space-y-5">
+        <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-emerald-50 p-5">
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+            <div className="space-y-2">
+              <Typography.Text className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
+                Homepage CMS
+              </Typography.Text>
+              <Typography.Title level={3} className="!mb-0">
+                {section ? `Edit ${section.name} Section` : "Edit Section"}
+              </Typography.Title>
+              <Typography.Paragraph className="!mb-0 max-w-2xl text-sm text-slate-600">
+                {sectionDescription}
+              </Typography.Paragraph>
+            </div>
 
-          {renderSectionFields()}
-        </Form>
+            {section ? (
+              <div className="flex flex-wrap items-center gap-2">
+                <Tag color={section.enabled ? "green" : "default"}>
+                  {section.enabled ? "Live on homepage" : "Currently hidden"}
+                </Tag>
+              </div>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="max-h-[68vh] overflow-y-auto pr-1">
+          <Form form={form} layout="vertical" initialValues={{ enabled: true }}>
+            <Tabs
+              defaultActiveKey="basics"
+              items={[
+                {
+                  key: "basics",
+                  label: "Basics",
+                  children: (
+                    <Card
+                      bordered={false}
+                      className="rounded-2xl bg-slate-50/70"
+                      styles={{ body: { padding: 20 } }}
+                    >
+                      <Row gutter={[16, 0]}>
+                        <Col xs={24} md={12}>
+                          <Form.Item
+                            label="Section status"
+                            name="enabled"
+                            valuePropName="checked"
+                            extra="Turn this off to hide the section from the homepage without deleting its content."
+                          >
+                            <Switch
+                              checkedChildren="Enabled"
+                              unCheckedChildren="Hidden"
+                            />
+                          </Form.Item>
+                        </Col>
+                        <Col xs={24} md={12}>
+                          <Form.Item
+                            label="Internal section name"
+                            name="name"
+                            rules={[
+                              {
+                                required: true,
+                                message: "Section name is required.",
+                              },
+                            ]}
+                            extra="Used by admins for identification inside the dashboard."
+                          >
+                            <Input placeholder="Homepage Hero" />
+                          </Form.Item>
+                        </Col>
+                        <Col xs={24}>
+                          <Form.Item
+                            label="Title"
+                            name="title"
+                            extra="Main heading visitors will notice first."
+                          >
+                            <Input placeholder="Fresh groceries delivered fast" />
+                          </Form.Item>
+                        </Col>
+                        <Col xs={24}>
+                          <Form.Item
+                            label="Subtitle"
+                            name="subtitle"
+                            extra="Short supporting copy that adds context under the title."
+                          >
+                            <Input.TextArea
+                              rows={3}
+                              placeholder="Add a concise and helpful supporting message"
+                            />
+                          </Form.Item>
+                        </Col>
+                        <Col xs={24}>
+                          <Form.Item
+                            label="Description"
+                            name="description"
+                            extra="Optional longer explanation or admin-managed marketing summary."
+                          >
+                            <Input.TextArea
+                              rows={4}
+                              placeholder="Include any extra detail you want editors to maintain here"
+                            />
+                          </Form.Item>
+                        </Col>
+                      </Row>
+                    </Card>
+                  ),
+                },
+                {
+                  key: "content",
+                  label: "Section Content",
+                  children: (
+                    <Card
+                      bordered={false}
+                      className="rounded-2xl bg-white"
+                      styles={{ body: { padding: 20 } }}
+                    >
+                      <div className="mb-4">
+                        <Typography.Title level={5} className="!mb-1">
+                          Section-specific content
+                        </Typography.Title>
+                        <Typography.Paragraph className="!mb-0 text-sm text-slate-500">
+                          These fields control the actual content shown to
+                          customers for this homepage block.
+                        </Typography.Paragraph>
+                      </div>
+                      {renderSectionFields()}
+                    </Card>
+                  ),
+                },
+              ]}
+            />
+          </Form>
+        </div>
       </div>
     </Modal>
   );
