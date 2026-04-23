@@ -8,6 +8,19 @@ type ApiResponse<T> = {
   data: T;
 };
 
+type HeroBannerUploadPayload = {
+  bannerImageUrls: string[];
+  files: Array<{
+    url: string;
+    publicId: string;
+    resourceType: string;
+    format: string | null;
+    bytes: number;
+    originalName: string;
+    mimeType: string;
+  }>;
+};
+
 type UpdateHomePageSectionsPayload = {
   sections: HomePageSection[];
 };
@@ -32,6 +45,13 @@ export const homePageCmsApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [tagTypes.HOME_PAGE_CMS, tagTypes.SYSTEM_SETTINGS],
     }),
+    uploadHeroBannerImages: builder.mutation<ApiResponse<HeroBannerUploadPayload>, FormData>({
+      query: (body) => ({
+        url: "/system-settings/home-page/hero-banners",
+        method: "POST",
+        body,
+      }),
+    }),
     getPublicHomePageSections: builder.query<ApiResponse<HomePageSectionsPayload>, void>({
       query: () => ({
         url: "/system-settings/public/home-page",
@@ -46,4 +66,5 @@ export const {
   useGetAdminHomePageSectionsQuery,
   useGetPublicHomePageSectionsQuery,
   useUpdateHomePageSectionsMutation,
+  useUploadHeroBannerImagesMutation,
 } = homePageCmsApi;

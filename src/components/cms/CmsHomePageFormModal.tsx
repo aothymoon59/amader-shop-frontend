@@ -1,16 +1,22 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   Button,
   Card,
   Form,
+  Image,
   Input,
   Modal,
   Select,
   Space,
   Switch,
   Typography,
+  Upload,
+  message,
 } from "antd";
+import { UploadOutlined } from "@ant-design/icons";
+import type { UploadFile } from "antd/es/upload/interface";
 import type { HomePageSection } from "@/types/homePageCms";
+import { useUploadHeroBannerImagesMutation } from "@/redux/features/generalApi/homePageCmsApi";
 
 type CmsHomePageFormModalProps = {
   open: boolean;
@@ -38,6 +44,7 @@ type FormValues = {
   primaryButtonLink?: string;
   secondaryButtonText?: string;
   secondaryButtonLink?: string;
+  bannerImageUrls?: string[];
   highlights?: string[];
   promoCardTitle?: string;
   promoCardSubtitle?: string;
@@ -70,10 +77,14 @@ const CmsHomePageFormModal = ({
   onSave,
 }: CmsHomePageFormModalProps) => {
   const [form] = Form.useForm<FormValues>();
+  const [bannerFileList, setBannerFileList] = useState<UploadFile[]>([]);
+  const [uploadHeroBannerImages, { isLoading: isUploadingBanners }] =
+    useUploadHeroBannerImagesMutation();
 
   useEffect(() => {
     if (!section) {
       form.resetFields();
+      setBannerFileList([]);
       return;
     }
 
@@ -122,7 +133,12 @@ const CmsHomePageFormModal = ({
       primaryButtonLink: String(content.primaryButtonLink || ""),
       secondaryButtonText: String(content.secondaryButtonText || ""),
       secondaryButtonLink: String(content.secondaryButtonLink || ""),
-      highlights: Array.isArray(content.highlights) ? content.highlights.map(String) : [],
+      bannerImageUrls: Array.isArray(content.bannerImageUrls)
+        ? content.bannerImageUrls.map(String)
+        : [],
+      highlights: Array.isArray(content.highlights)
+        ? content.highlights.map(String)
+        : [],
       promoCardTitle: String(content.promoCardTitle || ""),
       promoCardSubtitle: String(content.promoCardSubtitle || ""),
       promoCardItems: Array.isArray(content.promoCardItems)
@@ -144,6 +160,7 @@ const CmsHomePageFormModal = ({
         : [],
       items: mapItems(),
     });
+    setBannerFileList([]);
   }, [form, section]);
 
   const buildContent = (values: FormValues) => {
@@ -159,7 +176,12 @@ const CmsHomePageFormModal = ({
           primaryButtonLink: values.primaryButtonLink?.trim() || "",
           secondaryButtonText: values.secondaryButtonText?.trim() || "",
           secondaryButtonLink: values.secondaryButtonLink?.trim() || "",
-          highlights: (values.highlights || []).map((item) => item.trim()).filter(Boolean),
+          bannerImageUrls: (values.bannerImageUrls || [])
+            .map((item) => item.trim())
+            .filter(Boolean),
+          highlights: (values.highlights || [])
+            .map((item) => item.trim())
+            .filter(Boolean),
           promoCardTitle: values.promoCardTitle?.trim() || "",
           promoCardSubtitle: values.promoCardSubtitle?.trim() || "",
           promoCardItems: (values.promoCardItems || [])
@@ -252,6 +274,28 @@ const CmsHomePageFormModal = ({
     }
 
     const values = await form.validateFields();
+    let heroBannerImageUrls = values.bannerImageUrls || [];
+
+    if (section.key === "hero" && bannerFileList.length > 0) {
+      try {
+        const payload = new FormData();
+
+        bannerFileList.forEach((file) => {
+          if (file.originFileObj) {
+            payload.append("banners", file.originFileObj);
+          }
+        });
+
+        const response = await uploadHeroBannerImages(payload).unwrap();
+        heroBannerImageUrls = [
+          ...heroBannerImageUrls,
+          ...response.data.bannerImageUrls,
+        ];
+      } catch {
+        message.error("Hero banner images could not be uploaded.");
+        return;
+      }
+    }
 
     onSave({
       ...section,
@@ -260,15 +304,27 @@ const CmsHomePageFormModal = ({
       subtitle: values.subtitle.trim(),
       description: values.description.trim(),
       enabled: values.enabled,
-      content: buildContent(values),
+      content:
+        section.key === "hero"
+          ? {
+              ...buildContent(values),
+              bannerImageUrls: heroBannerImageUrls,
+            }
+          : buildContent(values),
     });
   };
 
-  const renderArrayTextArea = (name: keyof FormValues, label: string, placeholder: string) => (
+  const renderArrayTextArea = (
+    name: keyof FormValues,
+    label: string,
+    placeholder: string,
+  ) => (
     <Form.Item
       label={label}
       getValueFromEvent={(event) => splitLines(event.target.value)}
-      getValueProps={(value) => ({ value: Array.isArray(value) ? value.join("\n") : "" })}
+      getValueProps={(value) => ({
+        value: Array.isArray(value) ? value.join("\n") : "",
+      })}
       name={name}
     >
       <Input.TextArea rows={4} placeholder={placeholder} />
@@ -297,7 +353,9 @@ const CmsHomePageFormModal = ({
       return null;
     }
 
-    if (!["stats", "promo", "whyChooseUs", "howItWorks"].includes(section.key)) {
+    if (
+      !["stats", "promo", "whyChooseUs", "howItWorks"].includes(section.key)
+    ) {
       return null;
     }
 
@@ -338,15 +396,26 @@ const CmsHomePageFormModal = ({
                     <Input />
                   </Form.Item>
                   <Form.Item
-                    label={section.key === "stats" ? "Value" : "Subtitle / Description"}
+                    label={
+                      section.key === "stats"
+                        ? "Value"
+                        : "Subtitle / Description"
+                    }
                     name={[field.name, "subtitle"]}
                   >
-                    {section.key === "stats" ? <Input /> : <Input.TextArea rows={3} />}
+                    {section.key === "stats" ? (
+                      <Input />
+                    ) : (
+                      <Input.TextArea rows={3} />
+                    )}
                   </Form.Item>
 
                   {section.key === "promo" ? (
                     <>
-                      <Form.Item label="Badge Text" name={[field.name, "extra"]}>
+                      <Form.Item
+                        label="Badge Text"
+                        name={[field.name, "extra"]}
+                      >
                         <Input placeholder="Fresh" />
                       </Form.Item>
                       <Form.Item label="Theme" name={[field.name, "extraTwo"]}>
@@ -374,7 +443,11 @@ const CmsHomePageFormModal = ({
                     </Form.Item>
                   ) : null}
 
-                  <Button danger type="default" onClick={() => remove(field.name)}>
+                  <Button
+                    danger
+                    type="default"
+                    onClick={() => remove(field.name)}
+                  >
                     Remove Item
                   </Button>
                 </Space>
@@ -403,14 +476,83 @@ const CmsHomePageFormModal = ({
         return (
           <>
             {renderButtonFields()}
-            {renderArrayTextArea("highlights", "Highlights", "One highlight per line")}
+            <Form.List name="bannerImageUrls">
+              {(fields, { add, remove }) => (
+                <Space direction="vertical" size={16} style={{ width: "100%" }}>
+                  <Card size="small" title="Hero Banner Images">
+                    <Space
+                      direction="vertical"
+                      size={12}
+                      style={{ width: "100%" }}
+                    >
+                      <Typography.Text type="secondary">
+                        Uploaded images rotate as the hero background carousel.
+                      </Typography.Text>
+
+                      {fields.map((field, index) => {
+                        const imageUrl = form.getFieldValue([
+                          "bannerImageUrls",
+                          field.name,
+                        ]);
+
+                        return (
+                          <Card size="small" key={field.key}>
+                            <Space
+                              direction="vertical"
+                              size={12}
+                              style={{ width: "100%" }}
+                            >
+                              {imageUrl ? (
+                                <Image
+                                  src={imageUrl}
+                                  alt={`Hero banner ${index + 1}`}
+                                  className="max-h-40 rounded-lg object-cover"
+                                />
+                              ) : null}
+                              <Button danger onClick={() => remove(field.name)}>
+                                Remove Banner
+                              </Button>
+                            </Space>
+                          </Card>
+                        );
+                      })}
+
+                      <Upload
+                        beforeUpload={() => false}
+                        multiple
+                        accept=".jpg,.jpeg,.png,.webp,.gif"
+                        listType="picture"
+                        fileList={bannerFileList}
+                        onChange={({ fileList }) => setBannerFileList(fileList)}
+                      >
+                        <Button
+                          icon={<UploadOutlined />}
+                          loading={isUploadingBanners}
+                        >
+                          Choose Banner Images
+                        </Button>
+                      </Upload>
+                    </Space>
+                  </Card>
+                </Space>
+              )}
+            </Form.List>
+            {renderArrayTextArea(
+              "highlights",
+              "Highlights",
+              "One highlight per line",
+            )}
             <Form.Item label="Promo Card Subtitle" name="promoCardSubtitle">
               <Input />
             </Form.Item>
             <Form.Item label="Promo Card Title" name="promoCardTitle">
               <Input />
             </Form.Item>
-            {renderArrayTextArea("promoCardItems", "Promo Card Items", "One item per line")}
+            {renderArrayTextArea(
+              "promoCardItems",
+              "Promo Card Items",
+              "One item per line",
+            )}
             <Form.Item label="Delivery Label" name="deliverySubtitle">
               <Input />
             </Form.Item>
@@ -509,18 +651,28 @@ const CmsHomePageFormModal = ({
       onOk={submit}
       width={900}
       okText="Save Changes"
+      okButtonProps={{ loading: isUploadingBanners }}
       destroyOnClose
+      maskClosable={false}
     >
       <Typography.Paragraph type="secondary">
-        Update this section using simple form fields so admins can manage content without editing
-        technical data.
+        Update this section using simple form fields so admins can manage
+        content without editing technical data.
       </Typography.Paragraph>
 
       <Form form={form} layout="vertical" initialValues={{ enabled: true }}>
-        <Form.Item label="Section Enabled" name="enabled" valuePropName="checked">
+        <Form.Item
+          label="Section Enabled"
+          name="enabled"
+          valuePropName="checked"
+        >
           <Switch />
         </Form.Item>
-        <Form.Item label="Section Name" name="name" rules={[{ required: true }]}>
+        <Form.Item
+          label="Section Name"
+          name="name"
+          rules={[{ required: true }]}
+        >
           <Input />
         </Form.Item>
         <Form.Item label="Title" name="title">

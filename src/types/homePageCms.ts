@@ -56,6 +56,7 @@ export const defaultHomePageSections: HomePageSection[] = [
       primaryButtonLink: "/products",
       secondaryButtonText: "Become a Grocery Vendor",
       secondaryButtonLink: "/provider/apply",
+      bannerImageUrls: [],
       highlights: [
         "Fresh stock daily",
         "Verified sellers",
