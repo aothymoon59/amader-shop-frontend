@@ -4,6 +4,7 @@ import ProtectedRoute from "../components/auth/ProtectedRoute";
 import DashboardLayout from "../components/layouts/DashboardLayout";
 import AdminAuditLog from "../pages/admin/AdminAuditLog";
 import AdminCMS from "../pages/admin/AdminCMS";
+import AdminCMSHome from "../pages/admin/AdminCMSHome";
 import AdminCustomers from "../pages/admin/AdminCustomers";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import AdminDeliveryZones from "../pages/admin/AdminDeliveryZones";
@@ -39,6 +40,7 @@ export const adminRoutes: RouteObject[] = [
       { path: "reviews", element: <AdminReviews /> },
       { path: "cms", element: <AdminCMS /> },
       { path: "cms/management", element: <AdminCMS /> },
+      { path: "cms/management/home", element: <AdminCMSHome /> },
       { path: "cms/site-config", element: <AdminSiteConfig /> },
       { path: "settings", element: <AdminSettings /> },
       { path: "audit-log", element: <AdminAuditLog /> },

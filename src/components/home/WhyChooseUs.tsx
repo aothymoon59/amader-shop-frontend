@@ -1,38 +1,39 @@
-import { Truck, ShieldCheck, Clock3, BadgePercent } from "lucide-react";
+import { BadgePercent, Clock3, ShieldCheck, Truck } from "lucide-react";
 
-const WhyChooseUs = () => {
-  const features = [
-    {
-      icon: Truck,
-      title: "Express Delivery",
-      desc: "Get groceries delivered to your doorstep quickly and safely.",
-    },
-    {
-      icon: ShieldCheck,
-      title: "Trusted Sellers",
-      desc: "Verified grocery vendors and local stores you can rely on.",
-    },
-    {
-      icon: BadgePercent,
-      title: "Daily Offers",
-      desc: "Enjoy flash deals, combo bundles, and seasonal discounts.",
-    },
-    {
-      icon: Clock3,
-      title: "Same-Day Fulfillment",
-      desc: "Perfect for urgent household needs and repeat grocery shopping.",
-    },
-  ];
+import type { HomePageSection } from "@/types/homePageCms";
+
+type WhyChooseUsProps = {
+  section: HomePageSection;
+};
+
+const iconMap = {
+  Truck,
+  ShieldCheck,
+  BadgePercent,
+  Clock3,
+};
+
+const WhyChooseUs = ({ section }: WhyChooseUsProps) => {
+  const content = section.content as {
+    items?: Array<{
+      icon?: keyof typeof iconMap;
+      title?: string;
+      desc?: string;
+    }>;
+  };
+
+  const features = (content.items || []).map((item) => ({
+    icon: iconMap[item.icon || "Truck"] || Truck,
+    title: item.title || "",
+    desc: item.desc || "",
+  }));
+
   return (
     <section className="bg-secondary/40 py-16 lg:py-24">
       <div className="container">
         <div className="mb-12 text-center">
-          <h2 className="text-3xl font-bold md:text-4xl">
-            Why customers choose us
-          </h2>
-          <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
-            Built to serve both customers and local grocery providers.
-          </p>
+          <h2 className="text-3xl font-bold md:text-4xl">{section.title}</h2>
+          <p className="mx-auto mt-3 max-w-xl text-muted-foreground">{section.subtitle}</p>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
