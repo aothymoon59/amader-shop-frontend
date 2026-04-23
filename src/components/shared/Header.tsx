@@ -35,7 +35,7 @@ const Header = () => {
     const baseItems = [
       {
         key: "account",
-        label: "My Account",
+        label: user?.role === "customer" ? "My Account" : "Dashboard",
         href: user?.role === "customer" ? "/account/settings" : dashboardPath,
       },
       {
