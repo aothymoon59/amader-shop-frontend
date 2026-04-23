@@ -52,6 +52,9 @@ const HeroSectionFields = ({
                       size={12}
                       style={{ width: "100%" }}
                     >
+                      <Form.Item hidden name={field.name}>
+                        <Input />
+                      </Form.Item>
                       {imageUrl ? (
                         <Image
                           src={imageUrl}

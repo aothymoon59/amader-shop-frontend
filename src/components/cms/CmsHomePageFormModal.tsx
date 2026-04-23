@@ -266,7 +266,16 @@ const CmsHomePageFormModal = ({
     }
 
     const values = await form.validateFields();
-    let heroBannerImageUrls = values.bannerImageUrls || [];
+    const existingHeroBannerImageUrls =
+      section.key === "hero" &&
+      Array.isArray((section.content as Record<string, unknown>).bannerImageUrls)
+        ? ((section.content as Record<string, unknown>).bannerImageUrls as unknown[])
+            .map(String)
+            .filter(Boolean)
+        : [];
+    let heroBannerImageUrls =
+      values.bannerImageUrls?.map((item) => item.trim()).filter(Boolean) ||
+      existingHeroBannerImageUrls;
 
     if (section.key === "hero" && bannerFileList.length > 0) {
       try {
