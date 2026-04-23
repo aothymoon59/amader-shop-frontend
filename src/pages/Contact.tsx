@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Mail, MapPin, Phone } from "lucide-react";
 
-import PublicLayout from "@/components/layouts/PublicLayout";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -53,7 +53,7 @@ const Contact = () => {
   };
 
   return (
-    <PublicLayout>
+    
       <div className="container max-w-5xl py-16">
         <div className="mb-12 text-center">
           <h1 className="mb-4 text-4xl font-bold">{page.heroTitle}</h1>
@@ -143,7 +143,7 @@ const Contact = () => {
           </div>
         </div>
       </div>
-    </PublicLayout>
+    
   );
 };
 

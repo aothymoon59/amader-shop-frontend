@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import PublicLayout from "@/components/layouts/PublicLayout";
+
 import ChangePasswordSection from "@/components/settings/ChangePasswordSection";
 import ProfileSettingsSection from "@/components/settings/ProfileSettingsSection";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ const AccountSettings = () => {
   const { user } = useAuth();
 
   return (
-    <PublicLayout>
+    
       <div className="container py-8 lg:py-12 space-y-6">
         <div>
           <h1 className="text-3xl font-bold">My Account</h1>
@@ -44,7 +44,7 @@ const AccountSettings = () => {
           ]}
         />
       </div>
-    </PublicLayout>
+    
   );
 };
 

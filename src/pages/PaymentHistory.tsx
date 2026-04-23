@@ -1,4 +1,4 @@
-import PublicLayout from "@/components/layouts/PublicLayout";
+
 import { Button, Empty, Spin, Table, Tag } from "antd";
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -75,7 +75,7 @@ const PaymentHistory = () => {
   ];
 
   return (
-    <PublicLayout>
+    
       <div className="container space-y-6 py-8 lg:py-12">
         <Button type="link" className="px-0">
           <Link to="/account/settings" className="flex items-center gap-1">
@@ -129,8 +129,8 @@ const PaymentHistory = () => {
                   <div className="flex-1">
                     <div className="font-semibold">{payment.transactionId}</div>
                     <div className="mt-1 text-sm text-muted-foreground">
-                      {new Date(payment.createdAt).toLocaleDateString()} ·{" "}
-                      {payment.provider} · ${payment.amount.toFixed(2)}
+                      {new Date(payment.createdAt).toLocaleDateString()} Ã‚Â·{" "}
+                      {payment.provider} Ã‚Â· ${payment.amount.toFixed(2)}
                     </div>
                     <div className="mt-1 text-sm text-muted-foreground">
                       Order Number: {payment.orderGroup?.groupNumber || "N/A"}
@@ -145,7 +145,7 @@ const PaymentHistory = () => {
           </div>
         )}
       </div>
-    </PublicLayout>
+    
   );
 };
 

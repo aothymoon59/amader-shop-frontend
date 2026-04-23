@@ -1,4 +1,4 @@
-import PublicLayout from "@/components/layouts/PublicLayout";
+
 import FeaturedProductsSection from "@/components/home/FeaturedProductsSection";
 import HomeCategoriesSection from "@/components/home/HomeCategoriesSection";
 import HomePopularProductsSection from "@/components/home/HomePopularProductsSection";
@@ -14,7 +14,7 @@ import HowItWorks from "@/components/home/HowItWorks";
 
 const Index = () => {
   return (
-    <PublicLayout>
+    <>
       {/* Top Promo Bar */}
       <TopPromoBar />
       {/* Hero */}
@@ -39,7 +39,7 @@ const Index = () => {
       <Testimonials />
       {/* Vendor CTA */}
       <VendorCTA />
-    </PublicLayout>
+    </>
   );
 };
 

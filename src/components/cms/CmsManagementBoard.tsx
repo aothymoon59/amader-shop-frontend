@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { Edit, Eye, FileText, Globe, Search } from "lucide-react";
 
 import CmsPageFormDialog from "@/components/cms/CmsPageFormDialog";
-import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -47,7 +46,7 @@ const CmsManagementBoard = ({ role }: CmsManagementBoardProps) => {
   };
 
   return (
-    <DashboardLayout role={role}>
+    <>
       <div className="space-y-6">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
@@ -142,7 +141,7 @@ const CmsManagementBoard = ({ role }: CmsManagementBoardProps) => {
         }}
         onSave={handleSave}
       />
-    </DashboardLayout>
+    </>
   );
 };
 

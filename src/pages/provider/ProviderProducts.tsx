@@ -2,7 +2,6 @@ import { Button, Card, Result, Spin } from "antd";
 import { CreditCardOutlined, LockOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 
-import DashboardLayout from "@/components/layouts/DashboardLayout";
 import ProductManagementPage from "@/components/products/ProductManagementPage";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -12,17 +11,17 @@ const ProviderProducts = () => {
 
   if (!userData) {
     return (
-      <DashboardLayout role="provider">
+      
         <div className="flex min-h-[360px] items-center justify-center">
           <Spin size="large" />
         </div>
-      </DashboardLayout>
+      
     );
   }
 
   if (!userData.isPaymentConfigured) {
     return (
-      <DashboardLayout role="provider">
+      
         <div className="mx-auto max-w-4xl">
           <Card bordered={false} className="shadow-sm">
             <Result
@@ -46,14 +45,14 @@ const ProviderProducts = () => {
             />
           </Card>
         </div>
-      </DashboardLayout>
+      
     );
   }
 
   return (
-    <DashboardLayout role="provider">
+    
       <ProductManagementPage role="provider" />
-    </DashboardLayout>
+    
   );
 };
 

@@ -1,4 +1,3 @@
-import DashboardLayout from "@/components/layouts/DashboardLayout";
 import {
   type AdminDashboardOverview,
   type AdminRecentOrder,
@@ -73,7 +72,7 @@ const AdminDashboard = () => {
   ];
 
   return (
-    <DashboardLayout role="admin">
+    
       <div className="space-y-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
@@ -281,7 +280,7 @@ const AdminDashboard = () => {
           </>
         )}
       </div>
-    </DashboardLayout>
+    
   );
 };
 

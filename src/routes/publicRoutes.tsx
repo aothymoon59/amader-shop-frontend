@@ -9,6 +9,7 @@ import Index from "../pages/Index";
 import OrderHistory from "../pages/OrderHistory";
 import PaymentHistory from "../pages/PaymentHistory";
 import Products from "../pages/Products.new";
+import ProviderApply from "../pages/provider/ProviderApply";
 import CartPage from "../pages/shop/CartPage";
 import CheckoutPage from "../pages/shop/CheckoutPage";
 import CheckoutPaymentStatusPage from "../pages/shop/CheckoutPaymentStatusPage";
@@ -46,6 +47,10 @@ export const publicRoutes: RouteObject[] = [
   {
     path: "contact",
     element: <Contact />,
+  },
+  {
+    path: "provider/apply",
+    element: <ProviderApply />,
   },
   {
     path: "terms",

@@ -1,11 +1,10 @@
-import DashboardLayout from "@/components/layouts/DashboardLayout";
 import ChangePasswordSection from "@/components/settings/ChangePasswordSection";
 import ProfileSettingsSection from "@/components/settings/ProfileSettingsSection";
 import SettingsTabs from "@/components/settings/SettingsTabs";
 import SystemCurrencySettingsSection from "@/components/settings/SystemCurrencySettingsSection";
 
 const SuperAdminSettings = () => (
-  <DashboardLayout role="super-admin">
+  
     <div className="mx-auto">
       <SettingsTabs
         title="Profile Settings"
@@ -29,7 +28,7 @@ const SuperAdminSettings = () => (
         ]}
       />
     </div>
-  </DashboardLayout>
+  
 );
 
 export default SuperAdminSettings;

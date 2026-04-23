@@ -12,7 +12,6 @@ import {
   Typography,
 } from "antd";
 
-import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { toast } from "@/hooks/use-toast";
 import { useSystemCurrency } from "@/hooks/useSystemCurrency";
 import {
@@ -75,7 +74,7 @@ const ProviderWallet = () => {
   };
 
   return (
-    <DashboardLayout role="provider">
+    
       <div className="space-y-6">
         <div>
           <Title level={2} className="!mb-2">
@@ -269,7 +268,7 @@ const ProviderWallet = () => {
           </>
         )}
       </div>
-    </DashboardLayout>
+    
   );
 };
 

@@ -3,7 +3,6 @@ import { Eye, FileDown, Printer, Search } from "lucide-react";
 import { Descriptions, Modal, Spin, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
-import DashboardLayout from "@/components/layouts/DashboardLayout";
 import ReceiptPaperPreview from "@/components/receipts/ReceiptPaperPreview";
 import { exportReceiptAsPdf } from "@/components/receipts/receiptPrint";
 import { Button } from "@/components/ui/button";
@@ -155,7 +154,7 @@ const ProviderReceipts = () => {
   const printableReceipt = buildPrintableReceipt();
 
   return (
-    <DashboardLayout role="provider">
+    <>
       <div className="space-y-6">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
@@ -329,7 +328,7 @@ const ProviderReceipts = () => {
           ) : null}
         </Modal>
       </div>
-    </DashboardLayout>
+    </>
   );
 };
 

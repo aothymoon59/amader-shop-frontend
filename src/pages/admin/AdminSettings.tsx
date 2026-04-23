@@ -1,4 +1,3 @@
-import DashboardLayout from "@/components/layouts/DashboardLayout";
 import ChangePasswordSection from "@/components/settings/ChangePasswordSection";
 import ProfileSettingsSection from "@/components/settings/ProfileSettingsSection";
 import SettingsTabs from "@/components/settings/SettingsTabs";
@@ -6,7 +5,7 @@ import SystemCurrencySettingsSection from "@/components/settings/SystemCurrencyS
 import CommissionSettingsSection from "@/components/settings/CommissionSettingsSection";
 
 const AdminSettings = () => (
-  <DashboardLayout role="admin">
+  
     <div className="mx-auto max-w-6xl">
       <SettingsTabs
         title="Settings"
@@ -35,7 +34,7 @@ const AdminSettings = () => (
         ]}
       />
     </div>
-  </DashboardLayout>
+  
 );
 
 export default AdminSettings;

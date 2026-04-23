@@ -1,4 +1,3 @@
-import DashboardLayout from "@/components/layouts/DashboardLayout";
 import SettingsTabs from "@/components/settings/SettingsTabs";
 
 import AnalyticsConfigSettingsSection from "./AnalyticsConfigSettingsSection";
@@ -12,7 +11,7 @@ type SiteConfigSettingsPageProps = {
 };
 
 const SiteConfigSettingsPage = ({ role }: SiteConfigSettingsPageProps) => (
-  <DashboardLayout role={role}>
+  
     <div className="mx-auto max-w-6xl">
       <SettingsTabs
         title="Site Config"
@@ -46,7 +45,7 @@ const SiteConfigSettingsPage = ({ role }: SiteConfigSettingsPageProps) => (
         ]}
       />
     </div>
-  </DashboardLayout>
+  
 );
 
 export default SiteConfigSettingsPage;

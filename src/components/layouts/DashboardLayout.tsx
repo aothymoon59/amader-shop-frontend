@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { Alert, Avatar, Divider, Dropdown, Typography } from "antd";
@@ -22,12 +22,10 @@ import {
 } from "./dashboardMenuConfig";
 
 interface DashboardLayoutProps {
-  children: React.ReactNode;
   role: "admin" | "provider" | "super-admin";
 }
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({
-  children,
   role: dashboardRole,
 }) => {
   const [collapsed, setCollapsed] = useState(false);
@@ -359,7 +357,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 description="Your provider account is currently inactive. You can still view your account, but provider actions are blocked until an administrator reactivates it."
               />
             )}
-          {children}
+          <Outlet />
         </main>
       </div>
     </div>

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
-import PublicLayout from "@/components/layouts/PublicLayout";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -217,7 +217,7 @@ const CheckoutPage = () => {
   };
 
   return (
-    <PublicLayout>
+    
       <div className="container max-w-6xl py-8 lg:py-12">
         <div className="mb-8">
           <h1 className="text-3xl font-bold">Checkout</h1>
@@ -458,7 +458,7 @@ const CheckoutPage = () => {
           </form>
         )}
       </div>
-    </PublicLayout>
+    
   );
 };
 

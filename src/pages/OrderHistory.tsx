@@ -1,4 +1,4 @@
-import PublicLayout from "@/components/layouts/PublicLayout";
+
 import { Button, Empty, Spin, Table, Tag } from "antd";
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -52,7 +52,7 @@ const OrderHistory = () => {
                   {item.product?.name || item.productName}
                 </Link>
                 <span className="ml-2">
-                  Qty: {item.quantity} • {formatCurrencyAmount(item.subtotal, currency)}
+                  Qty: {item.quantity} Ã¢â‚¬Â¢ {formatCurrencyAmount(item.subtotal, currency)}
                 </span>
               </div>
             ))}
@@ -106,7 +106,7 @@ const OrderHistory = () => {
   ];
 
   return (
-    <PublicLayout>
+    
       <div className="container space-y-6 py-8 lg:py-12">
         <Button type="link" className="px-0">
           <Link to="/account/settings" className="flex items-center gap-1">
@@ -161,8 +161,8 @@ const OrderHistory = () => {
                   <div className="flex-1">
                     <div className="font-semibold">{order.orderNumber}</div>
                     <div className="mt-1 text-sm text-muted-foreground">
-                      {new Date(order.createdAt).toLocaleDateString()} ·{" "}
-                      {order.items.length} item(s) · $
+                      {new Date(order.createdAt).toLocaleDateString()} Ã‚Â·{" "}
+                      {order.items.length} item(s) Ã‚Â· $
                       {order.totalAmount.toFixed(2)}
                     </div>
                     <div className="mt-1 text-sm text-muted-foreground">
@@ -183,7 +183,7 @@ const OrderHistory = () => {
           </div>
         )}
       </div>
-    </PublicLayout>
+    
   );
 };
 

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import PublicLayout from "@/components/layouts/PublicLayout";
+
 import { Store } from "lucide-react";
 import { Button, Form, Input, Select, Upload, message } from "antd";
 import { FiUpload } from "react-icons/fi";
@@ -67,7 +67,7 @@ const ProviderApply = () => {
   };
 
   return (
-    <PublicLayout>
+    
       <div className="container py-16 max-w-2xl">
         <div className="text-center mb-10">
           <div className="mx-auto h-14 w-14 rounded-xl gradient-primary flex items-center justify-center mb-4">
@@ -170,7 +170,7 @@ const ProviderApply = () => {
           </Form>
         </div>
       </div>
-    </PublicLayout>
+    
   );
 };
 
