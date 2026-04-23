@@ -1,67 +1,29 @@
 import { useEffect, useState } from "react";
-import {
-  Button,
-  Card,
-  Form,
-  Image,
-  Input,
-  Modal,
-  Select,
-  Space,
-  Switch,
-  Typography,
-  Upload,
-  message,
-} from "antd";
-import { UploadOutlined } from "@ant-design/icons";
+import { Form, Input, Modal, Switch, Typography, message } from "antd";
 import type { UploadFile } from "antd/es/upload/interface";
 import type { HomePageSection } from "@/types/homePageCms";
 import { useUploadHeroBannerImagesMutation } from "@/redux/features/generalApi/homePageCmsApi";
+import {
+  AppAndCoverageSectionFields,
+  CategoriesSectionFields,
+  HeroSectionFields,
+  ProductSectionFields,
+  RepeaterSectionFields,
+  TestimonialsSectionFields,
+  TopPromoBarSectionFields,
+  VendorCtaSectionFields,
+} from "./homePageSections";
+import type {
+  ButtonFieldsProps,
+  FormValues,
+  RepeaterItem,
+} from "./homePageSections/types";
 
 type CmsHomePageFormModalProps = {
   open: boolean;
   section: HomePageSection | null;
   onClose: () => void;
   onSave: (section: HomePageSection) => void;
-};
-
-type RepeaterItem = {
-  title?: string;
-  subtitle?: string;
-  extra?: string;
-  extraTwo?: string;
-};
-
-type FormValues = {
-  name: string;
-  title: string;
-  subtitle: string;
-  description: string;
-  enabled: boolean;
-  primaryText?: string;
-  secondaryText?: string;
-  primaryButtonText?: string;
-  primaryButtonLink?: string;
-  secondaryButtonText?: string;
-  secondaryButtonLink?: string;
-  bannerImageUrls?: string[];
-  highlights?: string[];
-  promoCardTitle?: string;
-  promoCardSubtitle?: string;
-  promoCardItems?: string[];
-  deliveryTitle?: string;
-  deliverySubtitle?: string;
-  trustedTitle?: string;
-  trustedSubtitle?: string;
-  cardSubtitle?: string;
-  ctaText?: string;
-  ctaLink?: string;
-  emptyStateText?: string;
-  errorTitle?: string;
-  errorDescription?: string;
-  coverageSubtitle?: string;
-  coverageItems?: string[];
-  items?: RepeaterItem[];
 };
 
 const splitLines = (value: string) =>
@@ -331,19 +293,39 @@ const CmsHomePageFormModal = ({
     </Form.Item>
   );
 
-  const renderButtonFields = () => (
+  const renderButtonFields = (props?: ButtonFieldsProps) => (
     <>
-      <Form.Item label="Primary Button Text" name="primaryButtonText">
-        <Input placeholder="Primary button label" />
+      <Form.Item
+        label={props?.primaryTextLabel || "Primary Button Text"}
+        name="primaryButtonText"
+      >
+        <Input
+          placeholder={props?.primaryTextPlaceholder || "Enter button label"}
+        />
       </Form.Item>
-      <Form.Item label="Primary Button Link" name="primaryButtonLink">
-        <Input placeholder="/products" />
+      <Form.Item
+        label={props?.primaryLinkLabel || "Primary Button Link"}
+        name="primaryButtonLink"
+      >
+        <Input placeholder={props?.primaryLinkPlaceholder || "/products"} />
       </Form.Item>
-      <Form.Item label="Secondary Button Text" name="secondaryButtonText">
-        <Input placeholder="Secondary button label" />
+      <Form.Item
+        label={props?.secondaryTextLabel || "Secondary Button Text"}
+        name="secondaryButtonText"
+      >
+        <Input
+          placeholder={
+            props?.secondaryTextPlaceholder || "Enter secondary button label"
+          }
+        />
       </Form.Item>
-      <Form.Item label="Secondary Button Link" name="secondaryButtonLink">
-        <Input placeholder="/provider/apply" />
+      <Form.Item
+        label={props?.secondaryLinkLabel || "Secondary Button Link"}
+        name="secondaryButtonLink"
+      >
+        <Input
+          placeholder={props?.secondaryLinkPlaceholder || "/provider/apply"}
+        />
       </Form.Item>
     </>
   );
@@ -360,212 +342,28 @@ const CmsHomePageFormModal = ({
     }
 
     return (
-      <Form.List name="items">
-        {(fields, { add, remove }) => (
-          <Space direction="vertical" size={16} style={{ width: "100%" }}>
-            <Space style={{ justifyContent: "space-between", width: "100%" }}>
-              <Typography.Text strong>
-                {section.key === "stats"
-                  ? "Items"
-                  : section.key === "promo"
-                    ? "Promo Cards"
-                    : section.key === "whyChooseUs"
-                      ? "Feature Cards"
-                      : "Steps"}
-              </Typography.Text>
-              <Button
-                type="dashed"
-                onClick={() =>
-                  add(
-                    section.key === "whyChooseUs"
-                      ? { extra: "Truck" }
-                      : section.key === "promo"
-                        ? { extraTwo: "primary" }
-                        : {},
-                  )
-                }
-              >
-                Add Item
-              </Button>
-            </Space>
-
-            {fields.map((field) => (
-              <Card size="small" key={field.key}>
-                <Space direction="vertical" size={12} style={{ width: "100%" }}>
-                  <Form.Item label="Title" name={[field.name, "title"]}>
-                    <Input />
-                  </Form.Item>
-                  <Form.Item
-                    label={
-                      section.key === "stats"
-                        ? "Value"
-                        : "Subtitle / Description"
-                    }
-                    name={[field.name, "subtitle"]}
-                  >
-                    {section.key === "stats" ? (
-                      <Input />
-                    ) : (
-                      <Input.TextArea rows={3} />
-                    )}
-                  </Form.Item>
-
-                  {section.key === "promo" ? (
-                    <>
-                      <Form.Item
-                        label="Badge Text"
-                        name={[field.name, "extra"]}
-                      >
-                        <Input placeholder="Fresh" />
-                      </Form.Item>
-                      <Form.Item label="Theme" name={[field.name, "extraTwo"]}>
-                        <Select
-                          options={[
-                            { value: "primary", label: "Primary" },
-                            { value: "accent", label: "Accent" },
-                            { value: "mixed", label: "Mixed" },
-                          ]}
-                        />
-                      </Form.Item>
-                    </>
-                  ) : null}
-
-                  {section.key === "whyChooseUs" ? (
-                    <Form.Item label="Icon" name={[field.name, "extra"]}>
-                      <Select
-                        options={[
-                          { value: "Truck", label: "Truck" },
-                          { value: "ShieldCheck", label: "ShieldCheck" },
-                          { value: "BadgePercent", label: "BadgePercent" },
-                          { value: "Clock3", label: "Clock3" },
-                        ]}
-                      />
-                    </Form.Item>
-                  ) : null}
-
-                  <Button
-                    danger
-                    type="default"
-                    onClick={() => remove(field.name)}
-                  >
-                    Remove Item
-                  </Button>
-                </Space>
-              </Card>
-            ))}
-          </Space>
-        )}
-      </Form.List>
+      <RepeaterSectionFields
+        sectionKey={
+          section.key as "stats" | "promo" | "whyChooseUs" | "howItWorks"
+        }
+      />
     );
   };
 
   const renderSectionFields = () => {
     switch (section?.key) {
       case "topPromoBar":
-        return (
-          <>
-            <Form.Item label="Left Promo Text" name="primaryText">
-              <Input />
-            </Form.Item>
-            <Form.Item label="Right Promo Text" name="secondaryText">
-              <Input />
-            </Form.Item>
-          </>
-        );
+        return <TopPromoBarSectionFields />;
       case "hero":
         return (
-          <>
-            {renderButtonFields()}
-            <Form.List name="bannerImageUrls">
-              {(fields, { add, remove }) => (
-                <Space direction="vertical" size={16} style={{ width: "100%" }}>
-                  <Card size="small" title="Hero Banner Images">
-                    <Space
-                      direction="vertical"
-                      size={12}
-                      style={{ width: "100%" }}
-                    >
-                      <Typography.Text type="secondary">
-                        Uploaded images rotate as the hero background carousel.
-                      </Typography.Text>
-
-                      {fields.map((field, index) => {
-                        const imageUrl = form.getFieldValue([
-                          "bannerImageUrls",
-                          field.name,
-                        ]);
-
-                        return (
-                          <Card size="small" key={field.key}>
-                            <Space
-                              direction="vertical"
-                              size={12}
-                              style={{ width: "100%" }}
-                            >
-                              {imageUrl ? (
-                                <Image
-                                  src={imageUrl}
-                                  alt={`Hero banner ${index + 1}`}
-                                  className="max-h-40 rounded-lg object-cover"
-                                />
-                              ) : null}
-                              <Button danger onClick={() => remove(field.name)}>
-                                Remove Banner
-                              </Button>
-                            </Space>
-                          </Card>
-                        );
-                      })}
-
-                      <Upload
-                        beforeUpload={() => false}
-                        multiple
-                        accept=".jpg,.jpeg,.png,.webp,.gif"
-                        listType="picture"
-                        fileList={bannerFileList}
-                        onChange={({ fileList }) => setBannerFileList(fileList)}
-                      >
-                        <Button
-                          icon={<UploadOutlined />}
-                          loading={isUploadingBanners}
-                        >
-                          Choose Banner Images
-                        </Button>
-                      </Upload>
-                    </Space>
-                  </Card>
-                </Space>
-              )}
-            </Form.List>
-            {renderArrayTextArea(
-              "highlights",
-              "Highlights",
-              "One highlight per line",
-            )}
-            <Form.Item label="Promo Card Subtitle" name="promoCardSubtitle">
-              <Input />
-            </Form.Item>
-            <Form.Item label="Promo Card Title" name="promoCardTitle">
-              <Input />
-            </Form.Item>
-            {renderArrayTextArea(
-              "promoCardItems",
-              "Promo Card Items",
-              "One item per line",
-            )}
-            <Form.Item label="Delivery Label" name="deliverySubtitle">
-              <Input />
-            </Form.Item>
-            <Form.Item label="Delivery Value" name="deliveryTitle">
-              <Input />
-            </Form.Item>
-            <Form.Item label="Trusted Label" name="trustedSubtitle">
-              <Input />
-            </Form.Item>
-            <Form.Item label="Trusted Value" name="trustedTitle">
-              <Input />
-            </Form.Item>
-          </>
+          <HeroSectionFields
+            form={form}
+            bannerFileList={bannerFileList}
+            isUploadingBanners={isUploadingBanners}
+            onBannerFileListChange={setBannerFileList}
+            renderArrayTextArea={renderArrayTextArea}
+            renderButtonFields={renderButtonFields}
+          />
         );
       case "stats":
       case "promo":
@@ -574,70 +372,22 @@ const CmsHomePageFormModal = ({
         return renderRepeater();
       case "popularProducts":
       case "featuredProducts":
-        return (
-          <>
-            <Form.Item label="Button Text" name="ctaText">
-              <Input />
-            </Form.Item>
-            <Form.Item label="Button Link" name="ctaLink">
-              <Input />
-            </Form.Item>
-            <Form.Item label="Empty State Text" name="emptyStateText">
-              <Input.TextArea rows={3} />
-            </Form.Item>
-            <Form.Item label="Error Title" name="errorTitle">
-              <Input />
-            </Form.Item>
-            <Form.Item label="Error Description" name="errorDescription">
-              <Input />
-            </Form.Item>
-          </>
-        );
+        return <ProductSectionFields />;
       case "categories":
-        return (
-          <>
-            <Form.Item label="Card Subtitle" name="cardSubtitle">
-              <Input />
-            </Form.Item>
-            <Form.Item label="Button Text" name="ctaText">
-              <Input />
-            </Form.Item>
-            <Form.Item label="Button Link" name="ctaLink">
-              <Input />
-            </Form.Item>
-            <Form.Item label="Empty State Text" name="emptyStateText">
-              <Input.TextArea rows={3} />
-            </Form.Item>
-            <Form.Item label="Error Title" name="errorTitle">
-              <Input />
-            </Form.Item>
-            <Form.Item label="Error Description" name="errorDescription">
-              <Input />
-            </Form.Item>
-          </>
-        );
+        return <CategoriesSectionFields />;
       case "appAndCoverage":
         return (
-          <>
-            {renderButtonFields()}
-            <Form.Item label="Coverage Description" name="coverageSubtitle">
-              <Input.TextArea rows={4} />
-            </Form.Item>
-            {renderArrayTextArea(
-              "coverageItems",
-              "Coverage Bullet Points",
-              "One point per line",
-            )}
-          </>
+          <AppAndCoverageSectionFields
+            renderArrayTextArea={renderArrayTextArea}
+            renderButtonFields={renderButtonFields}
+          />
         );
       case "testimonials":
-        return (
-          <Form.Item label="Empty State Text" name="emptyStateText">
-            <Input.TextArea rows={4} />
-          </Form.Item>
-        );
+        return <TestimonialsSectionFields />;
       case "vendorCta":
-        return renderButtonFields();
+        return (
+          <VendorCtaSectionFields renderButtonFields={renderButtonFields} />
+        );
       default:
         return null;
     }
@@ -655,38 +405,41 @@ const CmsHomePageFormModal = ({
       destroyOnClose
       maskClosable={false}
     >
-      <Typography.Paragraph type="secondary">
-        Update this section using simple form fields so admins can manage
-        content without editing technical data.
-      </Typography.Paragraph>
+      <div className="max-h-[70vh] overflow-y-auto">
+        <Form form={form} layout="vertical" initialValues={{ enabled: true }}>
+          <Form.Item
+            label="Section Enabled"
+            name="enabled"
+            valuePropName="checked"
+          >
+            <Switch />
+          </Form.Item>
+          <Form.Item
+            label="Section Name"
+            name="name"
+            rules={[{ required: true }]}
+          >
+            <Input placeholder="Internal section name for admins" />
+          </Form.Item>
+          <Form.Item label="Title" name="title">
+            <Input placeholder="Main heading shown on the homepage" />
+          </Form.Item>
+          <Form.Item label="Subtitle" name="subtitle">
+            <Input.TextArea
+              rows={3}
+              placeholder="Short supporting text under the main heading"
+            />
+          </Form.Item>
+          <Form.Item label="Description" name="description">
+            <Input.TextArea
+              rows={3}
+              placeholder="Optional extra description or SEO-friendly summary"
+            />
+          </Form.Item>
 
-      <Form form={form} layout="vertical" initialValues={{ enabled: true }}>
-        <Form.Item
-          label="Section Enabled"
-          name="enabled"
-          valuePropName="checked"
-        >
-          <Switch />
-        </Form.Item>
-        <Form.Item
-          label="Section Name"
-          name="name"
-          rules={[{ required: true }]}
-        >
-          <Input />
-        </Form.Item>
-        <Form.Item label="Title" name="title">
-          <Input />
-        </Form.Item>
-        <Form.Item label="Subtitle" name="subtitle">
-          <Input.TextArea rows={3} />
-        </Form.Item>
-        <Form.Item label="Description" name="description">
-          <Input.TextArea rows={3} />
-        </Form.Item>
-
-        {renderSectionFields()}
-      </Form>
+          {renderSectionFields()}
+        </Form>
+      </div>
     </Modal>
   );
 };
