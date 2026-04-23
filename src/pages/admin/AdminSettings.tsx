@@ -5,7 +5,7 @@ import SystemCurrencySettingsSection from "@/components/settings/SystemCurrencyS
 import CommissionSettingsSection from "@/components/settings/CommissionSettingsSection";
 
 const AdminSettings = () => (
-  <div className="mx-auto max-w-6xl">
+  <div className="mx-auto">
     <SettingsTabs
       title="Settings"
       description="Manage your personal account details and password from one place."
