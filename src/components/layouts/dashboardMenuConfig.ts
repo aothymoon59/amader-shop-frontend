@@ -54,11 +54,19 @@ export const dashboardMenuItems: Record<string, SidebarItem[]> = {
       title: "CMS",
       icon: FileText,
       children: [
-        { title: "CMS Management", icon: FileText, path: "/admin/cms/management" },
-        { title: "Site Config", icon: Settings, path: "/admin/cms/site-config" },
+        {
+          title: "CMS Management",
+          icon: FileText,
+          path: "/admin/cms/management",
+        },
+        {
+          title: "Site Config",
+          icon: Settings,
+          path: "/admin/cms/site-config",
+        },
       ],
     },
-    { title: "Profile Settings", icon: Settings, path: "/admin/settings" },
+    { title: "Settings", icon: Settings, path: "/admin/settings" },
   ],
   provider: [
     { title: "Dashboard", icon: LayoutDashboard, path: "/provider/dashboard" },

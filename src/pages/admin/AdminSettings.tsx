@@ -5,36 +5,34 @@ import SystemCurrencySettingsSection from "@/components/settings/SystemCurrencyS
 import CommissionSettingsSection from "@/components/settings/CommissionSettingsSection";
 
 const AdminSettings = () => (
-  
-    <div className="mx-auto max-w-6xl">
-      <SettingsTabs
-        title="Settings"
-        description="Manage your personal account details and password from one place."
-        items={[
-          {
-            key: "profile",
-            label: "Personal Profile",
-            children: <ProfileSettingsSection title="Admin Profile Settings" />,
-          },
-          {
-            key: "password",
-            label: "Change Password",
-            children: <ChangePasswordSection />,
-          },
-          {
-            key: "currency",
-            label: "System Currency",
-            children: <SystemCurrencySettingsSection />,
-          },
-          {
-            key: "commission",
-            label: "Commission Settings",
-            children: <CommissionSettingsSection />,
-          },
-        ]}
-      />
-    </div>
-  
+  <div className="mx-auto max-w-6xl">
+    <SettingsTabs
+      title="Settings"
+      description="Manage your personal account details and password from one place."
+      items={[
+        {
+          key: "profile",
+          label: "Personal Profile",
+          children: <ProfileSettingsSection title="Admin Profile Settings" />,
+        },
+        {
+          key: "password",
+          label: "Change Password",
+          children: <ChangePasswordSection />,
+        },
+        {
+          key: "currency",
+          label: "System Currency",
+          children: <SystemCurrencySettingsSection />,
+        },
+        {
+          key: "commission",
+          label: "Commission Settings",
+          children: <CommissionSettingsSection />,
+        },
+      ]}
+    />
+  </div>
 );
 
 export default AdminSettings;
