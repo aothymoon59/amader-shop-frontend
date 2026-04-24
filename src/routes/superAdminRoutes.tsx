@@ -8,6 +8,7 @@ import SuperAdminAuditLog from "../pages/super-admin/SuperAdminAuditLog";
 import SuperAdminAnalytics from "../pages/super-admin/SuperAdminAnalytics";
 import SuperAdminCMS from "../pages/super-admin/SuperAdminCMS";
 import SuperAdminCMSHome from "../pages/super-admin/SuperAdminCMSHome";
+import SuperAdminCmsSystem from "../pages/super-admin/SuperAdminCmsSystem";
 import SuperAdminDashboard from "../pages/super-admin/SuperAdminDashboard";
 import SuperAdminDeliveryZones from "../pages/super-admin/SuperAdminDeliveryZones";
 import SuperAdminOrders from "../pages/super-admin/SuperAdminOrders";
@@ -37,6 +38,7 @@ export const superAdminRoutes: RouteObject[] = [
       { path: "cms/management", element: <SuperAdminCMS /> },
       { path: "cms/management/home", element: <SuperAdminCMSHome /> },
       { path: "cms/site-config", element: <SuperAdminSiteConfig /> },
+      { path: "cms/system", element: <SuperAdminCmsSystem /> },
     ],
   },
 ];

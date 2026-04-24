@@ -51,11 +51,11 @@ export const dashboardMenuItems: Record<string, SidebarItem[]> = {
     { title: "Reports", icon: BarChart3, path: "/admin/reports" },
     { title: "Audit Log", icon: FileText, path: "/admin/audit-log" },
     {
-      title: "CMS",
+      title: "CMS Management",
       icon: FileText,
       children: [
         {
-          title: "CMS Management",
+          title: "CMS",
           icon: FileText,
           path: "/admin/cms/management",
         },
@@ -63,6 +63,11 @@ export const dashboardMenuItems: Record<string, SidebarItem[]> = {
           title: "Site Config",
           icon: Settings,
           path: "/admin/cms/site-config",
+        },
+        {
+          title: "System",
+          icon: Settings,
+          path: "/admin/cms/system",
         },
       ],
     },
@@ -121,11 +126,11 @@ export const dashboardMenuItems: Record<string, SidebarItem[]> = {
     { title: "Analytics", icon: BarChart3, path: "/super-admin/analytics" },
     { title: "Audit Log", icon: FileText, path: "/super-admin/audit-log" },
     {
-      title: "CMS",
+      title: "CMS Management",
       icon: FileText,
       children: [
         {
-          title: "CMS Management",
+          title: "CMS",
           icon: FileText,
           path: "/super-admin/cms/management",
         },
@@ -133,6 +138,11 @@ export const dashboardMenuItems: Record<string, SidebarItem[]> = {
           title: "Site Config",
           icon: Settings,
           path: "/super-admin/cms/site-config",
+        },
+        {
+          title: "System",
+          icon: Settings,
+          path: "/super-admin/cms/system",
         },
       ],
     },

@@ -1,4 +1,4 @@
-import { App, Button, Card, Col, Row, Space, Tag, Typography } from "antd";
+import { Button, Card, Col, Row, Space, Tag, Typography } from "antd";
 import { ArrowRightOutlined, FileTextOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 
@@ -31,10 +31,11 @@ const CmsPagesBoard = ({ role }: CmsPagesBoardProps) => {
     <Space direction="vertical" size={24} style={{ width: "100%" }}>
       <div>
         <Typography.Title level={2} style={{ marginBottom: 8 }}>
-          CMS Pages
+          CMS Management
         </Typography.Title>
         <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
-          Select a page to manage its content. More CMS pages can be added here later.
+          Select a page to manage its content. System settings are available from the CMS
+          Management submenu.
         </Typography.Paragraph>
       </div>
 
