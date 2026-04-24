@@ -2,11 +2,16 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Empty, Pagination, Skeleton } from "antd";
 
-
+import Hero from "@/components/home/Hero";
 import MarketplaceProductCard from "@/components/products/MarketplaceProductCard";
 import MarketplaceProductFilters from "@/components/products/MarketplaceProductFilters";
 import { useGetCategoriesQuery } from "@/redux/features/generalApi/categoriesApi";
+import { useGetPublicProductsPageSectionsQuery } from "@/redux/features/generalApi/cmsSectionsApi";
 import { useGetAllProductsQuery } from "@/redux/features/products/productApi";
+import {
+  defaultProductsPageSections,
+  type ProductsPageSection,
+} from "@/types/cmsSections";
 
 type CategoryOption = {
   id: string;
@@ -19,9 +24,9 @@ const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryIdFromUrl = searchParams.get("categoryId") || undefined;
   const [search, setSearch] = useState("");
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | undefined>(
-    categoryIdFromUrl,
-  );
+  const [selectedCategoryId, setSelectedCategoryId] = useState<
+    string | undefined
+  >(categoryIdFromUrl);
   const [isFeatured, setIsFeatured] = useState<boolean | undefined>(undefined);
   const [isDiscount, setIsDiscount] = useState<boolean | undefined>(undefined);
   const [priceSort, setPriceSort] = useState<
@@ -34,10 +39,22 @@ const Products = () => {
   const [limit, setLimit] = useState(12);
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
 
+  const { data: productsPageCmsResponse } =
+    useGetPublicProductsPageSectionsQuery();
   const { data: categoriesResponse } = useGetCategoriesQuery(undefined);
   const categories = useMemo<CategoryOption[]>(
     () => (categoriesResponse?.data ?? []) as CategoryOption[],
     [categoriesResponse],
+  );
+  const cmsSections = useMemo(
+    () =>
+      [
+        ...(productsPageCmsResponse?.data.sections ??
+          defaultProductsPageSections),
+      ]
+        .filter((section) => section.enabled)
+        .sort((a, b) => a.order - b.order),
+    [productsPageCmsResponse],
   );
 
   useEffect(() => {
@@ -106,9 +123,20 @@ const Products = () => {
     setPage(1);
   };
 
-  return (
-    
+  const renderProductsListing = (section: ProductsPageSection) => (
+    <section key={section.key}>
       <div className="container py-8 lg:py-12">
+        <div className="mb-8 max-w-3xl">
+          <h1 className="mb-3 text-3xl font-bold md:text-4xl">
+            {section.title || "All Products"}
+          </h1>
+          {section.subtitle ? (
+            <p className="text-base text-muted-foreground md:text-lg">
+              {section.subtitle}
+            </p>
+          ) : null}
+        </div>
+
         <MarketplaceProductFilters
           categories={categories}
           search={search}
@@ -200,8 +228,21 @@ const Products = () => {
           </div>
         ) : null}
       </div>
-    
+    </section>
   );
+
+  const renderCmsSection = (section: ProductsPageSection) => {
+    switch (section.key) {
+      case "hero":
+        return <Hero key={section.key} section={section} />;
+      case "productList":
+        return renderProductsListing(section);
+      default:
+        return null;
+    }
+  };
+
+  return <>{cmsSections.map((section) => renderCmsSection(section))}</>;
 };
 
 export default Products;

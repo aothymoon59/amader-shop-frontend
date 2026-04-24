@@ -1,6 +1,7 @@
 import type { FormInstance } from "antd";
 import type { UploadFile } from "antd/es/upload/interface";
 import type { ReactNode } from "react";
+import type { ManagedCmsSection } from "@/types/cmsSections";
 
 export type RepeaterItem = {
   title?: string;
@@ -8,6 +9,13 @@ export type RepeaterItem = {
   extra?: string;
   extraTwo?: string;
 };
+
+export type RepeatableSectionKey =
+  | "stats"
+  | "promo"
+  | "whyChooseUs"
+  | "howItWorks"
+  | "faq";
 
 export type FormValues = {
   name: string;
@@ -39,6 +47,13 @@ export type FormValues = {
   coverageSubtitle?: string;
   coverageItems?: string[];
   items?: RepeaterItem[];
+};
+
+export type CmsSectionFormModalProps = {
+  open: boolean;
+  section: ManagedCmsSection | null;
+  onClose: () => void;
+  onSave: (section: ManagedCmsSection) => void;
 };
 
 export type ButtonFieldsProps = {

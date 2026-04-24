@@ -1,8 +1,8 @@
 import { Button, Card, Form, Input, Select, Space, Typography } from "antd";
-import type { HomeSectionKey } from "@/types/homePageCms";
+import type { RepeatableSectionKey } from "./types";
 
 type RepeaterSectionFieldsProps = {
-  sectionKey: Extract<HomeSectionKey, "stats" | "promo" | "whyChooseUs" | "howItWorks">;
+  sectionKey: Exclude<RepeatableSectionKey, "faq">;
 };
 
 const sectionTitles = {

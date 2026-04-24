@@ -1,4 +1,4 @@
-import { App, Button, Card, Col, Row, Space, Tag, Typography } from "antd";
+import { Button, Card, Col, Row, Space, Tag, Typography } from "antd";
 import { ArrowRightOutlined, FileTextOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 
@@ -7,7 +7,7 @@ type CmsPagesBoardProps = {
 };
 
 type CmsPageDefinition = {
-  key: "home";
+  key: "home" | "about" | "products" | "common";
   name: string;
   route: string;
   description: string;
@@ -21,6 +21,27 @@ const cmsPages: CmsPageDefinition[] = [
     description:
       "Manage section sequence, section titles, subtitles, descriptions, buttons, cards, and other home page content.",
   },
+  {
+    key: "about",
+    name: "About Page",
+    route: "/about",
+    description:
+      "Manage the About page hero and story sections that shape the public brand narrative.",
+  },
+  {
+    key: "products",
+    name: "Products Page",
+    route: "/products",
+    description:
+      "Manage the Products page banner, title, subtitle, and listing header content.",
+  },
+  {
+    key: "common",
+    name: "Common Sections",
+    route: "Shared blocks",
+    description:
+      "Manage reusable public sections such as Vendor CTA, Why Choose Us, and FAQ from one place.",
+  },
 ];
 
 const CmsPagesBoard = ({ role }: CmsPagesBoardProps) => {
@@ -31,10 +52,11 @@ const CmsPagesBoard = ({ role }: CmsPagesBoardProps) => {
     <Space direction="vertical" size={24} style={{ width: "100%" }}>
       <div>
         <Typography.Title level={2} style={{ marginBottom: 8 }}>
-          CMS Pages
+          CMS Management
         </Typography.Title>
         <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
-          Select a page to manage its content. More CMS pages can be added here later.
+          Select a page to manage its content. System settings are available from the CMS
+          Management submenu.
         </Typography.Paragraph>
       </div>
 

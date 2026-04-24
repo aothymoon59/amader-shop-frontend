@@ -2,7 +2,7 @@ import { Modal } from "antd";
 import type { ReactNode } from "react";
 
 type AntdModalProps = {
-  title?: string;
+  title?: ReactNode;
   width?: number | string;
   height?: number | string;
   children?: ReactNode;
@@ -22,7 +22,7 @@ const AntdModal = ({
 }: AntdModalProps) => {
   return (
     <Modal
-      title={<h3 className="text-2xl mb-3">{title}</h3>}
+      title={title ? <h3 className="text-2xl mb-3">{title}</h3> : null}
       open={isModalOpen}
       onCancel={closeModal}
       centered={isCentered}

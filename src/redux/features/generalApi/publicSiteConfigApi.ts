@@ -4,11 +4,17 @@ import type {
   SeoConfigRecord,
   SystemSettings,
 } from "@/redux/features/generalApi/systemSettingsApi";
-import type { HomePageSection } from "@/types/homePageCms";
+import type {
+  AboutPageSection,
+  CommonCmsSection,
+  HomePageSection,
+} from "@/types/cmsSections";
 
 export type PublicSiteConfig = {
   siteOverview: SystemSettings["siteOverview"];
   homePageSections: HomePageSection[];
+  aboutPageSections: AboutPageSection[];
+  commonSections: CommonCmsSection[];
   seoConfigs: SeoConfigRecord[];
   gaGtmConfig: SystemSettings["gaGtmConfig"];
   socialMediaConfig: SystemSettings["socialMediaConfig"];

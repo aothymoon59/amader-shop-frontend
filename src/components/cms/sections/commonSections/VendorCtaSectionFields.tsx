@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { ButtonFieldsProps } from "./types";
+import type { ButtonFieldsProps } from "../sharedSectionFields/types";
 
 type VendorCtaSectionFieldsProps = {
   renderButtonFields: (props?: ButtonFieldsProps) => ReactNode;

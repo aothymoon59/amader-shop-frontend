@@ -1,8 +1,4 @@
-import {
-  Button as AntButton,
-  Drawer,
-  Select,
-} from "antd";
+import { Button as AntButton, Drawer, Select } from "antd";
 import { SlidersHorizontal } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -62,15 +58,7 @@ const MarketplaceProductFilters = ({
 }: MarketplaceProductFiltersProps) => {
   return (
     <>
-      <div className="mb-8 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <h1 className="mb-2 text-3xl font-bold">All Products</h1>
-          <p className="text-muted-foreground">
-            Browse published marketplace products with live filters and
-            pagination.
-          </p>
-        </div>
-
+      <div className="mb-8 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-end">
         <div className="flex flex-wrap items-center gap-3">
           <Select
             value={String(limit)}
@@ -117,7 +105,12 @@ const MarketplaceProductFilters = ({
         ) : null}
       </div>
 
-      <Drawer title="Filter Products" width={360} open={isOpen} onClose={onClose}>
+      <Drawer
+        title="Filter Products"
+        width={360}
+        open={isOpen}
+        onClose={onClose}
+      >
         <div className="space-y-4">
           <div>
             <p className="mb-2 text-sm text-muted-foreground">Featured</p>

@@ -1,27 +1,4 @@
-export type HomeSectionKey =
-  | "topPromoBar"
-  | "hero"
-  | "stats"
-  | "popularProducts"
-  | "categories"
-  | "featuredProducts"
-  | "promo"
-  | "whyChooseUs"
-  | "howItWorks"
-  | "appAndCoverage"
-  | "testimonials"
-  | "vendorCta";
-
-export type HomePageSection = {
-  key: HomeSectionKey;
-  name: string;
-  enabled: boolean;
-  order: number;
-  title: string;
-  subtitle: string;
-  description: string;
-  content: Record<string, unknown>;
-};
+import type { HomePageSection, HomeSectionKey } from "./cmsSections";
 
 export type HomePageSectionsPayload = {
   sections: HomePageSection[];
