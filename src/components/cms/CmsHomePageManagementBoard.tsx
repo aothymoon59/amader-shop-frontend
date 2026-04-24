@@ -24,15 +24,13 @@ import {
 } from "antd";
 import { useNavigate } from "react-router-dom";
 
-import CmsHomePageFormModal from "@/components/cms/CmsHomePageFormModal";
+import { CmsHomePageFormModal } from "@/components/cms/modals/homePageModals";
 import {
   useGetAdminHomePageSectionsQuery,
   useUpdateHomePageSectionsMutation,
 } from "@/redux/features/generalApi/homePageCmsApi";
-import {
-  defaultHomePageSections,
-  type HomePageSection,
-} from "@/types/homePageCms";
+import { defaultHomePageSections } from "@/types/homePageCms";
+import { HomePageSection } from "@/types/cmsSections";
 
 type CmsHomePageManagementBoardProps = {
   role: "admin" | "super-admin";

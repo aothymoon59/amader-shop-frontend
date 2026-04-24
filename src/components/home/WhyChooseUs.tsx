@@ -1,9 +1,9 @@
 import { BadgePercent, Clock3, ShieldCheck, Truck } from "lucide-react";
 
-import type { HomePageSection } from "@/types/homePageCms";
+import type { BaseCmsSection } from "@/types/cmsSections";
 
 type WhyChooseUsProps = {
-  section: HomePageSection;
+  section: BaseCmsSection;
 };
 
 const iconMap = {

@@ -4,7 +4,11 @@ import ProtectedRoute from "../components/auth/ProtectedRoute";
 import DashboardLayout from "../components/layouts/DashboardLayout";
 import AdminAuditLog from "../pages/admin/AdminAuditLog";
 import AdminCMS from "../pages/admin/AdminCMS";
+import AdminCMSAbout from "../pages/admin/AdminCMSAbout";
+import AdminCMSCommon from "../pages/admin/AdminCMSCommon";
 import AdminCMSHome from "../pages/admin/AdminCMSHome";
+import AdminCMSProducts from "../pages/admin/AdminCMSProducts";
+import AdminCmsSystem from "../pages/admin/AdminCmsSystem";
 import AdminCustomers from "../pages/admin/AdminCustomers";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import AdminDeliveryZones from "../pages/admin/AdminDeliveryZones";
@@ -41,7 +45,11 @@ export const adminRoutes: RouteObject[] = [
       { path: "cms", element: <AdminCMS /> },
       { path: "cms/management", element: <AdminCMS /> },
       { path: "cms/management/home", element: <AdminCMSHome /> },
+      { path: "cms/management/about", element: <AdminCMSAbout /> },
+      { path: "cms/management/products", element: <AdminCMSProducts /> },
+      { path: "cms/management/common", element: <AdminCMSCommon /> },
       { path: "cms/site-config", element: <AdminSiteConfig /> },
+      { path: "cms/system", element: <AdminCmsSystem /> },
       { path: "settings", element: <AdminSettings /> },
       { path: "audit-log", element: <AdminAuditLog /> },
     ],

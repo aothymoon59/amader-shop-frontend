@@ -9,8 +9,8 @@ import {
   Typography,
   Upload,
 } from "antd";
-import StringListField from "./StringListField";
-import type { HeroSectionFieldsProps } from "./types";
+import StringListField from "../sharedSectionFields/StringListField";
+import type { HeroSectionFieldsProps } from "../sharedSectionFields/types";
 
 const HeroSectionFields = ({
   form,

@@ -11,7 +11,8 @@ import TopPromoBar from "@/components/home/TopPromoBar";
 import VendorCTA from "@/components/home/VendorCTA";
 import WhyChooseUs from "@/components/home/WhyChooseUs";
 import { useGetPublicHomePageSectionsQuery } from "@/redux/features/generalApi/homePageCmsApi";
-import { defaultHomePageSections, type HomePageSection } from "@/types/homePageCms";
+import { HomePageSection } from "@/types/cmsSections";
+import { defaultHomePageSections } from "@/types/homePageCms";
 
 const Index = () => {
   const { data } = useGetPublicHomePageSectionsQuery();
@@ -28,7 +29,9 @@ const Index = () => {
       case "stats":
         return <Stats key={section.key} section={section} />;
       case "popularProducts":
-        return <HomePopularProductsSection key={section.key} section={section} />;
+        return (
+          <HomePopularProductsSection key={section.key} section={section} />
+        );
       case "categories":
         return <HomeCategoriesSection key={section.key} section={section} />;
       case "featuredProducts":

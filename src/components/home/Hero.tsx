@@ -2,11 +2,11 @@ import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-import type { HomePageSection } from "@/types/homePageCms";
+import type { BaseCmsSection } from "@/types/cmsSections";
 import { Button } from "antd";
 
 type HeroProps = {
-  section: HomePageSection;
+  section: BaseCmsSection;
 };
 
 const Hero = ({ section }: HeroProps) => {
