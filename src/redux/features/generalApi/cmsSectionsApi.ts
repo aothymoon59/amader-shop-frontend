@@ -3,6 +3,7 @@ import { tagTypes } from "@/redux/tagTypes";
 import type {
   AboutPageSection,
   CommonCmsSection,
+  ProductsPageSection,
 } from "@/types/cmsSections";
 
 type ApiResponse<T> = {
@@ -14,6 +15,19 @@ type ApiResponse<T> = {
 type CmsSectionsPayload<T> = {
   sections: T[];
   updatedAt: string;
+};
+
+type CmsBannerUploadPayload = {
+  bannerImageUrls: string[];
+  files: Array<{
+    url: string;
+    publicId: string;
+    resourceType: string;
+    format: string | null;
+    bytes: number;
+    originalName: string;
+    mimeType: string;
+  }>;
 };
 
 export const cmsSectionsApi = baseApi.injectEndpoints({
@@ -80,6 +94,47 @@ export const cmsSectionsApi = baseApi.injectEndpoints({
       }),
       providesTags: [tagTypes.HOME_PAGE_CMS],
     }),
+    getAdminProductsPageSections: builder.query<
+      ApiResponse<CmsSectionsPayload<ProductsPageSection>>,
+      void
+    >({
+      query: () => ({
+        url: "/system-settings/products-page",
+        method: "GET",
+      }),
+      providesTags: [tagTypes.HOME_PAGE_CMS],
+    }),
+    updateProductsPageSections: builder.mutation<
+      ApiResponse<CmsSectionsPayload<ProductsPageSection>>,
+      { sections: ProductsPageSection[] }
+    >({
+      query: (body) => ({
+        url: "/system-settings/products-page",
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: [tagTypes.HOME_PAGE_CMS, tagTypes.SYSTEM_SETTINGS],
+    }),
+    uploadProductsPageHeroBannerImages: builder.mutation<
+      ApiResponse<CmsBannerUploadPayload>,
+      FormData
+    >({
+      query: (body) => ({
+        url: "/system-settings/products-page/hero-banners",
+        method: "POST",
+        body,
+      }),
+    }),
+    getPublicProductsPageSections: builder.query<
+      ApiResponse<CmsSectionsPayload<ProductsPageSection>>,
+      void
+    >({
+      query: () => ({
+        url: "/system-settings/public/products-page",
+        method: "GET",
+      }),
+      providesTags: [tagTypes.HOME_PAGE_CMS],
+    }),
   }),
 });
 
@@ -90,4 +145,8 @@ export const {
   useGetAdminCommonSectionsQuery,
   useUpdateCommonSectionsMutation,
   useGetPublicCommonSectionsQuery,
+  useGetAdminProductsPageSectionsQuery,
+  useUpdateProductsPageSectionsMutation,
+  useUploadProductsPageHeroBannerImagesMutation,
+  useGetPublicProductsPageSectionsQuery,
 } = cmsSectionsApi;

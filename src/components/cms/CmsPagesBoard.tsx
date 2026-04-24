@@ -7,7 +7,7 @@ type CmsPagesBoardProps = {
 };
 
 type CmsPageDefinition = {
-  key: "home" | "about" | "common";
+  key: "home" | "about" | "products" | "common";
   name: string;
   route: string;
   description: string;
@@ -27,6 +27,13 @@ const cmsPages: CmsPageDefinition[] = [
     route: "/about",
     description:
       "Manage the About page hero and story sections that shape the public brand narrative.",
+  },
+  {
+    key: "products",
+    name: "Products Page",
+    route: "/products",
+    description:
+      "Manage the Products page banner, title, subtitle, and listing header content.",
   },
   {
     key: "common",

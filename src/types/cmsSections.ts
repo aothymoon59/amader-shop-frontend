@@ -31,7 +31,14 @@ export type AboutPageSection = BaseCmsSection<AboutSectionKey>;
 export type CommonSectionKey = "whyChooseUs" | "vendorCta" | "faq";
 export type CommonCmsSection = BaseCmsSection<CommonSectionKey>;
 
-export type ManagedCmsSection = HomePageSection | AboutPageSection | CommonCmsSection;
+export type ProductsPageSectionKey = "hero" | "productList";
+export type ProductsPageSection = BaseCmsSection<ProductsPageSectionKey>;
+
+export type ManagedCmsSection =
+  | HomePageSection
+  | AboutPageSection
+  | CommonCmsSection
+  | ProductsPageSection;
 
 export const defaultAboutPageSections: AboutPageSection[] = [
   {
@@ -153,5 +160,43 @@ export const defaultCommonSections: CommonCmsSection[] = [
       secondaryButtonText: "Explore Marketplace",
       secondaryButtonLink: "/products",
     },
+  },
+];
+
+export const defaultProductsPageSections: ProductsPageSection[] = [
+  {
+    key: "hero",
+    name: "Products Banner",
+    enabled: true,
+    order: 1,
+    title: "Shop products from trusted local sellers",
+    subtitle:
+      "Browse everyday essentials, fresh grocery items, and marketplace deals from approved vendors in one place.",
+    description: "Products marketplace",
+    content: {
+      primaryButtonText: "Browse Products",
+      primaryButtonLink: "/products",
+      secondaryButtonText: "Become a Vendor",
+      secondaryButtonLink: "/provider/apply",
+      bannerImageUrls: [],
+      highlights: ["Verified sellers", "Fresh stock", "Simple checkout"],
+      promoCardTitle: "Fresh picks",
+      promoCardSubtitle: "Marketplace deals",
+      promoCardItems: ["Daily essentials", "Local shops", "Fast delivery"],
+      deliveryTitle: "Fast delivery",
+      deliverySubtitle: "Available",
+      trustedTitle: "Trusted vendors",
+      trustedSubtitle: "Shop from",
+    },
+  },
+  {
+    key: "productList",
+    name: "Products Section",
+    enabled: true,
+    order: 2,
+    title: "All Products",
+    subtitle: "Find the right products with search, filters, and category browsing.",
+    description: "",
+    content: {},
   },
 ];

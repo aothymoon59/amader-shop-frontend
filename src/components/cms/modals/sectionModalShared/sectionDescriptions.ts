@@ -26,6 +26,8 @@ const sectionDescriptions: Partial<Record<ManagedCmsSection["key"], string>> = {
     "Manage the main story, mission, and narrative copy for the About page.",
   faq:
     "Keep reusable frequently asked questions and answers updated in one place.",
+  productList:
+    "Manage the Products page listing title and subtitle shown above filters and product results.",
 };
 
 export const getSectionDescription = (section: ManagedCmsSection | null) =>

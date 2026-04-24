@@ -10,6 +10,7 @@ import SuperAdminCMS from "../pages/super-admin/SuperAdminCMS";
 import SuperAdminCMSAbout from "../pages/super-admin/SuperAdminCMSAbout";
 import SuperAdminCMSCommon from "../pages/super-admin/SuperAdminCMSCommon";
 import SuperAdminCMSHome from "../pages/super-admin/SuperAdminCMSHome";
+import SuperAdminCMSProducts from "../pages/super-admin/SuperAdminCMSProducts";
 import SuperAdminCmsSystem from "../pages/super-admin/SuperAdminCmsSystem";
 import SuperAdminDashboard from "../pages/super-admin/SuperAdminDashboard";
 import SuperAdminDeliveryZones from "../pages/super-admin/SuperAdminDeliveryZones";
@@ -40,6 +41,7 @@ export const superAdminRoutes: RouteObject[] = [
       { path: "cms/management", element: <SuperAdminCMS /> },
       { path: "cms/management/home", element: <SuperAdminCMSHome /> },
       { path: "cms/management/about", element: <SuperAdminCMSAbout /> },
+      { path: "cms/management/products", element: <SuperAdminCMSProducts /> },
       { path: "cms/management/common", element: <SuperAdminCMSCommon /> },
       { path: "cms/site-config", element: <SuperAdminSiteConfig /> },
       { path: "cms/system", element: <SuperAdminCmsSystem /> },
