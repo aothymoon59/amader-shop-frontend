@@ -1,4 +1,5 @@
 import CmsSectionManagementBoard from "@/components/cms/CmsSectionManagementBoard";
+import { CmsCommonSectionFormModal } from "@/components/cms/modals/commonSectionModals";
 import {
   useGetAdminCommonSectionsQuery,
   useUpdateCommonSectionsMutation,
@@ -32,6 +33,7 @@ const CmsCommonSectionsManagementBoard = ({
       isSaving={isSaving}
       refetch={refetch}
       onPersist={(sections) => updateCommonSections({ sections }).unwrap()}
+      FormModalComponent={CmsCommonSectionFormModal}
     />
   );
 };

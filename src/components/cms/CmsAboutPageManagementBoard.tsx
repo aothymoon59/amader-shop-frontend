@@ -1,4 +1,5 @@
 import CmsSectionManagementBoard from "@/components/cms/CmsSectionManagementBoard";
+import { CmsAboutPageFormModal } from "@/components/cms/modals/aboutPageModals";
 import {
   useGetAdminAboutPageSectionsQuery,
   useUpdateAboutPageSectionsMutation,
@@ -32,6 +33,7 @@ const CmsAboutPageManagementBoard = ({
       isSaving={isSaving}
       refetch={refetch}
       onPersist={(sections) => updateAboutPageSections({ sections }).unwrap()}
+      FormModalComponent={CmsAboutPageFormModal}
     />
   );
 };

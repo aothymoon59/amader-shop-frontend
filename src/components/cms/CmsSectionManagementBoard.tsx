@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { type ComponentType, useMemo, useState } from "react";
 import {
   ArrowLeftOutlined,
   ArrowDownOutlined,
@@ -24,7 +24,7 @@ import {
 } from "antd";
 import { useNavigate } from "react-router-dom";
 
-import CmsHomePageFormModal from "@/components/cms/CmsHomePageFormModal";
+import type { CmsSectionFormModalProps } from "@/components/cms/sections/sharedSectionFields/types";
 import type { ManagedCmsSection } from "@/types/cmsSections";
 
 type CmsSectionManagementBoardProps<T extends ManagedCmsSection> = {
@@ -39,6 +39,7 @@ type CmsSectionManagementBoardProps<T extends ManagedCmsSection> = {
   isSaving: boolean;
   refetch: () => void;
   onPersist: (sections: T[]) => Promise<unknown>;
+  FormModalComponent: ComponentType<CmsSectionFormModalProps>;
 };
 
 const CmsSectionManagementBoard = <T extends ManagedCmsSection>({
@@ -53,6 +54,7 @@ const CmsSectionManagementBoard = <T extends ManagedCmsSection>({
   isSaving,
   refetch,
   onPersist,
+  FormModalComponent,
 }: CmsSectionManagementBoardProps<T>) => {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
@@ -354,7 +356,7 @@ const CmsSectionManagementBoard = <T extends ManagedCmsSection>({
         </Row>
       )}
 
-      <CmsHomePageFormModal
+      <FormModalComponent
         open={Boolean(editingSection)}
         section={editingSection}
         onClose={() => setEditingSection(null)}

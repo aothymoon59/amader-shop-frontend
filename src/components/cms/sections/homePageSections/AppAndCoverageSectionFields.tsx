@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Form, Input } from "antd";
-import StringListField from "./StringListField";
-import type { ButtonFieldsProps } from "./types";
+import StringListField from "../sharedSectionFields/StringListField";
+import type { ButtonFieldsProps } from "../sharedSectionFields/types";
 
 type AppAndCoverageSectionFieldsProps = {
   renderButtonFields: (props?: ButtonFieldsProps) => ReactNode;
