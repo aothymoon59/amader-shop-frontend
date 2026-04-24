@@ -14,32 +14,28 @@ import {
   message,
 } from "antd";
 import type { UploadFile } from "antd/es/upload/interface";
-import type { HomePageSection } from "@/types/homePageCms";
+import type { ManagedCmsSection } from "@/types/cmsSections";
 import { useUploadHeroBannerImagesMutation } from "@/redux/features/generalApi/homePageCmsApi";
 import {
   AppAndCoverageSectionFields,
   CategoriesSectionFields,
+  FaqSectionFields,
   HeroSectionFields,
   ProductSectionFields,
   RepeaterSectionFields,
+  StorySectionFields,
   TestimonialsSectionFields,
   TopPromoBarSectionFields,
   VendorCtaSectionFields,
 } from "./homePageSections";
 import type {
   ButtonFieldsProps,
+  CmsSectionFormModalProps,
   FormValues,
   RepeaterItem,
 } from "./homePageSections/types";
 
-type CmsHomePageFormModalProps = {
-  open: boolean;
-  section: HomePageSection | null;
-  onClose: () => void;
-  onSave: (section: HomePageSection) => void;
-};
-
-const sectionDescriptions: Partial<Record<HomePageSection["key"], string>> = {
+const sectionDescriptions: Partial<Record<ManagedCmsSection["key"], string>> = {
   topPromoBar:
     "Update the short announcement that appears at the very top of the homepage.",
   hero: "Manage the main first-impression area including messaging, actions, and rotating banners.",
@@ -60,6 +56,9 @@ const sectionDescriptions: Partial<Record<HomePageSection["key"], string>> = {
   testimonials: "Set fallback text for the testimonials experience.",
   vendorCta:
     "Configure the call-to-action that encourages new vendors to join.",
+  story:
+    "Manage the main story, mission, and narrative copy for the About page.",
+  faq: "Keep reusable frequently asked questions and answers updated in one place.",
 };
 
 const CmsHomePageFormModal = ({
@@ -67,7 +66,7 @@ const CmsHomePageFormModal = ({
   section,
   onClose,
   onSave,
-}: CmsHomePageFormModalProps) => {
+}: CmsSectionFormModalProps) => {
   const [form] = Form.useForm<FormValues>();
   const [bannerFileList, setBannerFileList] = useState<UploadFile[]>([]);
   const [uploadHeroBannerImages, { isLoading: isUploadingBanners }] =
@@ -107,6 +106,11 @@ const CmsHomePageFormModal = ({
           return source.map((item) => ({
             title: String(item?.title || ""),
             subtitle: String(item?.desc || ""),
+          }));
+        case "faq":
+          return source.map((item) => ({
+            title: String(item?.question || ""),
+            subtitle: String(item?.answer || ""),
           }));
         default:
           return [];
@@ -233,6 +237,13 @@ const CmsHomePageFormModal = ({
             desc: item.subtitle?.trim() || "",
           })),
         };
+      case "faq":
+        return {
+          items: (values.items || []).map((item) => ({
+            question: item.title?.trim() || "",
+            answer: item.subtitle?.trim() || "",
+          })),
+        };
       case "appAndCoverage":
         return {
           primaryButtonText: values.primaryButtonText?.trim() || "",
@@ -255,6 +266,8 @@ const CmsHomePageFormModal = ({
           secondaryButtonText: values.secondaryButtonText?.trim() || "",
           secondaryButtonLink: values.secondaryButtonLink?.trim() || "",
         };
+      case "story":
+        return section?.content || {};
       default:
         return section?.content || {};
     }
@@ -268,8 +281,13 @@ const CmsHomePageFormModal = ({
     const values = await form.validateFields();
     const existingHeroBannerImageUrls =
       section.key === "hero" &&
-      Array.isArray((section.content as Record<string, unknown>).bannerImageUrls)
-        ? ((section.content as Record<string, unknown>).bannerImageUrls as unknown[])
+      Array.isArray(
+        (section.content as Record<string, unknown>).bannerImageUrls,
+      )
+        ? (
+            (section.content as Record<string, unknown>)
+              .bannerImageUrls as unknown[]
+          )
             .map(String)
             .filter(Boolean)
         : [];
@@ -391,6 +409,8 @@ const CmsHomePageFormModal = ({
       case "whyChooseUs":
       case "howItWorks":
         return renderRepeater();
+      case "story":
+        return <StorySectionFields />;
       case "popularProducts":
       case "featuredProducts":
         return <ProductSectionFields />;
@@ -408,6 +428,8 @@ const CmsHomePageFormModal = ({
         return (
           <VendorCtaSectionFields renderButtonFields={renderButtonFields} />
         );
+      case "faq":
+        return <FaqSectionFields />;
       default:
         return null;
     }
@@ -437,9 +459,6 @@ const CmsHomePageFormModal = ({
         <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-emerald-50 p-5">
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div className="space-y-2">
-              <Typography.Text className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
-                Homepage CMS
-              </Typography.Text>
               <Typography.Title level={3} className="!mb-0">
                 {section ? `Edit ${section.name} Section` : "Edit Section"}
               </Typography.Title>
@@ -451,7 +470,7 @@ const CmsHomePageFormModal = ({
             {section ? (
               <div className="flex flex-wrap items-center gap-2">
                 <Tag color={section.enabled ? "green" : "default"}>
-                  {section.enabled ? "Live on homepage" : "Currently hidden"}
+                  {section.enabled ? "Live on page" : "Currently hidden"}
                 </Tag>
               </div>
             ) : null}

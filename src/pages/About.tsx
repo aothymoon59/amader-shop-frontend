@@ -1,52 +1,76 @@
-import { Shield, Store, Users } from "lucide-react";
-
-
-import { useCms } from "@/context/CmsContext";
+import Hero from "@/components/home/Hero";
+import VendorCTA from "@/components/home/VendorCTA";
+import WhyChooseUs from "@/components/home/WhyChooseUs";
+import FaqSection from "@/components/home/FaqSection";
+import {
+  useGetPublicAboutPageSectionsQuery,
+  useGetPublicCommonSectionsQuery,
+} from "@/redux/features/generalApi/cmsSectionsApi";
+import {
+  defaultAboutPageSections,
+  defaultCommonSections,
+} from "@/types/cmsSections";
 
 const About = () => {
-  const { getPageBySlug } = useCms();
-  const page = getPageBySlug("about");
+  const { data: aboutData } = useGetPublicAboutPageSectionsQuery();
+  const { data: commonData } = useGetPublicCommonSectionsQuery();
+  const aboutSections = [
+    ...(aboutData?.data.sections ?? defaultAboutPageSections),
+  ]
+    .filter((section) => section.enabled)
+    .sort((a, b) => a.order - b.order);
+  const commonSections = [
+    ...(commonData?.data.sections ?? defaultCommonSections),
+  ]
+    .filter((section) => section.enabled)
+    .sort((a, b) => a.order - b.order);
 
-  if (!page) {
-    return null;
-  }
+  const aboutHero = aboutSections.find((section) => section.key === "hero");
+  const storySection = aboutSections.find((section) => section.key === "story");
+  const whyChooseUsSection = commonSections.find(
+    (section) => section.key === "whyChooseUs",
+  );
+  const faqSection = commonSections.find((section) => section.key === "faq");
+  const vendorCtaSection = commonSections.find(
+    (section) => section.key === "vendorCta",
+  );
 
   return (
-    
-      <div className="container max-w-4xl py-16">
-        <div className="mb-16 text-center">
-          <h1 className="mb-4 text-4xl font-bold">{page.heroTitle}</h1>
-          <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
-            {page.heroSubtitle}
-          </p>
-        </div>
+    <>
+      {aboutHero ? <Hero section={aboutHero} /> : null}
 
-        <div className="mb-16 grid grid-cols-1 gap-8 md:grid-cols-3">
-          {[
-            { icon: Store, title: "500+ Vendors", desc: "Trusted sellers from around the world" },
-            { icon: Users, title: "50K+ Customers", desc: "Growing community of happy shoppers" },
-            { icon: Shield, title: "100% Secure", desc: "Verified vendors and secure payments" },
-          ].map((item) => (
-            <div key={item.title} className="rounded-xl border bg-card p-6 text-center">
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl gradient-primary">
-                <item.icon className="h-6 w-6 text-primary-foreground" />
+      {storySection ? (
+        <section className="py-16 lg:py-24">
+          <div className="container">
+            <div className="mx-auto max-w-4xl rounded-3xl border bg-card p-8 shadow-sm md:p-10">
+              <div className="mb-8">
+                <p className="text-sm font-medium uppercase tracking-[0.22em] text-primary">
+                  About Us
+                </p>
+                <h2 className="mt-3 text-3xl font-bold md:text-4xl">
+                  {storySection.title}
+                </h2>
+                <p className="mt-3 text-muted-foreground">
+                  {storySection.subtitle}
+                </p>
               </div>
-              <h3 className="mb-2 font-semibold">{item.title}</h3>
-              <p className="text-sm text-muted-foreground">{item.desc}</p>
+              <div className="space-y-4 leading-8 text-muted-foreground">
+                {storySection.description
+                  .split("\n")
+                  .filter(Boolean)
+                  .map((paragraph, index) => (
+                    <p key={`${paragraph}-${index}`}>{paragraph}</p>
+                  ))}
+              </div>
             </div>
-          ))}
-        </div>
-
-        <div className="rounded-2xl border bg-card p-8">
-          <h2 className="mb-6 text-2xl font-semibold">{page.sectionTitle}</h2>
-          <div className="space-y-4 text-muted-foreground">
-            {page.sectionBody.split("\n").filter(Boolean).map((paragraph) => (
-              <p key={paragraph}>{paragraph}</p>
-            ))}
           </div>
-        </div>
-      </div>
-    
+        </section>
+      ) : null}
+
+      {whyChooseUsSection ? <WhyChooseUs section={whyChooseUsSection} /> : null}
+      {faqSection ? <FaqSection section={faqSection} /> : null}
+      {vendorCtaSection ? <VendorCTA section={vendorCtaSection} /> : null}
+    </>
   );
 };
 

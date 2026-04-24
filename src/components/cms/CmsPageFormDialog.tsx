@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import type { HomePageSection } from "@/types/homePageCms";
+import type { ManagedCmsSection } from "@/types/cmsSections";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -24,9 +24,9 @@ import { Textarea } from "@/components/ui/textarea";
 
 type CmsPageFormDialogProps = {
   open: boolean;
-  section: HomePageSection | null;
+  section: ManagedCmsSection | null;
   onOpenChange: (open: boolean) => void;
-  onSave: (section: HomePageSection) => void;
+  onSave: (section: ManagedCmsSection) => void;
 };
 
 type ListItem = {
@@ -115,7 +115,7 @@ const emptyState: FormState = {
 const toLines = (value: unknown) =>
   Array.isArray(value) ? value.map((item) => String(item ?? "")).join("\n") : "";
 
-const mapContentItemsToForm = (section: HomePageSection): ListItem[] => {
+const mapContentItemsToForm = (section: ManagedCmsSection): ListItem[] => {
   const content = section.content as {
     items?: Array<Record<string, unknown>>;
   };
@@ -146,12 +146,16 @@ const mapContentItemsToForm = (section: HomePageSection): ListItem[] => {
       return (content.items || []).map((item) =>
         createListItem(String(item.title || ""), String(item.desc || "")),
       );
+    case "faq":
+      return (content.items || []).map((item) =>
+        createListItem(String(item.question || ""), String(item.answer || "")),
+      );
     default:
       return [];
   }
 };
 
-const buildFormState = (section: HomePageSection): FormState => {
+const buildFormState = (section: ManagedCmsSection): FormState => {
   const content = section.content as Record<string, unknown>;
 
   return {
@@ -227,7 +231,7 @@ const CmsPageFormDialog = ({
     );
   };
 
-  const addListItem = (type: HomePageSection["key"]) => {
+  const addListItem = (type: ManagedCmsSection["key"]) => {
     const nextItem =
       type === "whyChooseUs"
         ? createListItem("", "", "Truck")
@@ -245,7 +249,7 @@ const CmsPageFormDialog = ({
     );
   };
 
-  const buildContent = (currentSection: HomePageSection) => {
+  const buildContent = (currentSection: ManagedCmsSection) => {
     switch (currentSection.key) {
       case "topPromoBar":
         return {
@@ -314,6 +318,13 @@ const CmsPageFormDialog = ({
           items: form.items.map((item) => ({
             title: item.title.trim(),
             desc: item.subtitle.trim(),
+          })),
+        };
+      case "faq":
+        return {
+          items: form.items.map((item) => ({
+            question: item.title.trim(),
+            answer: item.subtitle.trim(),
           })),
         };
       case "appAndCoverage":
@@ -504,13 +515,16 @@ const CmsPageFormDialog = ({
           <>
             {renderButtonFields()}
             <div className="grid gap-2">
-              <Label>Highlights</Label>
+              <Label>Quick Benefit Points</Label>
               <Textarea
                 value={form.highlightsText}
                 onChange={(event) => handleChange("highlightsText", event.target.value)}
-                placeholder={"One highlight per line"}
+                placeholder="One quick benefit point per line"
                 className="min-h-[110px]"
               />
+              <p className="text-sm text-muted-foreground">
+                These appear as short trust or value points under the hero actions.
+              </p>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="grid gap-2">
@@ -531,13 +545,16 @@ const CmsPageFormDialog = ({
               </div>
             </div>
             <div className="grid gap-2">
-              <Label>Promo Card Items</Label>
+              <Label>Promo Card Quick Items</Label>
               <Textarea
                 value={form.promoCardItemsText}
                 onChange={(event) => handleChange("promoCardItemsText", event.target.value)}
-                placeholder="One promo item per line"
+                placeholder="One promo card item per line"
                 className="min-h-[110px]"
               />
+              <p className="text-sm text-muted-foreground">
+                Use short phrases for the small points shown inside the hero promo card.
+              </p>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="grid gap-2">
@@ -859,6 +876,42 @@ const CmsPageFormDialog = ({
                 <div>
                   <Button type="button" variant="outline" onClick={() => removeListItem(item.id)}>
                     Remove Step
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+
+      case "faq":
+        return (
+          <div className="space-y-4">
+            {renderRepeaterHeader(
+              "FAQ Items",
+              "Manage the common questions and answers shown on public pages.",
+              () => addListItem(section.key),
+              "Add FAQ",
+            )}
+            {form.items.map((item) => (
+              <div key={item.id} className="grid gap-4 rounded-lg border p-4">
+                <div className="grid gap-2">
+                  <Label>Question</Label>
+                  <Input
+                    value={item.title}
+                    onChange={(event) => updateListItem(item.id, "title", event.target.value)}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label>Answer</Label>
+                  <Textarea
+                    value={item.subtitle}
+                    onChange={(event) => updateListItem(item.id, "subtitle", event.target.value)}
+                    className="min-h-[110px]"
+                  />
+                </div>
+                <div>
+                  <Button type="button" variant="outline" onClick={() => removeListItem(item.id)}>
+                    Remove FAQ
                   </Button>
                 </div>
               </div>

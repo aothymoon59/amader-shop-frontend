@@ -1,11 +1,11 @@
 import { ArrowRight, Store } from "lucide-react";
 import { Link } from "react-router-dom";
 
-import type { HomePageSection } from "@/types/homePageCms";
+import type { BaseCmsSection } from "@/types/cmsSections";
 import { Button } from "../ui/button";
 
 type VendorCTAProps = {
-  section: HomePageSection;
+  section: BaseCmsSection;
 };
 
 const VendorCTA = ({ section }: VendorCTAProps) => {

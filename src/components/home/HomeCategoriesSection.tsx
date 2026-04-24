@@ -9,9 +9,9 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { useGetCategoriesQuery } from "@/redux/features/generalApi/categoriesApi";
-import type { HomePageSection } from "@/types/homePageCms";
 import { Store } from "lucide-react";
 import { getCategoryVisual } from "@/utils/categoryPresentation";
+import { HomePageSection } from "@/types/cmsSections";
 
 type HomeCategoriesSectionProps = {
   section: HomePageSection;

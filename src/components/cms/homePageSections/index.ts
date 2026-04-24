@@ -1,8 +1,10 @@
 export { default as AppAndCoverageSectionFields } from "./AppAndCoverageSectionFields";
 export { default as CategoriesSectionFields } from "./CategoriesSectionFields";
+export { default as FaqSectionFields } from "./FaqSectionFields";
 export { default as HeroSectionFields } from "./HeroSectionFields";
 export { default as ProductSectionFields } from "./ProductSectionFields";
 export { default as RepeaterSectionFields } from "./RepeaterSectionFields";
+export { default as StorySectionFields } from "./StorySectionFields";
 export { default as StringListField } from "./StringListField";
 export { default as TestimonialsSectionFields } from "./TestimonialsSectionFields";
 export { default as TopPromoBarSectionFields } from "./TopPromoBarSectionFields";
