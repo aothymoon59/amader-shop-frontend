@@ -4,6 +4,7 @@ import {
   CreditCard,
   FileText,
   LayoutDashboard,
+  Mail,
   MapPinned,
   Package,
   PackageCheck,
@@ -42,6 +43,7 @@ export const dashboardMenuItems: Record<string, SidebarItem[]> = {
     },
     { title: "Wallet & Earnings", icon: Wallet, path: "/admin/wallet" },
     { title: "Reviews", icon: Star, path: "/admin/reviews" },
+    { title: "Contact Messages", icon: Mail, path: "/admin/contact-messages" },
     {
       title: "User Management",
       icon: Users,
@@ -132,6 +134,11 @@ export const dashboardMenuItems: Record<string, SidebarItem[]> = {
       path: "/super-admin/inventory",
     },
     { title: "Analytics", icon: BarChart3, path: "/super-admin/analytics" },
+    {
+      title: "Contact Messages",
+      icon: Mail,
+      path: "/super-admin/contact-messages",
+    },
     { title: "Audit Log", icon: FileText, path: "/super-admin/audit-log" },
     {
       title: "CMS Management",

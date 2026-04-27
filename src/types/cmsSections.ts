@@ -34,11 +34,15 @@ export type CommonCmsSection = BaseCmsSection<CommonSectionKey>;
 export type ProductsPageSectionKey = "hero" | "productList";
 export type ProductsPageSection = BaseCmsSection<ProductsPageSectionKey>;
 
+export type ContactPageSectionKey = "hero" | "contactDetails" | "contactForm";
+export type ContactPageSection = BaseCmsSection<ContactPageSectionKey>;
+
 export type ManagedCmsSection =
   | HomePageSection
   | AboutPageSection
   | CommonCmsSection
-  | ProductsPageSection;
+  | ProductsPageSection
+  | ContactPageSection;
 
 export const defaultAboutPageSections: AboutPageSection[] = [
   {
@@ -198,5 +202,50 @@ export const defaultProductsPageSections: ProductsPageSection[] = [
     subtitle: "Find the right products with search, filters, and category browsing.",
     description: "",
     content: {},
+  },
+];
+
+export const defaultContactPageSections: ContactPageSection[] = [
+  {
+    key: "hero",
+    name: "Hero",
+    enabled: true,
+    order: 1,
+    title: "Contact Us",
+    subtitle: "We would love to hear from you and help with your questions.",
+    description: "Support, vendor onboarding, orders, and partnership inquiries.",
+    content: {},
+  },
+  {
+    key: "contactDetails",
+    name: "Contact Details",
+    enabled: true,
+    order: 2,
+    title: "Get in touch",
+    subtitle:
+      "Reach out to our support team for account help, vendor onboarding questions, order issues, or partnership inquiries.",
+    description: "",
+    content: {
+      contactEmail: "support@amadershop.com",
+      contactPhone: "+880 1700-000000",
+      contactAddress: "Dhaka, Bangladesh",
+      supportHours: "Saturday to Thursday, 9:00 AM - 6:00 PM",
+      mapEmbedUrl: "",
+      responseTimeText: "We usually reply within one business day.",
+    },
+  },
+  {
+    key: "contactForm",
+    name: "Contact Form",
+    enabled: true,
+    order: 3,
+    title: "Send us a message",
+    subtitle: "Share your question and our team will get back to you soon.",
+    description: "",
+    content: {
+      recipientEmail: "",
+      successMessage:
+        "Thanks for reaching out. Our team will review your message and reply soon.",
+    },
   },
 ];
