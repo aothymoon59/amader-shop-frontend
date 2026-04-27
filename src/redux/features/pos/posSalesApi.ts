@@ -59,6 +59,7 @@ export const posSalesApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [
         { type: tagTypes.PRODUCT, id: "LIST" },
+        { type: tagTypes.INVENTORY, id: "LIST" },
         { type: tagTypes.RECEIPTS, id: "LIST" },
         { type: tagTypes.POS_SALES, id: "LIST" },
       ],

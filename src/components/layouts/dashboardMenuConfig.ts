@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   MapPinned,
   Package,
+  PackageCheck,
   Receipt,
   Settings,
   Shield,
@@ -29,6 +30,7 @@ export const dashboardMenuItems: Record<string, SidebarItem[]> = {
   admin: [
     { title: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard" },
     { title: "Manage Products", icon: Package, path: "/admin/manage-products" },
+    { title: "Inventory", icon: PackageCheck, path: "/admin/inventory" },
     { title: "Delivery Zones", icon: MapPinned, path: "/admin/delivery-zones" },
     {
       title: "Order Management",
@@ -76,6 +78,7 @@ export const dashboardMenuItems: Record<string, SidebarItem[]> = {
   provider: [
     { title: "Dashboard", icon: LayoutDashboard, path: "/provider/dashboard" },
     { title: "Products", icon: Package, path: "/provider/products" },
+    { title: "Inventory", icon: PackageCheck, path: "/provider/inventory" },
     {
       title: "Order Management",
       icon: ShoppingCart,
@@ -122,6 +125,11 @@ export const dashboardMenuItems: Record<string, SidebarItem[]> = {
       title: "Delivery Zones",
       icon: MapPinned,
       path: "/super-admin/delivery-zones",
+    },
+    {
+      title: "Inventory",
+      icon: PackageCheck,
+      path: "/super-admin/inventory",
     },
     { title: "Analytics", icon: BarChart3, path: "/super-admin/analytics" },
     { title: "Audit Log", icon: FileText, path: "/super-admin/audit-log" },

@@ -12,6 +12,7 @@ import AdminCmsSystem from "../pages/admin/AdminCmsSystem";
 import AdminCustomers from "../pages/admin/AdminCustomers";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import AdminDeliveryZones from "../pages/admin/AdminDeliveryZones";
+import AdminInventory from "../pages/admin/AdminInventory";
 import AdminOrders from "../pages/admin/AdminOrders";
 import AdminPayments from "../pages/admin/AdminPayments";
 import AdminProducts from "../pages/admin/AdminProducts";
@@ -34,6 +35,7 @@ export const adminRoutes: RouteObject[] = [
       { path: "dashboard", element: <AdminDashboard /> },
       { path: "products", element: <AdminProducts /> },
       { path: "manage-products", element: <AdminProducts /> },
+      { path: "inventory", element: <AdminInventory /> },
       { path: "orders", element: <AdminOrders /> },
       { path: "delivery-zones", element: <AdminDeliveryZones /> },
       { path: "payments", element: <AdminPayments /> },

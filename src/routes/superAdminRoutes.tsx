@@ -14,6 +14,7 @@ import SuperAdminCMSProducts from "../pages/super-admin/SuperAdminCMSProducts";
 import SuperAdminCmsSystem from "../pages/super-admin/SuperAdminCmsSystem";
 import SuperAdminDashboard from "../pages/super-admin/SuperAdminDashboard";
 import SuperAdminDeliveryZones from "../pages/super-admin/SuperAdminDeliveryZones";
+import SuperAdminInventory from "../pages/super-admin/SuperAdminInventory";
 import SuperAdminOrders from "../pages/super-admin/SuperAdminOrders";
 import SuperAdminPayments from "../pages/super-admin/SuperAdminPayments";
 import SuperAdminSiteConfig from "../pages/super-admin/SuperAdminSiteConfig";
@@ -31,6 +32,7 @@ export const superAdminRoutes: RouteObject[] = [
       { path: "dashboard", element: <SuperAdminDashboard /> },
       { path: "admins", element: <SuperAdminAdmins /> },
       { path: "providers", element: <AdminProviders /> },
+      { path: "inventory", element: <SuperAdminInventory /> },
       { path: "analytics", element: <SuperAdminAnalytics /> },
       { path: "orders", element: <SuperAdminOrders /> },
       { path: "delivery-zones", element: <SuperAdminDeliveryZones /> },
