@@ -28,6 +28,10 @@ const sectionDescriptions: Partial<Record<ManagedCmsSection["key"], string>> = {
     "Keep reusable frequently asked questions and answers updated in one place.",
   productList:
     "Manage the Products page listing title and subtitle shown above filters and product results.",
+  contactDetails:
+    "Update the public support email, phone, address, hours, and map details shown on the Contact page.",
+  contactForm:
+    "Manage the Contact page form title, instructions, recipient email, and success messaging.",
 };
 
 export const getSectionDescription = (section: ManagedCmsSection | null) =>

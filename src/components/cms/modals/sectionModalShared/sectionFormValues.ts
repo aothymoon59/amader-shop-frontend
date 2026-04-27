@@ -96,6 +96,14 @@ export const getSectionFormValues = (
     errorDescription: getString(content.errorDescription),
     coverageSubtitle: getString(content.coverageSubtitle),
     coverageItems: getStringList(content.coverageItems),
+    contactEmail: getString(content.contactEmail),
+    contactPhone: getString(content.contactPhone),
+    contactAddress: getString(content.contactAddress),
+    supportHours: getString(content.supportHours),
+    mapEmbedUrl: getString(content.mapEmbedUrl),
+    responseTimeText: getString(content.responseTimeText),
+    recipientEmail: getString(content.recipientEmail),
+    successMessage: getString(content.successMessage),
     items: mapItems(section),
   };
 };

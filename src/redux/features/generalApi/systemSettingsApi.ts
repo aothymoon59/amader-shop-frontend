@@ -1,6 +1,11 @@
 import { baseApi } from "@/redux/api/baseApi";
 import { tagTypes } from "@/redux/tagTypes";
-import type { AboutPageSection, CommonCmsSection, HomePageSection } from "@/types/cmsSections";
+import type {
+  AboutPageSection,
+  CommonCmsSection,
+  ContactPageSection,
+  HomePageSection,
+} from "@/types/cmsSections";
 
 export type SystemCurrency = {
   code: string;
@@ -27,6 +32,7 @@ export type SystemSettings = {
   homePageSections: HomePageSection[];
   aboutPageSections: AboutPageSection[];
   commonSections: CommonCmsSection[];
+  contactPageSections: ContactPageSection[];
   seoConfigs: SeoConfigRecord[];
   gaGtmConfig: {
     googleAnalyticsMeasurementId: string;

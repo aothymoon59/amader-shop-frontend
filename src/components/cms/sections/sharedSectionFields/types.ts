@@ -46,6 +46,14 @@ export type FormValues = {
   errorDescription?: string;
   coverageSubtitle?: string;
   coverageItems?: string[];
+  contactEmail?: string;
+  contactPhone?: string;
+  contactAddress?: string;
+  supportHours?: string;
+  mapEmbedUrl?: string;
+  responseTimeText?: string;
+  recipientEmail?: string;
+  successMessage?: string;
   items?: RepeaterItem[];
 };
 

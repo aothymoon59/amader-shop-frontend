@@ -4,6 +4,7 @@ import ProtectedRoute from "../components/auth/ProtectedRoute";
 import DashboardLayout from "../components/layouts/DashboardLayout";
 import ProviderDashboard from "../pages/provider/ProviderDashboard";
 import ProviderExpenseTracker from "../pages/provider/ProviderExpenseTracker";
+import ProviderInventory from "../pages/provider/ProviderInventory";
 import ProviderOrders from "../pages/provider/ProviderOrders";
 import ProviderPayments from "../pages/provider/ProviderPayments";
 import ProviderPOS from "../pages/provider/ProviderPOS";
@@ -25,6 +26,7 @@ export const providerRoutes: RouteObject[] = [
     children: [
       { path: "dashboard", element: <ProviderDashboard /> },
       { path: "products", element: <ProviderProducts /> },
+      { path: "inventory", element: <ProviderInventory /> },
       { path: "orders", element: <ProviderOrders /> },
       { path: "payments", element: <ProviderPayments /> },
       { path: "wallet", element: <ProviderWallet /> },
