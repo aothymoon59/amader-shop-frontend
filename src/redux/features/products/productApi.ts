@@ -169,7 +169,10 @@ export const productApi = baseApi.injectEndpoints({
         method: "POST",
         body: payload,
       }),
-      invalidatesTags: [{ type: tagTypes.PRODUCT, id: "LIST" }],
+      invalidatesTags: [
+        { type: tagTypes.PRODUCT, id: "LIST" },
+        { type: tagTypes.INVENTORY, id: "LIST" },
+      ],
     }),
 
     updateProduct: builder.mutation<
@@ -184,6 +187,7 @@ export const productApi = baseApi.injectEndpoints({
       invalidatesTags: (result, error, { id }) => [
         { type: tagTypes.PRODUCT, id },
         { type: tagTypes.PRODUCT, id: "LIST" },
+        { type: tagTypes.INVENTORY, id: "LIST" },
       ],
     }),
 

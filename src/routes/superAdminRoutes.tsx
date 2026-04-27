@@ -9,11 +9,14 @@ import SuperAdminAnalytics from "../pages/super-admin/SuperAdminAnalytics";
 import SuperAdminCMS from "../pages/super-admin/SuperAdminCMS";
 import SuperAdminCMSAbout from "../pages/super-admin/SuperAdminCMSAbout";
 import SuperAdminCMSCommon from "../pages/super-admin/SuperAdminCMSCommon";
+import SuperAdminCMSContact from "../pages/super-admin/SuperAdminCMSContact";
 import SuperAdminCMSHome from "../pages/super-admin/SuperAdminCMSHome";
 import SuperAdminCMSProducts from "../pages/super-admin/SuperAdminCMSProducts";
+import SuperAdminContactMessages from "../pages/super-admin/SuperAdminContactMessages";
 import SuperAdminCmsSystem from "../pages/super-admin/SuperAdminCmsSystem";
 import SuperAdminDashboard from "../pages/super-admin/SuperAdminDashboard";
 import SuperAdminDeliveryZones from "../pages/super-admin/SuperAdminDeliveryZones";
+import SuperAdminInventory from "../pages/super-admin/SuperAdminInventory";
 import SuperAdminOrders from "../pages/super-admin/SuperAdminOrders";
 import SuperAdminPayments from "../pages/super-admin/SuperAdminPayments";
 import SuperAdminSiteConfig from "../pages/super-admin/SuperAdminSiteConfig";
@@ -31,10 +34,12 @@ export const superAdminRoutes: RouteObject[] = [
       { path: "dashboard", element: <SuperAdminDashboard /> },
       { path: "admins", element: <SuperAdminAdmins /> },
       { path: "providers", element: <AdminProviders /> },
+      { path: "inventory", element: <SuperAdminInventory /> },
       { path: "analytics", element: <SuperAdminAnalytics /> },
       { path: "orders", element: <SuperAdminOrders /> },
       { path: "delivery-zones", element: <SuperAdminDeliveryZones /> },
       { path: "payments", element: <SuperAdminPayments /> },
+      { path: "contact-messages", element: <SuperAdminContactMessages /> },
       { path: "settings", element: <SuperAdminSettings /> },
       { path: "audit-log", element: <SuperAdminAuditLog /> },
       { path: "cms", element: <SuperAdminCMS /> },
@@ -42,6 +47,7 @@ export const superAdminRoutes: RouteObject[] = [
       { path: "cms/management/home", element: <SuperAdminCMSHome /> },
       { path: "cms/management/about", element: <SuperAdminCMSAbout /> },
       { path: "cms/management/products", element: <SuperAdminCMSProducts /> },
+      { path: "cms/management/contact", element: <SuperAdminCMSContact /> },
       { path: "cms/management/common", element: <SuperAdminCMSCommon /> },
       { path: "cms/site-config", element: <SuperAdminSiteConfig /> },
       { path: "cms/system", element: <SuperAdminCmsSystem /> },

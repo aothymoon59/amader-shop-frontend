@@ -3,6 +3,7 @@ import { tagTypes } from "@/redux/tagTypes";
 import type {
   AboutPageSection,
   CommonCmsSection,
+  ContactPageSection,
   ProductsPageSection,
 } from "@/types/cmsSections";
 
@@ -135,6 +136,37 @@ export const cmsSectionsApi = baseApi.injectEndpoints({
       }),
       providesTags: [tagTypes.HOME_PAGE_CMS],
     }),
+    getAdminContactPageSections: builder.query<
+      ApiResponse<CmsSectionsPayload<ContactPageSection>>,
+      void
+    >({
+      query: () => ({
+        url: "/system-settings/contact-page",
+        method: "GET",
+      }),
+      providesTags: [tagTypes.HOME_PAGE_CMS],
+    }),
+    updateContactPageSections: builder.mutation<
+      ApiResponse<CmsSectionsPayload<ContactPageSection>>,
+      { sections: ContactPageSection[] }
+    >({
+      query: (body) => ({
+        url: "/system-settings/contact-page",
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: [tagTypes.HOME_PAGE_CMS, tagTypes.SYSTEM_SETTINGS],
+    }),
+    getPublicContactPageSections: builder.query<
+      ApiResponse<CmsSectionsPayload<ContactPageSection>>,
+      void
+    >({
+      query: () => ({
+        url: "/system-settings/public/contact-page",
+        method: "GET",
+      }),
+      providesTags: [tagTypes.HOME_PAGE_CMS],
+    }),
   }),
 });
 
@@ -149,4 +181,7 @@ export const {
   useUpdateProductsPageSectionsMutation,
   useUploadProductsPageHeroBannerImagesMutation,
   useGetPublicProductsPageSectionsQuery,
+  useGetAdminContactPageSectionsQuery,
+  useUpdateContactPageSectionsMutation,
+  useGetPublicContactPageSectionsQuery,
 } = cmsSectionsApi;

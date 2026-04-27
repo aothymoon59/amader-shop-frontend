@@ -188,7 +188,11 @@ export const orderApi = baseApi.injectEndpoints({
         method: "POST",
         body: payload,
       }),
-      invalidatesTags: [tagTypes.CART],
+      invalidatesTags: [
+        tagTypes.CART,
+        { type: tagTypes.PRODUCT, id: "LIST" },
+        { type: tagTypes.INVENTORY, id: "LIST" },
+      ],
     }),
     getMyOrders: builder.query<OrderListResponse, void>({
       query: () => ({

@@ -4,8 +4,10 @@ import {
   CreditCard,
   FileText,
   LayoutDashboard,
+  Mail,
   MapPinned,
   Package,
+  PackageCheck,
   Receipt,
   Settings,
   Shield,
@@ -29,6 +31,7 @@ export const dashboardMenuItems: Record<string, SidebarItem[]> = {
   admin: [
     { title: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard" },
     { title: "Manage Products", icon: Package, path: "/admin/manage-products" },
+    { title: "Inventory", icon: PackageCheck, path: "/admin/inventory" },
     { title: "Delivery Zones", icon: MapPinned, path: "/admin/delivery-zones" },
     {
       title: "Order Management",
@@ -40,6 +43,7 @@ export const dashboardMenuItems: Record<string, SidebarItem[]> = {
     },
     { title: "Wallet & Earnings", icon: Wallet, path: "/admin/wallet" },
     { title: "Reviews", icon: Star, path: "/admin/reviews" },
+    { title: "Contact Messages", icon: Mail, path: "/admin/contact-messages" },
     {
       title: "User Management",
       icon: Users,
@@ -76,6 +80,7 @@ export const dashboardMenuItems: Record<string, SidebarItem[]> = {
   provider: [
     { title: "Dashboard", icon: LayoutDashboard, path: "/provider/dashboard" },
     { title: "Products", icon: Package, path: "/provider/products" },
+    { title: "Inventory", icon: PackageCheck, path: "/provider/inventory" },
     {
       title: "Order Management",
       icon: ShoppingCart,
@@ -123,7 +128,17 @@ export const dashboardMenuItems: Record<string, SidebarItem[]> = {
       icon: MapPinned,
       path: "/super-admin/delivery-zones",
     },
+    {
+      title: "Inventory",
+      icon: PackageCheck,
+      path: "/super-admin/inventory",
+    },
     { title: "Analytics", icon: BarChart3, path: "/super-admin/analytics" },
+    {
+      title: "Contact Messages",
+      icon: Mail,
+      path: "/super-admin/contact-messages",
+    },
     { title: "Audit Log", icon: FileText, path: "/super-admin/audit-log" },
     {
       title: "CMS Management",
