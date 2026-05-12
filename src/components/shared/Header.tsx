@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/context/CartContext";
 import NotificationBell from "@/components/notifications/NotificationBell";
+import ChatNavButton from "@/components/chat/ChatNavButton";
 
 const navLinks = [
   { title: "Home", path: "/" },
@@ -54,6 +55,12 @@ const Header = () => {
           user?.role === "customer"
             ? "/account/payments"
             : `/${user?.role}/payments`,
+      },
+      {
+        key: "chat",
+        label: "Live Chat",
+        href:
+          user?.role === "customer" ? "/account/chat" : `/${user?.role}/chat`,
       },
     ];
 
@@ -133,6 +140,7 @@ const Header = () => {
           ) : null}
           {isAuthenticated ? (
             <>
+              <ChatNavButton />
               <NotificationBell />
               <Dropdown
                 trigger={["click"]}
@@ -207,7 +215,12 @@ const Header = () => {
         </div>
 
         <div className="flex items-center gap-2 md:hidden">
-          {isAuthenticated ? <NotificationBell /> : null}
+          {isAuthenticated ? (
+            <>
+              <ChatNavButton />
+              <NotificationBell />
+            </>
+          ) : null}
           <button
             className="text-foreground"
             onClick={() => setMobileNav(!mobileNav)}

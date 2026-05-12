@@ -14,6 +14,7 @@ import ProviderReviews from "../pages/provider/ProviderReviews";
 import ProviderReports from "../pages/provider/ProviderReports";
 import ProviderSettings from "../pages/provider/ProviderSettings";
 import ProviderWallet from "../pages/provider/ProviderWallet";
+import ChatPage from "../pages/chat/ChatPage";
 
 export const providerRoutes: RouteObject[] = [
   {
@@ -35,6 +36,7 @@ export const providerRoutes: RouteObject[] = [
       { path: "pos", element: <ProviderPOS /> },
       { path: "receipts", element: <ProviderReceipts /> },
       { path: "reports", element: <ProviderReports /> },
+      { path: "chat", element: <ChatPage /> },
       { path: "settings", element: <ProviderSettings /> },
     ],
   },

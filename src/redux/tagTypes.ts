@@ -20,6 +20,7 @@ export const tagTypes = {
   AUDIT_LOGS: "AUDIT_LOGS",
   REVIEWS: "REVIEWS",
   NOTIFICATIONS: "NOTIFICATIONS",
+  CHAT: "CHAT",
 };
 
 export const tagTypesList = Object.values(tagTypes);

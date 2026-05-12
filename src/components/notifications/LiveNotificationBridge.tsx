@@ -8,6 +8,7 @@ import {
   notificationApi,
   type AppNotification,
 } from "@/redux/features/notifications/notificationApi";
+import { chatApi } from "@/redux/features/chat/chatApi";
 import { tagTypes } from "@/redux/tagTypes";
 
 const socketUrl = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
@@ -33,6 +34,24 @@ const LiveNotificationBridge = () => {
         description: notification.message,
       });
       dispatch(notificationApi.util.invalidateTags([tagTypes.NOTIFICATIONS]));
+    });
+
+    socket.on("chat:message:new", (payload: { conversationId: string }) => {
+      dispatch(chatApi.util.invalidateTags([tagTypes.CHAT]));
+      dispatch(
+        chatApi.util.invalidateTags([
+          { type: tagTypes.CHAT, id: payload.conversationId },
+        ]),
+      );
+    });
+
+    socket.on("chat:read", (payload: { conversationId: string }) => {
+      dispatch(chatApi.util.invalidateTags([tagTypes.CHAT]));
+      dispatch(
+        chatApi.util.invalidateTags([
+          { type: tagTypes.CHAT, id: payload.conversationId },
+        ]),
+      );
     });
 
     return () => {

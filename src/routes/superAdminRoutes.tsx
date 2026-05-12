@@ -22,6 +22,7 @@ import SuperAdminPayments from "../pages/super-admin/SuperAdminPayments";
 import SuperAdminSiteConfig from "../pages/super-admin/SuperAdminSiteConfig";
 import SuperAdminSettings from "../pages/super-admin/SuperAdminSettings";
 import AdminWallet from "../pages/admin/AdminWallet";
+import ChatPage from "../pages/chat/ChatPage";
 
 export const superAdminRoutes: RouteObject[] = [
   {
@@ -42,6 +43,7 @@ export const superAdminRoutes: RouteObject[] = [
       { path: "payments", element: <SuperAdminPayments /> },
       { path: "wallet", element: <AdminWallet /> },
       { path: "contact-messages", element: <SuperAdminContactMessages /> },
+      { path: "chat", element: <ChatPage /> },
       { path: "settings", element: <SuperAdminSettings /> },
       { path: "audit-log", element: <SuperAdminAuditLog /> },
       { path: "cms", element: <SuperAdminCMS /> },
