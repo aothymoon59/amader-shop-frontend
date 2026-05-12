@@ -10,6 +10,7 @@ import {
   Reply,
   Search,
   Send,
+  Sparkles,
   X,
 } from "lucide-react";
 import { Avatar, Badge, Button, Empty, Input, Spin, Typography } from "antd";
@@ -31,6 +32,22 @@ import { tagTypes } from "@/redux/tagTypes";
 import { cn } from "@/lib/utils";
 
 const socketUrl = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
+const maxAttachmentSize = 10 * 1024 * 1024;
+const maxAttachmentCount = 5;
+const acceptedAttachmentTypes = [
+  "image/",
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.ms-excel",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.ms-powerpoint",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  "text/plain",
+  "text/csv",
+  "application/zip",
+  "application/x-zip-compressed",
+];
 
 const formatTime = (value?: string | null) =>
   value
@@ -223,7 +240,47 @@ const ChatPage = () => {
 
   const handleFiles = (files: FileList | null) => {
     if (!files?.length) return;
-    setAttachments((current) => [...current, ...Array.from(files)].slice(0, 5));
+
+    const incomingFiles = Array.from(files);
+    const validFiles = incomingFiles.filter((file) => {
+      const isAccepted =
+        !file.type ||
+        acceptedAttachmentTypes.some((type) =>
+          type.endsWith("/") ? file.type.startsWith(type) : file.type === type,
+        );
+
+      if (!isAccepted) {
+        toast({
+          title: "File not supported",
+          description: `${file.name} is not a supported attachment type.`,
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      if (file.size > maxAttachmentSize) {
+        toast({
+          title: "File too large",
+          description: `${file.name} must be 10MB or smaller.`,
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      return true;
+    });
+
+    setAttachments((current) => {
+      const next = [...current, ...validFiles].slice(0, maxAttachmentCount);
+      if (current.length + validFiles.length > maxAttachmentCount) {
+        toast({
+          title: "Attachment limit",
+          description: `You can attach up to ${maxAttachmentCount} files at once.`,
+        });
+      }
+      return next;
+    });
+
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -254,18 +311,28 @@ const ChatPage = () => {
   };
 
   return (
-    <div className="h-[calc(100dvh-5rem)] min-h-0 overflow-hidden rounded-xl border bg-card md:h-[calc(100dvh-8rem)]">
+    <div className="h-[calc(100dvh-5rem)] min-h-0 overflow-hidden rounded-xl border bg-background shadow-sm md:h-[calc(100dvh-8rem)]">
       <div className="grid h-full min-h-0 grid-cols-1 md:grid-cols-[340px_minmax(0,1fr)]">
         <aside
           className={cn(
-            "flex h-full min-h-0 flex-col border-r bg-background md:flex",
+            "flex h-full min-h-0 flex-col border-r bg-card md:flex",
             mobileListOpen ? "flex" : "hidden",
           )}
         >
-          <div className="shrink-0 border-b p-4">
-            <Typography.Title level={4} className="!mb-3">
-              Chats
-            </Typography.Title>
+          <div className="shrink-0 border-b bg-card p-4">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <Typography.Title level={4} className="!mb-0">
+                  Messages
+                </Typography.Title>
+                <div className="text-xs text-muted-foreground">
+                  Orders, customers, and support
+                </div>
+              </div>
+              <div className="rounded-full bg-primary/10 p-2 text-primary">
+                <Sparkles className="h-4 w-4" />
+              </div>
+            </div>
             <Input
               prefix={<Search className="h-4 w-4 text-muted-foreground" />}
               placeholder="Search conversations"
@@ -294,23 +361,40 @@ const ChatPage = () => {
                       setMobileListOpen(false);
                     }}
                     className={cn(
-                      "mb-1 flex w-full items-start gap-3 rounded-lg p-3 text-left transition hover:bg-secondary/60",
-                      isActive && "bg-secondary",
+                      "mb-1 flex w-full items-start gap-3 rounded-xl border border-transparent p-3 text-left transition hover:border-border hover:bg-secondary/50",
+                      isActive &&
+                        "border-primary/20 bg-primary/5 shadow-sm hover:bg-primary/5",
                     )}
                   >
                     <Badge count={conversation.unreadCount} size="small">
-                      <Avatar>{avatarText}</Avatar>
+                      <Avatar className={cn(isActive && "bg-primary")}>
+                        {avatarText}
+                      </Avatar>
                     </Badge>
                     <div className="min-w-0 flex-1">
-                      <div className="truncate font-medium">
-                        {details.oppositeName}
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="truncate font-semibold">
+                          {details.oppositeName}
+                        </div>
+                        {conversation.lastMessage?.createdAt ? (
+                          <span className="shrink-0 text-[11px] text-muted-foreground">
+                            {formatTime(conversation.lastMessage.createdAt)}
+                          </span>
+                        ) : null}
                       </div>
                       {details.subtitle ? (
                         <div className="truncate text-xs text-muted-foreground">
                           {details.subtitle}
                         </div>
                       ) : null}
-                      <div className="mt-0.5 truncate text-xs text-muted-foreground/80">
+                      <div
+                        className={cn(
+                          "mt-1 truncate text-xs",
+                          conversation.unreadCount
+                            ? "font-medium text-foreground"
+                            : "text-muted-foreground/80",
+                        )}
+                      >
                         {details.lastMessage}
                       </div>
                     </div>
@@ -331,7 +415,7 @@ const ChatPage = () => {
         >
           {selectedConversation ? (
             <>
-              <div className="flex shrink-0 items-center gap-3 border-b px-4 py-3">
+              <div className="flex shrink-0 items-center gap-3 border-b bg-card px-4 py-3">
                 <Button
                   type="text"
                   shape="circle"
@@ -345,7 +429,7 @@ const ChatPage = () => {
                     .charAt(0)
                     .toUpperCase()}
                 </Avatar>
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <div className="truncate font-semibold">
                     {getConversationDetails(selectedConversation, user?.id).oppositeName}
                   </div>
@@ -353,15 +437,20 @@ const ChatPage = () => {
                     {getConversationDetails(selectedConversation, user?.id).subtitle}
                   </div>
                 </div>
+                <div className="hidden rounded-full border bg-secondary/40 px-3 py-1 text-xs text-muted-foreground sm:block">
+                  {selectedConversation.type === "ORDER"
+                    ? "Order chat"
+                    : "Support chat"}
+                </div>
               </div>
 
-              <div className="min-h-0 flex-1 overflow-y-auto bg-secondary/20 p-4">
+              <div className="min-h-0 flex-1 overflow-y-auto bg-[linear-gradient(180deg,hsl(var(--secondary)/0.35),hsl(var(--background)))] p-4">
                 {messagesLoading ? (
                   <div className="flex h-full items-center justify-center">
                     <Spin />
                   </div>
                 ) : messages.length ? (
-                  <div className="space-y-3">
+                  <div className="mx-auto max-w-5xl space-y-3">
                     {messages.map((message) => {
                       const isMine = message.senderId === user?.id;
 
@@ -375,10 +464,10 @@ const ChatPage = () => {
                         >
                           <div
                             className={cn(
-                              "max-w-[86%] rounded-2xl border px-3 py-2 shadow-sm md:max-w-[68%]",
+                              "max-w-[86%] rounded-2xl border px-3.5 py-2.5 shadow-sm md:max-w-[68%]",
                               isMine
-                                ? "rounded-br-md bg-primary text-primary-foreground"
-                                : "rounded-bl-md bg-background",
+                                ? "rounded-br-md border-primary bg-primary text-primary-foreground"
+                                : "rounded-bl-md border-border/70 bg-card",
                             )}
                           >
                             {!isMine ? (
@@ -393,7 +482,7 @@ const ChatPage = () => {
                                   "mb-2 rounded-lg border-l-2 px-2 py-1 text-xs",
                                   isMine
                                     ? "border-primary-foreground/70 bg-primary-foreground/10"
-                                    : "border-primary bg-secondary",
+                                    : "border-primary bg-secondary/70",
                                 )}
                               >
                                 <div className="font-medium">
@@ -481,14 +570,17 @@ const ChatPage = () => {
                   </div>
                 ) : (
                   <div className="flex h-full items-center justify-center">
-                    <Empty description="Start the conversation" />
+                    <Empty
+                      image={Empty.PRESENTED_IMAGE_SIMPLE}
+                      description="Start the conversation"
+                    />
                   </div>
                 )}
               </div>
 
-              <div className="shrink-0 border-t bg-background p-3">
+              <div className="shrink-0 border-t bg-card p-3">
                 {replyTo ? (
-                  <div className="mb-2 flex items-start justify-between gap-3 rounded-lg border bg-secondary/50 p-2 text-sm">
+                  <div className="mb-2 flex items-start justify-between gap-3 rounded-xl border bg-secondary/50 p-2.5 text-sm">
                     <div className="min-w-0">
                       <div className="font-medium">
                         Replying to {replyTo.sender?.name || "message"}
@@ -508,7 +600,7 @@ const ChatPage = () => {
                     {attachments.map((file) => (
                       <div
                         key={`${file.name}-${file.lastModified}`}
-                        className="flex items-center gap-2 rounded-full border bg-secondary/50 px-3 py-1 text-xs"
+                        className="flex items-center gap-2 rounded-full border bg-secondary/60 px-3 py-1 text-xs"
                       >
                         {file.type.startsWith("image/") ? (
                           <ImageIcon className="h-3.5 w-3.5" />
@@ -531,12 +623,12 @@ const ChatPage = () => {
                   </div>
                 ) : null}
 
-                <div className="flex items-end gap-2">
+                <div className="flex items-end gap-2 rounded-2xl border bg-background p-2 shadow-sm">
                   <input
                     ref={fileInputRef}
                     type="file"
                     multiple
-                    accept="image/*,.pdf,.doc,.docx,.txt,.xls,.xlsx,.csv,.zip"
+                    accept="image/*,.pdf,.doc,.docx,.txt,.xls,.xlsx,.csv,.ppt,.pptx,.zip"
                     className="hidden"
                     onChange={(event) => handleFiles(event.target.files)}
                   />
@@ -548,7 +640,7 @@ const ChatPage = () => {
                     <Paperclip className="h-4 w-4" />
                   </Button>
                   <Input.TextArea
-                    className="min-w-0 flex-1"
+                    className="min-w-0 flex-1 border-0 shadow-none focus:shadow-none"
                     autoSize={{ minRows: 1, maxRows: 4 }}
                     placeholder="Write a message"
                     value={draft}
