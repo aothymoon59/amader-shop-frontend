@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { CartProvider } from "@/context/CartContext";
 import { CmsProvider } from "@/context/CmsContext";
 import AntdProvider from "./context/AntdProvider";
+import LiveNotificationBridge from "@/components/notifications/LiveNotificationBridge";
 
 const queryClient = new QueryClient();
 
@@ -17,6 +18,7 @@ const App = () => (
           <TooltipProvider>
             <Toaster />
             <Sonner />
+            <LiveNotificationBridge />
             <Outlet />
           </TooltipProvider>
         </CartProvider>

@@ -124,6 +124,11 @@ export const dashboardMenuItems: Record<string, SidebarItem[]> = {
       ],
     },
     {
+      title: "Wallet & Earnings",
+      icon: Wallet,
+      path: "/super-admin/wallet",
+    },
+    {
       title: "Delivery Zones",
       icon: MapPinned,
       path: "/super-admin/delivery-zones",

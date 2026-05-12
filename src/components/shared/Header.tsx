@@ -7,6 +7,7 @@ import { Avatar, Divider, Dropdown, Typography } from "antd";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/context/CartContext";
+import NotificationBell from "@/components/notifications/NotificationBell";
 
 const navLinks = [
   { title: "Home", path: "/" },
@@ -132,6 +133,7 @@ const Header = () => {
           ) : null}
           {isAuthenticated ? (
             <>
+              <NotificationBell />
               <Dropdown
                 trigger={["click"]}
                 menu={{
@@ -204,12 +206,19 @@ const Header = () => {
           )}
         </div>
 
-        <button
-          className="md:hidden text-foreground"
-          onClick={() => setMobileNav(!mobileNav)}
-        >
-          {mobileNav ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
+        <div className="flex items-center gap-2 md:hidden">
+          {isAuthenticated ? <NotificationBell /> : null}
+          <button
+            className="text-foreground"
+            onClick={() => setMobileNav(!mobileNav)}
+          >
+            {mobileNav ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
+          </button>
+        </div>
       </div>
 
       {mobileNav && (

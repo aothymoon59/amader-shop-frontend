@@ -20,6 +20,7 @@ import {
   dashboardRoleLabels,
   getOpenMenusForPath,
 } from "./dashboardMenuConfig";
+import NotificationBell from "@/components/notifications/NotificationBell";
 
 interface DashboardLayoutProps {
   role: "admin" | "provider" | "super-admin";
@@ -285,6 +286,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           </button>
           <div className="flex-1" />
           <div className="flex items-center gap-3">
+            <NotificationBell />
             <Dropdown
               trigger={["click"]}
               menu={{ items: profileMenuItems }}
