@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Bell } from "lucide-react";
 import { Badge, Button, Dropdown, Empty, Spin, Typography } from "antd";
 import { useNavigate } from "react-router-dom";
@@ -16,16 +17,19 @@ const formatNotificationTime = (value: string) =>
 
 const NotificationBell = () => {
   const navigate = useNavigate();
-  const { data, isLoading } = useGetMyNotificationsQuery({
+  const [visibleLimit, setVisibleLimit] = useState(10);
+  const { data, isFetching, isLoading } = useGetMyNotificationsQuery({
     page: 1,
-    limit: 10,
+    limit: visibleLimit,
   });
   const [markNotificationRead] = useMarkNotificationReadMutation();
   const [markAllNotificationsRead, { isLoading: isMarkingAll }] =
     useMarkAllNotificationsReadMutation();
 
   const notifications = data?.data ?? [];
+  const totalNotifications = Number(data?.meta?.total || 0);
   const unreadCount = Number(data?.meta?.unreadCount || 0);
+  const hasMoreNotifications = notifications.length < totalNotifications;
 
   const handleNotificationClick = async (notification: AppNotification) => {
     if (!notification.readAt) {
@@ -48,6 +52,7 @@ const NotificationBell = () => {
               <Text strong>Notifications</Text>
               <div className="text-xs text-muted-foreground">
                 {unreadCount} unread
+                {totalNotifications ? ` • ${notifications.length} of ${totalNotifications}` : ""}
               </div>
             </div>
             <Button
@@ -66,34 +71,46 @@ const NotificationBell = () => {
               <Spin />
             </div>
           ) : notifications.length ? (
-            <div className="max-h-[420px] space-y-2 overflow-y-auto pr-1">
-              {notifications.map((notification) => (
-                <button
-                  key={notification.id}
-                  type="button"
-                  onClick={() => handleNotificationClick(notification)}
-                  className={`w-full rounded-lg border p-3 text-left transition hover:bg-secondary/50 ${
-                    notification.readAt
-                      ? "bg-background"
-                      : "border-primary/25 bg-primary/5"
-                  }`}
+            <div className="max-h-[420px] overflow-y-auto pr-1">
+              <div className="space-y-2">
+                {notifications.map((notification) => (
+                  <button
+                    key={notification.id}
+                    type="button"
+                    onClick={() => handleNotificationClick(notification)}
+                    className={`w-full rounded-lg border p-3 text-left transition hover:bg-secondary/50 ${
+                      notification.readAt
+                        ? "bg-background"
+                        : "border-primary/25 bg-primary/5"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <Text strong className="text-sm">
+                        {notification.title}
+                      </Text>
+                      {!notification.readAt ? (
+                        <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary" />
+                      ) : null}
+                    </div>
+                    <div className="mt-1 text-sm text-muted-foreground">
+                      {notification.message}
+                    </div>
+                    <div className="mt-2 text-xs text-muted-foreground">
+                      {formatNotificationTime(notification.createdAt)}
+                    </div>
+                  </button>
+                ))}
+              </div>
+              {hasMoreNotifications ? (
+                <Button
+                  block
+                  className="mt-3"
+                  loading={isFetching && !isLoading}
+                  onClick={() => setVisibleLimit((current) => current + 10)}
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <Text strong className="text-sm">
-                      {notification.title}
-                    </Text>
-                    {!notification.readAt ? (
-                      <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary" />
-                    ) : null}
-                  </div>
-                  <div className="mt-1 text-sm text-muted-foreground">
-                    {notification.message}
-                  </div>
-                  <div className="mt-2 text-xs text-muted-foreground">
-                    {formatNotificationTime(notification.createdAt)}
-                  </div>
-                </button>
-              ))}
+                  Load more
+                </Button>
+              ) : null}
             </div>
           ) : (
             <Empty
