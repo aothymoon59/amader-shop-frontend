@@ -31,6 +31,11 @@ import { useCurrentToken } from "@/redux/features/auth/authSlice";
 import { tagTypes } from "@/redux/tagTypes";
 import { cn } from "@/lib/utils";
 
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+
+dayjs.extend(utc);
+
 const socketUrl = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
 const maxAttachmentSize = 10 * 1024 * 1024;
 const maxAttachmentCount = 5;
@@ -48,14 +53,8 @@ const acceptedAttachmentTypes = [
   "application/zip",
   "application/x-zip-compressed",
 ];
-
-const formatTime = (value?: string | null) =>
-  value
-    ? new Date(value).toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-    : "";
+const formatDateTime = (value?: string | null) =>
+  value ? dayjs.utc(value).format("MMM D, YYYY, h:mm A") : "";
 
 const getConversationLabel = (
   conversation: ChatConversation,
@@ -67,9 +66,15 @@ const getConversationLabel = (
 
   if (conversation.type === "ADMIN_SUPPORT") {
     const provider =
-      conversation.participants.find((participant) => participant.role === "PROVIDER") ||
-      otherParticipants[0];
-    return provider?.shopName || provider?.name || conversation.title || "Admin support";
+      conversation.participants.find(
+        (participant) => participant.role === "PROVIDER",
+      ) || otherParticipants[0];
+    return (
+      provider?.shopName ||
+      provider?.name ||
+      conversation.title ||
+      "Admin support"
+    );
   }
 
   const other = otherParticipants[0];
@@ -80,7 +85,9 @@ const getOtherParticipant = (
   conversation: ChatConversation,
   currentUserId?: string,
 ) =>
-  conversation.participants.find((participant) => participant.id !== currentUserId) ||
+  conversation.participants.find(
+    (participant) => participant.id !== currentUserId,
+  ) ||
   conversation.participants[0] ||
   null;
 
@@ -111,7 +118,10 @@ const getConversationDetails = (
   );
   const orderName = conversation.type === "ORDER" ? conversation.title : null;
   const shopName = provider?.shopName || null;
-  const oppositeName = other?.name || other?.shopName || getConversationLabel(conversation, currentUserId);
+  const oppositeName =
+    other?.name ||
+    other?.shopName ||
+    getConversationLabel(conversation, currentUserId);
 
   return {
     oppositeName,
@@ -154,7 +164,9 @@ const ChatPage = () => {
   const { user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const messageEndRef = useRef<HTMLDivElement | null>(null);
-  const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
+  const [selectedConversationId, setSelectedConversationId] = useState<
+    string | null
+  >(null);
   const [query, setQuery] = useState("");
   const [draft, setDraft] = useState("");
   const [attachments, setAttachments] = useState<File[]>([]);
@@ -165,7 +177,9 @@ const ChatPage = () => {
     useGetChatConversationsQuery();
   const conversations = conversationsResponse?.data ?? [];
   const selectedConversation =
-    conversations.find((conversation) => conversation.id === selectedConversationId) ||
+    conversations.find(
+      (conversation) => conversation.id === selectedConversationId,
+    ) ||
     conversations[0] ||
     null;
   const activeConversationId = selectedConversation?.id || "";
@@ -175,7 +189,8 @@ const ChatPage = () => {
       { conversationId: activeConversationId, limit: 80 },
       { skip: !activeConversationId },
     );
-  const [sendChatMessage, { isLoading: sending }] = useSendChatMessageMutation();
+  const [sendChatMessage, { isLoading: sending }] =
+    useSendChatMessageMutation();
   const [markChatRead] = useMarkChatReadMutation();
   const messages = messagesResponse?.data ?? [];
 
@@ -185,8 +200,13 @@ const ChatPage = () => {
 
     return conversations.filter((conversation) => {
       const label = getConversationLabel(conversation, user?.id).toLowerCase();
-      const subtitle = getConversationSubtitle(conversation, user?.id).toLowerCase();
-      return label.includes(normalizedQuery) || subtitle.includes(normalizedQuery);
+      const subtitle = getConversationSubtitle(
+        conversation,
+        user?.id,
+      ).toLowerCase();
+      return (
+        label.includes(normalizedQuery) || subtitle.includes(normalizedQuery)
+      );
     });
   }, [conversations, query, user?.id]);
 
@@ -378,7 +398,7 @@ const ChatPage = () => {
                         </div>
                         {conversation.lastMessage?.createdAt ? (
                           <span className="shrink-0 text-[11px] text-muted-foreground">
-                            {formatTime(conversation.lastMessage.createdAt)}
+                            {formatDateTime(conversation.lastMessage.createdAt)}
                           </span>
                         ) : null}
                       </div>
@@ -431,10 +451,16 @@ const ChatPage = () => {
                 </Avatar>
                 <div className="min-w-0 flex-1">
                   <div className="truncate font-semibold">
-                    {getConversationDetails(selectedConversation, user?.id).oppositeName}
+                    {
+                      getConversationDetails(selectedConversation, user?.id)
+                        .oppositeName
+                    }
                   </div>
                   <div className="truncate text-xs text-muted-foreground">
-                    {getConversationDetails(selectedConversation, user?.id).subtitle}
+                    {
+                      getConversationDetails(selectedConversation, user?.id)
+                        .subtitle
+                    }
                   </div>
                 </div>
                 <div className="hidden rounded-full border bg-secondary/40 px-3 py-1 text-xs text-muted-foreground sm:block">
@@ -533,7 +559,9 @@ const ChatPage = () => {
                                       )}
                                     >
                                       <FileText className="h-4 w-4" />
-                                      <span className="truncate">{attachment.name}</span>
+                                      <span className="truncate">
+                                        {attachment.name}
+                                      </span>
                                     </a>
                                   ),
                                 )}
@@ -559,7 +587,7 @@ const ChatPage = () => {
                               >
                                 <Reply className="h-3.5 w-3.5" />
                               </Button>
-                              <span>{formatTime(message.createdAt)}</span>
+                              <span>{formatDateTime(message.createdAt)}</span>
                               {isMine ? <ChatStatus message={message} /> : null}
                             </div>
                           </div>
@@ -586,10 +614,16 @@ const ChatPage = () => {
                         Replying to {replyTo.sender?.name || "message"}
                       </div>
                       <div className="truncate text-xs text-muted-foreground">
-                        {replyTo.body || replyTo.attachments?.[0]?.name || "Attachment"}
+                        {replyTo.body ||
+                          replyTo.attachments?.[0]?.name ||
+                          "Attachment"}
                       </div>
                     </div>
-                    <Button type="text" size="small" onClick={() => setReplyTo(null)}>
+                    <Button
+                      type="text"
+                      size="small"
+                      onClick={() => setReplyTo(null)}
+                    >
                       <X className="h-4 w-4" />
                     </Button>
                   </div>
@@ -607,7 +641,9 @@ const ChatPage = () => {
                         ) : (
                           <FileText className="h-3.5 w-3.5" />
                         )}
-                        <span className="max-w-[160px] truncate">{file.name}</span>
+                        <span className="max-w-[160px] truncate">
+                          {file.name}
+                        </span>
                         <button
                           type="button"
                           onClick={() =>
