@@ -24,6 +24,7 @@ import AdminReviews from "../pages/admin/AdminReviews";
 import AdminSiteConfig from "../pages/admin/AdminSiteConfig";
 import AdminSettings from "../pages/admin/AdminSettings";
 import AdminWallet from "../pages/admin/AdminWallet";
+import ChatPage from "../pages/chat/ChatPage";
 
 export const adminRoutes: RouteObject[] = [
   {
@@ -45,6 +46,7 @@ export const adminRoutes: RouteObject[] = [
       { path: "providers", element: <AdminProviders /> },
       { path: "customers", element: <AdminCustomers /> },
       { path: "contact-messages", element: <AdminContactMessages /> },
+      { path: "chat", element: <ChatPage /> },
       { path: "reports", element: <AdminReports /> },
       { path: "reviews", element: <AdminReviews /> },
       { path: "cms", element: <AdminCMS /> },

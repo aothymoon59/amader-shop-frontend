@@ -7,6 +7,8 @@ import { Avatar, Divider, Dropdown, Typography } from "antd";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/context/CartContext";
+import NotificationBell from "@/components/notifications/NotificationBell";
+import ChatNavButton from "@/components/chat/ChatNavButton";
 
 const navLinks = [
   { title: "Home", path: "/" },
@@ -53,6 +55,12 @@ const Header = () => {
           user?.role === "customer"
             ? "/account/payments"
             : `/${user?.role}/payments`,
+      },
+      {
+        key: "chat",
+        label: "Live Chat",
+        href:
+          user?.role === "customer" ? "/account/chat" : `/${user?.role}/chat`,
       },
     ];
 
@@ -132,6 +140,8 @@ const Header = () => {
           ) : null}
           {isAuthenticated ? (
             <>
+              <ChatNavButton />
+              <NotificationBell />
               <Dropdown
                 trigger={["click"]}
                 menu={{
@@ -204,12 +214,24 @@ const Header = () => {
           )}
         </div>
 
-        <button
-          className="md:hidden text-foreground"
-          onClick={() => setMobileNav(!mobileNav)}
-        >
-          {mobileNav ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
+        <div className="flex items-center gap-2 md:hidden">
+          {isAuthenticated ? (
+            <>
+              <ChatNavButton />
+              <NotificationBell />
+            </>
+          ) : null}
+          <button
+            className="text-foreground"
+            onClick={() => setMobileNav(!mobileNav)}
+          >
+            {mobileNav ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
+          </button>
+        </div>
       </div>
 
       {mobileNav && (

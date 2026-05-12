@@ -30,6 +30,25 @@ export type WalletTransaction = {
   updatedAt: string;
 };
 
+export type WithdrawRequestPaymentSettings = {
+  id: string;
+  providerId: string;
+  accountHolderName: string;
+  bankName: string;
+  branchName: string;
+  routingNumber: string;
+  accountNumber: string;
+  accountType: "SAVINGS" | "CURRENT";
+  mobileBankType: "BKASH" | "NAGAD" | "ROCKET" | "NONE";
+  mobileBankNumber: string | null;
+  documentUrl: string | null;
+  isVerified: boolean;
+  verifiedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  isPaymentConfigured: true;
+};
+
 export type WithdrawRequest = {
   id: string;
   providerId: string;
@@ -45,6 +64,7 @@ export type WithdrawRequest = {
   updatedAt: string;
   providerName?: string;
   providerEmail?: string;
+  paymentSettings?: WithdrawRequestPaymentSettings | null;
 };
 
 export type EffectiveCommission = {
@@ -77,6 +97,9 @@ type AdminWalletOverviewResponse = {
       totalLockedBalance: number;
       totalEarned: number;
       totalWithdrawn: number;
+      totalCommissionBalance: number;
+      pendingCommissionBalance: number;
+      availableCommissionBalance: number;
     };
     commission: {
       enabled: boolean;
@@ -88,6 +111,7 @@ type AdminWalletOverviewResponse = {
       providerName?: string;
       providerEmail?: string;
       shopName?: string;
+      totalCommissionEarned?: number;
     }>;
     withdrawRequests: WithdrawRequest[];
   };
