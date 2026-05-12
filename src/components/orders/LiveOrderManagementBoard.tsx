@@ -41,7 +41,12 @@ const orderStatusOptions: OrderStatus[] = [
   "CANCELLED",
 ];
 
-const paymentStatusOptions: PaymentStatus[] = ["PENDING", "PAID", "FAILED", "REFUNDED"];
+const paymentStatusOptions: PaymentStatus[] = [
+  "PENDING",
+  "PAID",
+  "FAILED",
+  "REFUNDED",
+];
 const livePipelineStatuses: OrderStatus[] = [
   "PENDING",
   "CONFIRMED",
@@ -78,13 +83,19 @@ const paymentColors: Record<PaymentStatus, string> = {
 const formatDateTime = (value?: string | null) =>
   value ? new Date(value).toLocaleString() : "N/A";
 
-const generateTrackingNumber = (orderNumber: string, courier?: string | null) => {
+const generateTrackingNumber = (
+  orderNumber: string,
+  courier?: string | null,
+) => {
   const normalizedOrderNumber = orderNumber
     .replace(/[^A-Z0-9]/gi, "")
     .toUpperCase()
     .slice(-8);
   const courierCode =
-    courier?.replace(/[^A-Z0-9]/gi, "").toUpperCase().slice(0, 4) || "GEN";
+    courier
+      ?.replace(/[^A-Z0-9]/gi, "")
+      .toUpperCase()
+      .slice(0, 4) || "GEN";
   const dateCode = new Date().toISOString().slice(2, 10).replace(/-/g, "");
   const randomCode = Math.random().toString(36).slice(2, 6).toUpperCase();
 
@@ -120,8 +131,11 @@ const LiveOrderManagementBoard = ({
   const [customCourierDraft, setCustomCourierDraft] = useState("");
   const { currency = defaultSystemCurrency } = useSystemCurrency();
 
-  const { data: ordersResponse, isLoading: isOrdersLoading, refetch: refetchOrders } =
-    useGetManagementOrdersQuery(query);
+  const {
+    data: ordersResponse,
+    isLoading: isOrdersLoading,
+    refetch: refetchOrders,
+  } = useGetManagementOrdersQuery(query);
   const {
     data: paymentsResponse,
     isLoading: isPaymentsLoading,
@@ -151,7 +165,7 @@ const LiveOrderManagementBoard = ({
       selectedOrderFromList.courier &&
         !courierOptions.includes(selectedOrderFromList.courier)
         ? selectedOrderFromList.courier
-        : ""
+        : "",
     );
   }, [selectedOrderFromList]);
 
@@ -180,17 +194,24 @@ const LiveOrderManagementBoard = ({
       },
       {
         label: "Collected Revenue",
-        value: formatCurrencyAmount(Number(ordersSummary?.totalRevenue ?? 0), currency),
+        value: formatCurrencyAmount(
+          Number(ordersSummary?.totalRevenue ?? 0),
+          currency,
+        ),
         accent: "from-sky-500 via-cyan-500 to-blue-600",
         icon: DollarSign,
         helper: `${ordersSummary?.paidOrders ?? 0} paid orders`,
       },
     ],
-    [currency, ordersSummary]
+    [currency, ordersSummary],
   );
 
   const roleLabel =
-    role === "provider" ? "Provider Operations" : role === "super-admin" ? "Marketplace Control" : "Admin Operations";
+    role === "provider"
+      ? "Provider Operations"
+      : role === "super-admin"
+        ? "Marketplace Control"
+        : "Admin Operations";
   const sectionTitle = section === "orders" ? "Orders Desk" : "Payments Desk";
   const sectionDescription =
     section === "orders"
@@ -207,7 +228,10 @@ const LiveOrderManagementBoard = ({
     }
 
     return Array.from(
-      new Set([draftOrder.status, ...(draftOrder.workflow?.availableStatuses || [])])
+      new Set([
+        draftOrder.status,
+        ...(draftOrder.workflow?.availableStatuses || []),
+      ]),
     );
   }, [draftOrder]);
 
@@ -220,7 +244,7 @@ const LiveOrderManagementBoard = ({
       new Set([
         draftOrder.paymentStatus,
         ...(draftOrder.workflow?.allowedPaymentStatuses || []),
-      ])
+      ]),
     );
   }, [draftOrder]);
 
@@ -243,7 +267,9 @@ const LiveOrderManagementBoard = ({
       render: (_: unknown, order: OrderRecord) => (
         <div>
           <div>{order.customerName}</div>
-          <div className="text-xs text-muted-foreground">{order.customerPhone}</div>
+          <div className="text-xs text-muted-foreground">
+            {order.customerPhone}
+          </div>
         </div>
       ),
     },
@@ -260,7 +286,8 @@ const LiveOrderManagementBoard = ({
     {
       title: "Items",
       key: "items",
-      render: (_: unknown, order: OrderRecord) => `${order.items.length} item(s)`,
+      render: (_: unknown, order: OrderRecord) =>
+        `${order.items.length} item(s)`,
     },
     {
       title: "Amount",
@@ -272,16 +299,16 @@ const LiveOrderManagementBoard = ({
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (status: OrderStatus) => <Tag color={statusColors[status]}>{status}</Tag>,
+      render: (status: OrderStatus) => (
+        <Tag color={statusColors[status]}>{status}</Tag>
+      ),
     },
     {
       title: "Payment",
       dataIndex: "paymentStatus",
       key: "paymentStatus",
       render: (status: PaymentStatus) => (
-        <Tag color={paymentColors[status]}>
-          {status}
-        </Tag>
+        <Tag color={paymentColors[status]}>{status}</Tag>
       ),
     },
     {
@@ -291,7 +318,9 @@ const LiveOrderManagementBoard = ({
         order.trackingNumber ? (
           <div className="text-xs">
             <div className="font-medium">{order.trackingNumber}</div>
-            <div className="text-muted-foreground">{order.courier || "Courier pending"}</div>
+            <div className="text-muted-foreground">
+              {order.courier || "Courier pending"}
+            </div>
           </div>
         ) : (
           <span className="text-xs text-muted-foreground">Not assigned</span>
@@ -353,7 +382,15 @@ const LiveOrderManagementBoard = ({
       dataIndex: "status",
       key: "status",
       render: (status: string) => (
-        <Tag color={status === "SUCCESS" ? "green" : status === "FAILED" ? "red" : "gold"}>
+        <Tag
+          color={
+            status === "SUCCESS"
+              ? "green"
+              : status === "FAILED"
+                ? "red"
+                : "gold"
+          }
+        >
           {status}
         </Tag>
       ),
@@ -364,7 +401,7 @@ const LiveOrderManagementBoard = ({
     if (!selectedOrder || !draftOrder) return;
 
     try {
-      await updateManagementOrder({
+      const res = await updateManagementOrder({
         orderId: selectedOrder.id,
         payload: {
           status: draftOrder.status,
@@ -375,6 +412,8 @@ const LiveOrderManagementBoard = ({
         },
       }).unwrap();
 
+      console.log("Update response:", res);
+
       toast({
         title: "Order updated",
         description: `${draftOrder.orderNumber} has been updated.`,
@@ -383,15 +422,28 @@ const LiveOrderManagementBoard = ({
       void refetchOrders();
       void refetchPayments();
     } catch (error: unknown) {
-      const message =
-        typeof error === "object" &&
-        error !== null &&
-        "data" in error &&
-        typeof error.data === "object" &&
-        error.data !== null &&
-        "message" in error.data
-          ? String(error.data.message)
-          : "Unable to update the order right now.";
+      console.log("Full error:", error);
+
+      let message = "Something went wrong while updating the order.";
+
+      if (typeof error === "object" && error !== null) {
+        if (
+          "data" in error &&
+          typeof error.data === "object" &&
+          error.data !== null &&
+          "message" in error.data
+        ) {
+          const apiMessage = error.data.message;
+
+          console.log("API message:", apiMessage);
+
+          message = Array.isArray(apiMessage)
+            ? apiMessage.join(", ")
+            : String(apiMessage);
+        } else if ("message" in error) {
+          message = String(error.message);
+        }
+      }
 
       toast({
         title: "Update failed",
@@ -436,7 +488,10 @@ const LiveOrderManagementBoard = ({
   const setTablePagination = (
     value:
       | { page: number; per_page: number }
-      | ((prev: { page: number; per_page: number }) => { page: number; per_page: number })
+      | ((prev: { page: number; per_page: number }) => {
+          page: number;
+          per_page: number;
+        }),
   ) => {
     setQuery((current) => {
       const previous = {
@@ -460,26 +515,42 @@ const LiveOrderManagementBoard = ({
           <p className="text-sm font-medium uppercase tracking-[0.24em] text-primary">
             {roleLabel}
           </p>
-          <h1 className="mt-2 text-3xl font-bold">
-            {sectionTitle}
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">{sectionDescription}</p>
+          <h1 className="mt-2 text-3xl font-bold">{sectionTitle}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {sectionDescription}
+          </p>
         </div>
         <div className="max-w-xl rounded-2xl border bg-card p-5 shadow-sm">
           <p className="mb-3 font-medium">Operational flow</p>
           {section === "orders" ? (
             <div className="grid grid-cols-2 gap-3 text-sm text-muted-foreground">
-              <div className="rounded-lg bg-secondary/50 p-3">1. Confirm after stock review</div>
-              <div className="rounded-lg bg-secondary/50 p-3">2. Move into processing while packing</div>
-              <div className="rounded-lg bg-secondary/50 p-3">3. Add courier and tracking before ship</div>
-              <div className="rounded-lg bg-secondary/50 p-3">4. Close delivery and settle payment</div>
+              <div className="rounded-lg bg-secondary/50 p-3">
+                1. Confirm after stock review
+              </div>
+              <div className="rounded-lg bg-secondary/50 p-3">
+                2. Move into processing while packing
+              </div>
+              <div className="rounded-lg bg-secondary/50 p-3">
+                3. Add courier and tracking before ship
+              </div>
+              <div className="rounded-lg bg-secondary/50 p-3">
+                4. Close delivery and settle payment
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-3 text-sm text-muted-foreground">
-              <div className="rounded-lg bg-secondary/50 p-3">1. Watch COD vs online mix</div>
-              <div className="rounded-lg bg-secondary/50 p-3">2. Track paid order movement</div>
-              <div className="rounded-lg bg-secondary/50 p-3">3. Spot failed or refunded payments</div>
-              <div className="rounded-lg bg-secondary/50 p-3">4. Reconcile receipts and settlements</div>
+              <div className="rounded-lg bg-secondary/50 p-3">
+                1. Watch COD vs online mix
+              </div>
+              <div className="rounded-lg bg-secondary/50 p-3">
+                2. Track paid order movement
+              </div>
+              <div className="rounded-lg bg-secondary/50 p-3">
+                3. Spot failed or refunded payments
+              </div>
+              <div className="rounded-lg bg-secondary/50 p-3">
+                4. Reconcile receipts and settlements
+              </div>
             </div>
           )}
         </div>
@@ -497,7 +568,9 @@ const LiveOrderManagementBoard = ({
                   <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
                     {stat.label}
                   </div>
-                  <div className="mt-2 text-2xl font-bold tracking-tight">{stat.value}</div>
+                  <div className="mt-2 text-2xl font-bold tracking-tight">
+                    {stat.value}
+                  </div>
                 </div>
                 <div className="rounded-xl bg-secondary/80 p-2.5 text-foreground shadow-sm">
                   <stat.icon className="h-4 w-4" />
@@ -519,7 +592,11 @@ const LiveOrderManagementBoard = ({
             placeholder="Search order, customer, product, receipt"
             value={query.search}
             onChange={(event) =>
-              setQuery((current) => ({ ...current, search: event.target.value, page: 1 }))
+              setQuery((current) => ({
+                ...current,
+                search: event.target.value,
+                page: 1,
+              }))
             }
           />
           <Select
@@ -527,16 +604,27 @@ const LiveOrderManagementBoard = ({
             placeholder="Order status"
             value={query.status || undefined}
             onChange={(value) =>
-              setQuery((current) => ({ ...current, status: value || "", page: 1 }))
+              setQuery((current) => ({
+                ...current,
+                status: value || "",
+                page: 1,
+              }))
             }
-            options={orderStatusOptions.map((status) => ({ label: status, value: status }))}
+            options={orderStatusOptions.map((status) => ({
+              label: status,
+              value: status,
+            }))}
           />
           <Select
             allowClear
             placeholder="Payment method"
             value={query.paymentMethod || undefined}
             onChange={(value) =>
-              setQuery((current) => ({ ...current, paymentMethod: value || "", page: 1 }))
+              setQuery((current) => ({
+                ...current,
+                paymentMethod: value || "",
+                page: 1,
+              }))
             }
             options={[
               { label: "COD", value: "COD" },
@@ -548,22 +636,37 @@ const LiveOrderManagementBoard = ({
             placeholder="Payment status"
             value={query.paymentStatus || undefined}
             onChange={(value) =>
-              setQuery((current) => ({ ...current, paymentStatus: value || "", page: 1 }))
+              setQuery((current) => ({
+                ...current,
+                paymentStatus: value || "",
+                page: 1,
+              }))
             }
-            options={paymentStatusOptions.map((status) => ({ label: status, value: status }))}
+            options={paymentStatusOptions.map((status) => ({
+              label: status,
+              value: status,
+            }))}
           />
           <Input
             type="date"
             value={query.dateFrom || ""}
             onChange={(event) =>
-              setQuery((current) => ({ ...current, dateFrom: event.target.value, page: 1 }))
+              setQuery((current) => ({
+                ...current,
+                dateFrom: event.target.value,
+                page: 1,
+              }))
             }
           />
           <Input
             type="date"
             value={query.dateTo || ""}
             onChange={(event) =>
-              setQuery((current) => ({ ...current, dateTo: event.target.value, page: 1 }))
+              setQuery((current) => ({
+                ...current,
+                dateTo: event.target.value,
+                page: 1,
+              }))
             }
           />
           <Button
@@ -618,7 +721,9 @@ const LiveOrderManagementBoard = ({
           open={Boolean(selectedOrder && draftOrder)}
           onClose={() => setSelectedOrder(null)}
           width={960}
-          title={draftOrder ? `Manage ${draftOrder.orderNumber}` : "Manage Order"}
+          title={
+            draftOrder ? `Manage ${draftOrder.orderNumber}` : "Manage Order"
+          }
           extra={
             <div className="flex gap-2">
               <Button onClick={() => setSelectedOrder(null)}>Close</Button>
@@ -630,309 +735,344 @@ const LiveOrderManagementBoard = ({
         >
           {draftOrder ? (
             <div className="space-y-6">
-            <div className="rounded-2xl border bg-card p-5">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                <div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Tag color={statusColors[draftOrder.status]}>{draftOrder.status}</Tag>
-                    <Tag color={paymentColors[draftOrder.paymentStatus]}>
-                      {draftOrder.paymentStatus}
-                    </Tag>
-                    <Tag>{draftOrder.paymentMethod}</Tag>
-                  </div>
-                  <h2 className="mt-3 text-2xl font-semibold">{draftOrder.orderNumber}</h2>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Created {formatDateTime(draftOrder.createdAt)} and last updated{" "}
-                    {formatDateTime(draftOrder.updatedAt)}.
-                  </p>
-                </div>
-                {draftOrder.workflow?.recommendedNextStatus ? (
-                  <div className="rounded-xl bg-secondary/70 p-4 text-sm">
-                    <div className="font-medium">Recommended next move</div>
-                    <div className="mt-1 text-muted-foreground">
-                      Move this order to{" "}
-                      <span className="font-semibold text-foreground">
-                        {draftOrder.workflow.recommendedNextStatus}
-                      </span>
-                      {" "}after your checklist is complete.
+              <div className="rounded-2xl border bg-card p-5">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Tag color={statusColors[draftOrder.status]}>
+                        {draftOrder.status}
+                      </Tag>
+                      <Tag color={paymentColors[draftOrder.paymentStatus]}>
+                        {draftOrder.paymentStatus}
+                      </Tag>
+                      <Tag>{draftOrder.paymentMethod}</Tag>
                     </div>
+                    <h2 className="mt-3 text-2xl font-semibold">
+                      {draftOrder.orderNumber}
+                    </h2>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Created {formatDateTime(draftOrder.createdAt)} and last
+                      updated {formatDateTime(draftOrder.updatedAt)}.
+                    </p>
                   </div>
-                ) : null}
-              </div>
-            </div>
-
-            <div className="rounded-2xl border bg-card p-5">
-              <div className="mb-4 flex items-center gap-2 font-medium">
-                <PackageCheck className="h-4 w-4" /> Fulfillment timeline
-              </div>
-              <Steps
-                current={getStepIndex(draftOrder.status)}
-                status={draftOrder.status === "CANCELLED" ? "error" : "process"}
-                responsive
-                items={livePipelineStatuses.map((status) => ({
-                  title: status,
-                  description:
-                    draftOrder.status === status
-                      ? "Current"
-                      : draftOrder.workflow?.recommendedNextStatus === status
-                        ? "Recommended"
-                        : undefined,
-                }))}
-              />
-            </div>
-
-            {draftOrder.workflow?.blockers?.length ? (
-              <Alert
-                type="warning"
-                showIcon
-                message="Action blockers"
-                description={
-                  <div className="space-y-1">
-                    {draftOrder.workflow.blockers.map((blocker) => (
-                      <div key={blocker}>{blocker}</div>
-                    ))}
-                  </div>
-                }
-              />
-            ) : (
-              <Alert
-                type="success"
-                showIcon
-                message="Order is ready for the next guided action"
-              />
-            )}
-
-            <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.25fr_0.95fr]">
-              <div className="space-y-6">
-                <div className="rounded-2xl border p-5">
-                  <div className="mb-4 flex items-center gap-2 font-medium">
-                    <ShoppingBag className="h-4 w-4" /> Order items
-                  </div>
-                  <div className="space-y-3">
-                    {draftOrder.items.map((item) => (
-                      <div
-                        key={item.id}
-                        className="flex items-start justify-between gap-4 rounded-xl border bg-secondary/30 p-4"
-                      >
-                        <div className="min-w-0">
-                          <div className="font-medium">
-                            {item.product?.name || item.productName}
-                          </div>
-                          <div className="mt-1 text-sm text-muted-foreground">
-                            Qty {item.quantity} x {formatCurrencyAmount(item.unitPrice, currency)}
-                          </div>
-                        </div>
-                        <div className="text-right text-sm font-medium">
-                          {formatCurrencyAmount(item.subtotal, currency)}
-                        </div>
+                  {draftOrder.workflow?.recommendedNextStatus ? (
+                    <div className="rounded-xl bg-secondary/70 p-4 text-sm">
+                      <div className="font-medium">Recommended next move</div>
+                      <div className="mt-1 text-muted-foreground">
+                        Move this order to{" "}
+                        <span className="font-semibold text-foreground">
+                          {draftOrder.workflow.recommendedNextStatus}
+                        </span>{" "}
+                        after your checklist is complete.
                       </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="rounded-2xl border p-5">
-                  <div className="mb-4 flex items-center gap-2 font-medium">
-                    <Truck className="h-4 w-4" /> Fulfillment controls
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                    <Select
-                      value={draftOrder.status}
-                      onChange={(value) =>
-                        setDraftOrder((current) =>
-                          current ? { ...current, status: value } : current
-                        )
-                      }
-                      options={currentAvailableStatuses.map((status) => ({
-                        label: status,
-                        value: status,
-                      }))}
-                    />
-                    <Select
-                      value={draftOrder.paymentStatus}
-                      disabled={!draftOrder.workflow?.canEditPaymentStatus}
-                      onChange={(value) =>
-                        setDraftOrder((current) =>
-                          current ? { ...current, paymentStatus: value } : current
-                        )
-                      }
-                      options={currentAvailablePaymentStatuses.map((status) => ({
-                        label: status,
-                        value: status,
-                      }))}
-                    />
-                    <Select
-                      allowClear
-                      placeholder="Courier"
-                      value={selectedCourierOption}
-                      onChange={(value) => {
-                        if (!value) {
-                          setCustomCourierDraft("");
-                          setDraftOrder((current) =>
-                            current ? { ...current, courier: "" } : current
-                          );
-                          return;
-                        }
-
-                        if (value === customCourierValue) {
-                          applyCourierChange(customCourierDraft || "");
-                          return;
-                        }
-
-                        setCustomCourierDraft("");
-                        applyCourierChange(value);
-                      }}
-                      options={[
-                        ...courierOptions.map((courier) => ({
-                          label: courier,
-                          value: courier,
-                        })),
-                        {
-                          label: "Other courier",
-                          value: customCourierValue,
-                        },
-                      ]}
-                    />
-                    <Input
-                      placeholder="Tracking number"
-                      value={draftOrder.trackingNumber || ""}
-                      onChange={(event) =>
-                        setDraftOrder((current) =>
-                          current
-                            ? { ...current, trackingNumber: event.target.value }
-                            : current
-                        )
-                      }
-                    />
-                  </div>
-
-                  {selectedCourierOption === customCourierValue ? (
-                    <Input
-                      className="mt-4"
-                      placeholder="Write courier name manually"
-                      value={customCourierDraft}
-                      onChange={(event) => {
-                        const value = event.target.value;
-                        setCustomCourierDraft(value);
-                        applyCourierChange(value);
-                      }}
-                    />
+                    </div>
                   ) : null}
-
-                  <div className="mt-5 flex flex-wrap gap-2">
-                    {(draftOrder.workflow?.availableStatuses || []).map((status) => (
-                      <Button
-                        key={status}
-                        onClick={() => handleRecommendedAction(status)}
-                        type={
-                          draftOrder.workflow?.recommendedNextStatus === status
-                            ? "primary"
-                            : "default"
-                        }
-                      >
-                        Move to {status}
-                      </Button>
-                    ))}
-                  </div>
-
-                  <div className="mt-5">
-                    <Input.TextArea
-                      rows={5}
-                      placeholder="Internal notes for support, operations, or delivery follow-up"
-                      value={draftOrder.internalNotes || ""}
-                      onChange={(event) =>
-                        setDraftOrder((current) =>
-                          current
-                            ? { ...current, internalNotes: event.target.value }
-                            : current
-                        )
-                      }
-                    />
-                  </div>
                 </div>
               </div>
 
-              <div className="space-y-6">
-                <div className="rounded-2xl border p-5">
-                  <div className="mb-4 font-medium">Customer & destination</div>
-                  <div className="space-y-3 text-sm">
-                    <div className="flex items-start gap-3">
-                      <UserRound className="mt-0.5 h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <div className="font-medium">{draftOrder.customerName}</div>
-                        <div className="text-muted-foreground">
-                          {draftOrder.customerEmail || "Email not provided"}
+              <div className="rounded-2xl border bg-card p-5">
+                <div className="mb-4 flex items-center gap-2 font-medium">
+                  <PackageCheck className="h-4 w-4" /> Fulfillment timeline
+                </div>
+                <Steps
+                  current={getStepIndex(draftOrder.status)}
+                  status={
+                    draftOrder.status === "CANCELLED" ? "error" : "process"
+                  }
+                  responsive
+                  items={livePipelineStatuses.map((status) => ({
+                    title: status,
+                    description:
+                      draftOrder.status === status
+                        ? "Current"
+                        : draftOrder.workflow?.recommendedNextStatus === status
+                          ? "Recommended"
+                          : undefined,
+                  }))}
+                />
+              </div>
+
+              {draftOrder.workflow?.blockers?.length ? (
+                <Alert
+                  type="warning"
+                  showIcon
+                  message="Action blockers"
+                  description={
+                    <div className="space-y-1">
+                      {draftOrder.workflow.blockers.map((blocker) => (
+                        <div key={blocker}>{blocker}</div>
+                      ))}
+                    </div>
+                  }
+                />
+              ) : (
+                <Alert
+                  type="success"
+                  showIcon
+                  message="Order is ready for the next guided action"
+                />
+              )}
+
+              <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.25fr_0.95fr]">
+                <div className="space-y-6">
+                  <div className="rounded-2xl border p-5">
+                    <div className="mb-4 flex items-center gap-2 font-medium">
+                      <ShoppingBag className="h-4 w-4" /> Order items
+                    </div>
+                    <div className="space-y-3">
+                      {draftOrder.items.map((item) => (
+                        <div
+                          key={item.id}
+                          className="flex items-start justify-between gap-4 rounded-xl border bg-secondary/30 p-4"
+                        >
+                          <div className="min-w-0">
+                            <div className="font-medium">
+                              {item.product?.name || item.productName}
+                            </div>
+                            <div className="mt-1 text-sm text-muted-foreground">
+                              Qty {item.quantity} x{" "}
+                              {formatCurrencyAmount(item.unitPrice, currency)}
+                            </div>
+                          </div>
+                          <div className="text-right text-sm font-medium">
+                            {formatCurrencyAmount(item.subtotal, currency)}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border p-5">
+                    <div className="mb-4 flex items-center gap-2 font-medium">
+                      <Truck className="h-4 w-4" /> Fulfillment controls
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                      <Select
+                        value={draftOrder.status}
+                        onChange={(value) =>
+                          setDraftOrder((current) =>
+                            current ? { ...current, status: value } : current,
+                          )
+                        }
+                        options={currentAvailableStatuses.map((status) => ({
+                          label: status,
+                          value: status,
+                        }))}
+                      />
+                      <Select
+                        value={draftOrder.paymentStatus}
+                        disabled={!draftOrder.workflow?.canEditPaymentStatus}
+                        onChange={(value) =>
+                          setDraftOrder((current) =>
+                            current
+                              ? { ...current, paymentStatus: value }
+                              : current,
+                          )
+                        }
+                        options={currentAvailablePaymentStatuses.map(
+                          (status) => ({
+                            label: status,
+                            value: status,
+                          }),
+                        )}
+                      />
+                      <Select
+                        allowClear
+                        placeholder="Courier"
+                        value={selectedCourierOption}
+                        onChange={(value) => {
+                          if (!value) {
+                            setCustomCourierDraft("");
+                            setDraftOrder((current) =>
+                              current ? { ...current, courier: "" } : current,
+                            );
+                            return;
+                          }
+
+                          if (value === customCourierValue) {
+                            applyCourierChange(customCourierDraft || "");
+                            return;
+                          }
+
+                          setCustomCourierDraft("");
+                          applyCourierChange(value);
+                        }}
+                        options={[
+                          ...courierOptions.map((courier) => ({
+                            label: courier,
+                            value: courier,
+                          })),
+                          {
+                            label: "Other courier",
+                            value: customCourierValue,
+                          },
+                        ]}
+                      />
+                      <Input
+                        placeholder="Tracking number"
+                        value={draftOrder.trackingNumber || ""}
+                        onChange={(event) =>
+                          setDraftOrder((current) =>
+                            current
+                              ? {
+                                  ...current,
+                                  trackingNumber: event.target.value,
+                                }
+                              : current,
+                          )
+                        }
+                      />
+                    </div>
+
+                    {selectedCourierOption === customCourierValue ? (
+                      <Input
+                        className="mt-4"
+                        placeholder="Write courier name manually"
+                        value={customCourierDraft}
+                        onChange={(event) => {
+                          const value = event.target.value;
+                          setCustomCourierDraft(value);
+                          applyCourierChange(value);
+                        }}
+                      />
+                    ) : null}
+
+                    <div className="mt-5 flex flex-wrap gap-2">
+                      {(draftOrder.workflow?.availableStatuses || []).map(
+                        (status) => (
+                          <Button
+                            key={status}
+                            onClick={() => handleRecommendedAction(status)}
+                            type={
+                              draftOrder.workflow?.recommendedNextStatus ===
+                              status
+                                ? "primary"
+                                : "default"
+                            }
+                          >
+                            Move to {status}
+                          </Button>
+                        ),
+                      )}
+                    </div>
+
+                    <div className="mt-5">
+                      <Input.TextArea
+                        rows={5}
+                        placeholder="Internal notes for support, operations, or delivery follow-up"
+                        value={draftOrder.internalNotes || ""}
+                        onChange={(event) =>
+                          setDraftOrder((current) =>
+                            current
+                              ? {
+                                  ...current,
+                                  internalNotes: event.target.value,
+                                }
+                              : current,
+                          )
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="rounded-2xl border p-5">
+                    <div className="mb-4 font-medium">
+                      Customer & destination
+                    </div>
+                    <div className="space-y-3 text-sm">
+                      <div className="flex items-start gap-3">
+                        <UserRound className="mt-0.5 h-4 w-4 text-muted-foreground" />
+                        <div>
+                          <div className="font-medium">
+                            {draftOrder.customerName}
+                          </div>
+                          <div className="text-muted-foreground">
+                            {draftOrder.customerEmail || "Email not provided"}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <Phone className="mt-0.5 h-4 w-4 text-muted-foreground" />
-                      <div>{draftOrder.customerPhone}</div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <MapPin className="mt-0.5 h-4 w-4 text-muted-foreground" />
-                      <div>{draftOrder.shippingAddress}</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="rounded-2xl border p-5">
-                  <div className="mb-4 font-medium">Commercial snapshot</div>
-                  <div className="space-y-3 text-sm">
-                    <div className="flex items-start justify-between gap-4">
-                      <span className="text-muted-foreground">Total amount</span>
-                      <span className="font-semibold">
-                        {formatCurrencyAmount(draftOrder.totalAmount, currency)}
-                      </span>
-                    </div>
-                    <div className="flex items-start justify-between gap-4">
-                      <span className="text-muted-foreground">Receipt</span>
-                      <span className="font-medium">
-                        {draftOrder.receipt?.receiptNumber || "Pending"}
-                      </span>
-                    </div>
-                    <div className="flex items-start justify-between gap-4">
-                      <span className="text-muted-foreground">Payment method</span>
-                      <span>{draftOrder.paymentMethod}</span>
-                    </div>
-                    {(role !== "provider" && draftOrder.providerNames?.length) ? (
                       <div className="flex items-start gap-3">
-                        <Store className="mt-0.5 h-4 w-4 text-muted-foreground" />
-                        <div>{draftOrder.providerNames.join(", ")}</div>
+                        <Phone className="mt-0.5 h-4 w-4 text-muted-foreground" />
+                        <div>{draftOrder.customerPhone}</div>
                       </div>
-                    ) : null}
+                      <div className="flex items-start gap-3">
+                        <MapPin className="mt-0.5 h-4 w-4 text-muted-foreground" />
+                        <div>{draftOrder.shippingAddress}</div>
+                      </div>
+                    </div>
                   </div>
-                </div>
 
-                <div className="rounded-2xl border p-5">
-                  <div className="mb-4 font-medium">Operator checklist</div>
-                  <div className="space-y-3 text-sm text-muted-foreground">
-                    <div className="flex items-start gap-3">
-                      <CalendarDays className="mt-0.5 h-4 w-4" />
-                      Review order time, address, and contact before confirming.
+                  <div className="rounded-2xl border p-5">
+                    <div className="mb-4 font-medium">Commercial snapshot</div>
+                    <div className="space-y-3 text-sm">
+                      <div className="flex items-start justify-between gap-4">
+                        <span className="text-muted-foreground">
+                          Total amount
+                        </span>
+                        <span className="font-semibold">
+                          {formatCurrencyAmount(
+                            draftOrder.totalAmount,
+                            currency,
+                          )}
+                        </span>
+                      </div>
+                      <div className="flex items-start justify-between gap-4">
+                        <span className="text-muted-foreground">Receipt</span>
+                        <span className="font-medium">
+                          {draftOrder.receipt?.receiptNumber || "Pending"}
+                        </span>
+                      </div>
+                      <div className="flex items-start justify-between gap-4">
+                        <span className="text-muted-foreground">
+                          Payment method
+                        </span>
+                        <span>{draftOrder.paymentMethod}</span>
+                      </div>
+                      {role !== "provider" &&
+                      draftOrder.providerNames?.length ? (
+                        <div className="flex items-start gap-3">
+                          <Store className="mt-0.5 h-4 w-4 text-muted-foreground" />
+                          <div>{draftOrder.providerNames.join(", ")}</div>
+                        </div>
+                      ) : null}
                     </div>
-                    <div className="flex items-start gap-3">
-                      <Truck className="mt-0.5 h-4 w-4" />
-                      Attach courier and tracking before shipping to keep support aligned.
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <CreditCard className="mt-0.5 h-4 w-4" />
-                      Keep payment state consistent with COD collection or online validation.
-                    </div>
-                    <div className="flex items-start gap-3">
-                      {draftOrder.workflow?.blockers?.length ? (
-                        <AlertCircle className="mt-0.5 h-4 w-4 text-amber-600" />
-                      ) : (
-                        <CheckCircle2 className="mt-0.5 h-4 w-4 text-green-600" />
-                      )}
-                      {draftOrder.workflow?.blockers?.length
-                        ? "Resolve blockers before moving to the next fulfillment stage."
-                        : "This order is ready for the next operational step."}
+                  </div>
+
+                  <div className="rounded-2xl border p-5">
+                    <div className="mb-4 font-medium">Operator checklist</div>
+                    <div className="space-y-3 text-sm text-muted-foreground">
+                      <div className="flex items-start gap-3">
+                        <CalendarDays className="mt-0.5 h-4 w-4" />
+                        Review order time, address, and contact before
+                        confirming.
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <Truck className="mt-0.5 h-4 w-4" />
+                        Attach courier and tracking before shipping to keep
+                        support aligned.
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <CreditCard className="mt-0.5 h-4 w-4" />
+                        Keep payment state consistent with COD collection or
+                        online validation.
+                      </div>
+                      <div className="flex items-start gap-3">
+                        {draftOrder.workflow?.blockers?.length ? (
+                          <AlertCircle className="mt-0.5 h-4 w-4 text-amber-600" />
+                        ) : (
+                          <CheckCircle2 className="mt-0.5 h-4 w-4 text-green-600" />
+                        )}
+                        {draftOrder.workflow?.blockers?.length
+                          ? "Resolve blockers before moving to the next fulfillment stage."
+                          : "This order is ready for the next operational step."}
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
             </div>
           ) : null}
         </Drawer>

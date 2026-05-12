@@ -5,6 +5,7 @@ import {
   FileText,
   LayoutDashboard,
   Mail,
+  MessageCircle,
   MapPinned,
   Package,
   PackageCheck,
@@ -44,6 +45,7 @@ export const dashboardMenuItems: Record<string, SidebarItem[]> = {
     { title: "Wallet & Earnings", icon: Wallet, path: "/admin/wallet" },
     { title: "Reviews", icon: Star, path: "/admin/reviews" },
     { title: "Contact Messages", icon: Mail, path: "/admin/contact-messages" },
+    { title: "Live Chat", icon: MessageCircle, path: "/admin/chat" },
     {
       title: "User Management",
       icon: Users,
@@ -91,6 +93,7 @@ export const dashboardMenuItems: Record<string, SidebarItem[]> = {
     },
     { title: "Wallet & Earnings", icon: Wallet, path: "/provider/wallet" },
     { title: "Reviews", icon: Star, path: "/provider/reviews" },
+    { title: "Live Chat", icon: MessageCircle, path: "/provider/chat" },
     {
       title: "Expense Tracker",
       icon: FileText,
@@ -124,6 +127,11 @@ export const dashboardMenuItems: Record<string, SidebarItem[]> = {
       ],
     },
     {
+      title: "Wallet & Earnings",
+      icon: Wallet,
+      path: "/super-admin/wallet",
+    },
+    {
       title: "Delivery Zones",
       icon: MapPinned,
       path: "/super-admin/delivery-zones",
@@ -139,6 +147,7 @@ export const dashboardMenuItems: Record<string, SidebarItem[]> = {
       icon: Mail,
       path: "/super-admin/contact-messages",
     },
+    { title: "Live Chat", icon: MessageCircle, path: "/super-admin/chat" },
     { title: "Audit Log", icon: FileText, path: "/super-admin/audit-log" },
     {
       title: "CMS Management",

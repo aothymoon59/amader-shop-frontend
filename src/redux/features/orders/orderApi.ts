@@ -71,6 +71,8 @@ export type OrderRecord = {
   customerEmail?: string | null;
   shippingAddress: string;
   totalAmount: number;
+  marketplaceTotalAmount?: number;
+  providerSubtotalAmount?: number;
   status: OrderStatus;
   paymentMethod: CheckoutPaymentMethod;
   paymentStatus: PaymentStatus;

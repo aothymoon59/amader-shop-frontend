@@ -14,6 +14,7 @@ import CartPage from "../pages/shop/CartPage";
 import CheckoutPage from "../pages/shop/CheckoutPage";
 import CheckoutPaymentStatusPage from "../pages/shop/CheckoutPaymentStatusPage";
 import ProductDetailPage from "../pages/shop/ProductDetailPage.new";
+import ChatPage from "../pages/chat/ChatPage";
 
 export const publicRoutes: RouteObject[] = [
   {
@@ -81,6 +82,14 @@ export const publicRoutes: RouteObject[] = [
     element: (
       <ProtectedRoute allowedRoles={["customer"]}>
         <PaymentHistory />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "account/chat",
+    element: (
+      <ProtectedRoute allowedRoles={["customer"]}>
+        <ChatPage />
       </ProtectedRoute>
     ),
   },
