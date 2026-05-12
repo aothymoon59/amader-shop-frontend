@@ -30,11 +30,7 @@ import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { useCurrentToken } from "@/redux/features/auth/authSlice";
 import { tagTypes } from "@/redux/tagTypes";
 import { cn } from "@/lib/utils";
-
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-
-dayjs.extend(utc);
+import { formatDateTime } from "@/utils/dateFormatter";
 
 const socketUrl = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
 const maxAttachmentSize = 10 * 1024 * 1024;
@@ -53,8 +49,6 @@ const acceptedAttachmentTypes = [
   "application/zip",
   "application/x-zip-compressed",
 ];
-const formatDateTime = (value?: string | null) =>
-  value ? dayjs.utc(value).format("MMM D, YYYY, h:mm A") : "";
 
 const getConversationLabel = (
   conversation: ChatConversation,

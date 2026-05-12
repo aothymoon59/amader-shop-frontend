@@ -9,11 +9,9 @@ import {
   useMarkAllNotificationsReadMutation,
   useMarkNotificationReadMutation,
 } from "@/redux/features/notifications/notificationApi";
+import { formatDateTime } from "@/utils/dateFormatter";
 
 const { Text } = Typography;
-
-const formatNotificationTime = (value: string) =>
-  new Date(value).toLocaleString();
 
 const NotificationBell = () => {
   const navigate = useNavigate();
@@ -33,7 +31,9 @@ const NotificationBell = () => {
 
   const handleNotificationClick = async (notification: AppNotification) => {
     if (!notification.readAt) {
-      await markNotificationRead(notification.id).unwrap().catch(() => null);
+      await markNotificationRead(notification.id)
+        .unwrap()
+        .catch(() => null);
     }
 
     if (notification.actionUrl) {
@@ -52,7 +52,9 @@ const NotificationBell = () => {
               <Text strong>Notifications</Text>
               <div className="text-xs text-muted-foreground">
                 {unreadCount} unread
-                {totalNotifications ? ` • ${notifications.length} of ${totalNotifications}` : ""}
+                {totalNotifications
+                  ? ` • ${notifications.length} of ${totalNotifications}`
+                  : ""}
               </div>
             </div>
             <Button
@@ -60,7 +62,11 @@ const NotificationBell = () => {
               type="link"
               disabled={!unreadCount}
               loading={isMarkingAll}
-              onClick={() => markAllNotificationsRead().unwrap().catch(() => null)}
+              onClick={() =>
+                markAllNotificationsRead()
+                  .unwrap()
+                  .catch(() => null)
+              }
             >
               Mark all read
             </Button>
@@ -96,7 +102,7 @@ const NotificationBell = () => {
                       {notification.message}
                     </div>
                     <div className="mt-2 text-xs text-muted-foreground">
-                      {formatNotificationTime(notification.createdAt)}
+                      {formatDateTime(notification.createdAt)}
                     </div>
                   </button>
                 ))}
