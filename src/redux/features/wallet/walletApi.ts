@@ -97,6 +97,9 @@ type AdminWalletOverviewResponse = {
       totalLockedBalance: number;
       totalEarned: number;
       totalWithdrawn: number;
+      totalCommissionBalance: number;
+      pendingCommissionBalance: number;
+      availableCommissionBalance: number;
     };
     commission: {
       enabled: boolean;
@@ -108,6 +111,7 @@ type AdminWalletOverviewResponse = {
       providerName?: string;
       providerEmail?: string;
       shopName?: string;
+      totalCommissionEarned?: number;
     }>;
     withdrawRequests: WithdrawRequest[];
   };

@@ -632,7 +632,7 @@ const AdminWallet = () => {
 
           <Paragraph className="!mb-0 text-muted-foreground">
             Review provider balances, approve or reject withdraw requests, and
-            monitor marketplace payout exposure.
+            monitor marketplace payout and commission exposure.
           </Paragraph>
         </div>
 
@@ -642,7 +642,7 @@ const AdminWallet = () => {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-6">
               <Card bordered={false} className="shadow-sm">
                 <Statistic
                   title="Available"
@@ -681,6 +681,32 @@ const AdminWallet = () => {
                     formatCurrencyAmount(Number(value || 0), currency)
                   }
                 />
+              </Card>
+
+              <Card bordered={false} className="shadow-sm">
+                <Statistic
+                  title="Admin Commission"
+                  value={summary?.totalCommissionBalance || 0}
+                  formatter={(value) =>
+                    formatCurrencyAmount(Number(value || 0), currency)
+                  }
+                />
+                <div className="mt-1 space-y-0.5 text-xs text-muted-foreground">
+                  <div>
+                    Available:{" "}
+                    {formatCurrencyAmount(
+                      Number(summary?.availableCommissionBalance || 0),
+                      currency,
+                    )}
+                  </div>
+                  <div>
+                    Pending:{" "}
+                    {formatCurrencyAmount(
+                      Number(summary?.pendingCommissionBalance || 0),
+                      currency,
+                    )}
+                  </div>
+                </div>
               </Card>
 
               <Card bordered={false} className="shadow-sm">
@@ -830,6 +856,15 @@ const AdminWallet = () => {
                     render: (_, record: any) =>
                       formatCurrencyAmount(
                         Number(record.totalEarned || 0),
+                        currency,
+                      ),
+                  },
+                  {
+                    title: "Commission",
+                    key: "commission",
+                    render: (_, record: any) =>
+                      formatCurrencyAmount(
+                        Number(record.totalCommissionEarned || 0),
                         currency,
                       ),
                   },
