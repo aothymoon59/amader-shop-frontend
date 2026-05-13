@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Store, ShoppingCart, Menu, X } from "lucide-react";
+import { Store, ShoppingCart, Menu, X, Heart } from "lucide-react";
 import { Avatar, Divider, Dropdown, Typography } from "antd";
 
 import { Button } from "@/components/ui/button";
@@ -63,6 +63,14 @@ const Header = () => {
           user?.role === "customer" ? "/account/chat" : `/${user?.role}/chat`,
       },
     ];
+
+    if (user?.role === "customer") {
+      baseItems.splice(2, 0, {
+        key: "wishlist",
+        label: "Wishlist",
+        href: "/account/wishlist",
+      });
+    }
 
     if (user?.role === "provider") {
       baseItems.push(
@@ -127,16 +135,25 @@ const Header = () => {
 
         <div className="hidden md:flex items-center gap-3">
           {canUseCart ? (
-            <Link to="/cart" className="relative">
-              <Button variant="ghost" size="icon">
-                <ShoppingCart className="h-5 w-5" />
-              </Button>
-              {itemCount > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-primary text-primary-foreground text-[11px] flex items-center justify-center font-semibold">
-                  {itemCount}
-                </span>
-              )}
-            </Link>
+            <>
+              {isAuthenticated ? (
+                <Link to="/account/wishlist">
+                  <Button variant="ghost" size="icon">
+                    <Heart className="h-5 w-5" />
+                  </Button>
+                </Link>
+              ) : null}
+              <Link to="/cart" className="relative">
+                <Button variant="ghost" size="icon">
+                  <ShoppingCart className="h-5 w-5" />
+                </Button>
+                {itemCount > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-primary text-primary-foreground text-[11px] flex items-center justify-center font-semibold">
+                    {itemCount}
+                  </span>
+                )}
+              </Link>
+            </>
           ) : null}
           {isAuthenticated ? (
             <>
@@ -252,6 +269,24 @@ const Header = () => {
                 {link.title}
               </Link>
             ))}
+            {canUseCart ? (
+              <>
+                {isAuthenticated ? (
+                  <Link
+                    to="/account/wishlist"
+                    onClick={() => setMobileNav(false)}
+                    className={cn(
+                      "block text-sm font-medium py-2",
+                      location.pathname === "/account/wishlist"
+                        ? "text-primary"
+                        : "text-muted-foreground",
+                    )}
+                  >
+                    Wishlist
+                  </Link>
+                ) : null}
+              </>
+            ) : null}
             {canUseCart ? (
               <Link
                 to="/cart"

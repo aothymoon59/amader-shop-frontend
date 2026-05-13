@@ -9,6 +9,7 @@ import Index from "../pages/Index";
 import OrderHistory from "../pages/OrderHistory";
 import PaymentHistory from "../pages/PaymentHistory";
 import Products from "../pages/Products.new";
+import WishlistPage from "../pages/WishlistPage";
 import ProviderApply from "../pages/provider/ProviderApply";
 import CartPage from "../pages/shop/CartPage";
 import CheckoutPage from "../pages/shop/CheckoutPage";
@@ -82,6 +83,14 @@ export const publicRoutes: RouteObject[] = [
     element: (
       <ProtectedRoute allowedRoles={["customer"]}>
         <PaymentHistory />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "account/wishlist",
+    element: (
+      <ProtectedRoute allowedRoles={["customer"]}>
+        <WishlistPage />
       </ProtectedRoute>
     ),
   },

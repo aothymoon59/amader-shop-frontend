@@ -1,6 +1,6 @@
 import type { MouseEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { PackageOpen, ShoppingCart, Star, Store } from "lucide-react";
+import { Heart, PackageOpen, ShoppingCart, Star, Store } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
@@ -9,8 +9,13 @@ import { useAuth } from "@/hooks/useAuth";
 import { useSystemCurrency } from "@/hooks/useSystemCurrency";
 import { defaultSystemCurrency } from "@/redux/features/generalApi/systemSettingsApi";
 import type { Product } from "@/redux/features/products/productApi";
+import {
+  useGetWishlistQuery,
+  useToggleWishlistItemMutation,
+} from "@/redux/features/wishlist/wishlistApi";
 import { formatCurrencyAmount } from "@/utils/currency";
 import { getDiscountedPrice } from "@/utils/getDiscountedPrice";
+import { cn } from "@/lib/utils";
 
 type MarketplaceProductCardProps = {
   product: Product;
@@ -25,10 +30,19 @@ const MarketplaceProductCard = ({ product }: MarketplaceProductCardProps) => {
   const { addToCart } = useCart();
   const { user } = useAuth();
   const { currency = defaultSystemCurrency } = useSystemCurrency();
+  const isCustomer = user?.role === "customer";
+  const { data: wishlistResponse } = useGetWishlistQuery(undefined, {
+    skip: !isCustomer,
+  });
+  const [toggleWishlistItem, { isLoading: isTogglingWishlist }] =
+    useToggleWishlistItemMutation();
   const productImage = getProductImage(product);
   const discountedPrice = getDiscountedPrice(product);
   const hasDiscount = discountedPrice < product.price;
   const reviewSummary = product.reviewSummary;
+  const isWishlisted = Boolean(
+    wishlistResponse?.data.productIds.includes(product.id),
+  );
   const isPurchaseDisabled =
     user?.role === "admin" ||
     user?.role === "super-admin" ||
@@ -51,10 +65,48 @@ const MarketplaceProductCard = ({ product }: MarketplaceProductCardProps) => {
     navigate("/checkout");
   };
 
+  const handleToggleWishlist = async (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (!user) {
+      toast({
+        title: "Login required",
+        description: "Please login to save products to your wishlist.",
+      });
+      navigate("/login", { state: { from: "/products" } });
+      return;
+    }
+
+    if (!isCustomer) {
+      toast({
+        title: "Wishlist is for customers",
+        description: "Admin and provider accounts cannot save products.",
+      });
+      return;
+    }
+
+    try {
+      const result = await toggleWishlistItem(product.id).unwrap();
+      toast({
+        title:
+          result.data.action === "added"
+            ? "Added to wishlist"
+            : "Removed from wishlist",
+      });
+    } catch (error) {
+      toast({
+        title: "Could not update wishlist",
+        description: "Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="group overflow-hidden rounded-2xl border bg-card transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-      <Link to={`/products/${product.slug}`} className="block">
-        <div className="relative h-52 overflow-hidden bg-secondary">
+      <div className="relative h-52 overflow-hidden bg-secondary">
+        <Link to={`/products/${product.slug}`} className="block h-full">
           <img
             src={productImage}
             alt={product.name}
@@ -70,8 +122,24 @@ const MarketplaceProductCard = ({ product }: MarketplaceProductCardProps) => {
               </span>
             ) : null}
           </div>
-        </div>
-      </Link>
+        </Link>
+        <Button
+          type="button"
+          variant="secondary"
+          size="icon"
+          className="absolute right-3 top-3 h-9 w-9 rounded-full bg-background/90 shadow-sm hover:bg-background"
+          onClick={handleToggleWishlist}
+          disabled={isTogglingWishlist}
+          aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+        >
+          <Heart
+            className={cn(
+              "h-4 w-4",
+              isWishlisted && "fill-primary text-primary",
+            )}
+          />
+        </Button>
+      </div>
 
       <div className="p-4">
         <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">

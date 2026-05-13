@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Empty, Skeleton } from "antd";
-import { ArrowLeft, Shield, ShoppingCart, Star, Truck } from "lucide-react";
+import { ArrowLeft, Heart, Shield, ShoppingCart, Star, Truck } from "lucide-react";
 
 import ProductReviewsSection from "@/components/reviews/ProductReviewsSection";
 import { Button } from "@/components/ui/button";
@@ -11,8 +11,13 @@ import { useAuth } from "@/hooks/useAuth";
 import { useSystemCurrency } from "@/hooks/useSystemCurrency";
 import { defaultSystemCurrency } from "@/redux/features/generalApi/systemSettingsApi";
 import { useGetSingleProductQuery } from "@/redux/features/products/productApi";
+import {
+  useGetWishlistQuery,
+  useToggleWishlistItemMutation,
+} from "@/redux/features/wishlist/wishlistApi";
 import { formatCurrencyAmount } from "@/utils/currency";
 import { getDiscountedPrice } from "@/utils/getDiscountedPrice";
+import { cn } from "@/lib/utils";
 
 const ProductDetailPage = () => {
   const { slug } = useParams();
@@ -20,6 +25,12 @@ const ProductDetailPage = () => {
   const { addToCart } = useCart();
   const { user } = useAuth();
   const { currency = defaultSystemCurrency } = useSystemCurrency();
+  const isCustomer = user?.role === "customer";
+  const { data: wishlistResponse } = useGetWishlistQuery(undefined, {
+    skip: !isCustomer,
+  });
+  const [toggleWishlistItem, { isLoading: isTogglingWishlist }] =
+    useToggleWishlistItemMutation();
   const [selectedImage, setSelectedImage] = useState("");
   const [isZoomActive, setIsZoomActive] = useState(false);
   const [isMobileZoomOpen, setIsMobileZoomOpen] = useState(false);
@@ -110,6 +121,41 @@ const ProductDetailPage = () => {
     navigate("/checkout");
   };
 
+  const handleToggleWishlist = async () => {
+    if (!user) {
+      toast({
+        title: "Login required",
+        description: "Please login to save products to your wishlist.",
+      });
+      navigate("/login", { state: { from: `/products/${product.slug}` } });
+      return;
+    }
+
+    if (!isCustomer) {
+      toast({
+        title: "Wishlist is for customers",
+        description: "Admin and provider accounts cannot save products.",
+      });
+      return;
+    }
+
+    try {
+      const result = await toggleWishlistItem(product.id).unwrap();
+      toast({
+        title:
+          result.data.action === "added"
+            ? "Added to wishlist"
+            : "Removed from wishlist",
+      });
+    } catch (error) {
+      toast({
+        title: "Could not update wishlist",
+        description: "Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const discountedPrice = getDiscountedPrice(product);
   const hasDiscount = discountedPrice < product.price;
   const productImages = product.images || [];
@@ -120,6 +166,9 @@ const ProductDetailPage = () => {
   const providerName =
     product.provider?.providerProfile?.shopName || product.provider?.name;
   const reviewSummary = product.reviewSummary;
+  const isWishlisted = Boolean(
+    wishlistResponse?.data.productIds.includes(product.id),
+  );
   const isPurchaseDisabled =
     user?.role === "admin" ||
     user?.role === "super-admin" ||
@@ -372,6 +421,23 @@ const ProductDetailPage = () => {
               disabled={isPurchaseDisabled}
             >
               Buy Now
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              onClick={handleToggleWishlist}
+              disabled={isTogglingWishlist}
+              aria-label={
+                isWishlisted ? "Remove from wishlist" : "Add to wishlist"
+              }
+            >
+              <Heart
+                className={cn(
+                  "h-5 w-5",
+                  isWishlisted && "fill-primary text-primary",
+                )}
+              />
             </Button>
           </div>
 
