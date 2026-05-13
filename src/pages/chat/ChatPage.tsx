@@ -686,7 +686,7 @@ const ChatPage = () => {
                     type="primary"
                     shape="circle"
                     className="shrink-0"
-                    loading={sending}
+                    // loading={sending}
                     onClick={handleSend}
                     disabled={!draft.trim() && !attachments.length}
                   >
