@@ -23,6 +23,7 @@ import AdminProviders from "../pages/admin/AdminProviders";
 import AdminReports from "../pages/admin/AdminReports";
 import AdminReviews from "../pages/admin/AdminReviews";
 import AdminSiteConfig from "../pages/admin/AdminSiteConfig";
+import AdminStores from "../pages/admin/AdminStores";
 import AdminSettings from "../pages/admin/AdminSettings";
 import AdminWallet from "../pages/admin/AdminWallet";
 import ChatPage from "../pages/chat/ChatPage";
@@ -45,6 +46,8 @@ export const adminRoutes: RouteObject[] = [
       { path: "payments", element: <AdminPayments /> },
       { path: "wallet", element: <AdminWallet /> },
       { path: "providers", element: <AdminProviders /> },
+      { path: "stores", element: <AdminStores /> },
+      { path: "stores/:providerId", element: <AdminStores /> },
       { path: "customers", element: <AdminCustomers /> },
       { path: "contact-messages", element: <AdminContactMessages /> },
       { path: "chat", element: <ChatPage /> },

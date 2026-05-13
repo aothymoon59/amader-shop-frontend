@@ -25,6 +25,7 @@ import {
   Search,
   Trash2,
 } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 
 import CustomTable from "@/components/shared/table/CustomTable";
 import RefreshButton from "@/components/shared/button/RefreshButton";
@@ -68,10 +69,11 @@ const getProductImage = (product: Product) =>
   "https://placehold.co/600x400/e5e7eb/6b7280?text=No+Image";
 
 const ProductManagementPage = ({ role }: ProductManagementPageProps) => {
+  const [searchParams] = useSearchParams();
   const [filters, setFilters] = useState<FilterState>({
     search: "",
     categoryId: undefined,
-    providerId: undefined,
+    providerId: searchParams.get("providerId") || undefined,
     status: undefined,
     isFeatured: undefined,
     isDiscount: undefined,

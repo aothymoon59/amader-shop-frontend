@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { io } from "socket.io-client";
+import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   Check,
@@ -13,7 +14,16 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
-import { Avatar, Badge, Button, Empty, Input, Spin, Typography } from "antd";
+import {
+  Avatar,
+  Badge,
+  Button,
+  Empty,
+  Input,
+  Spin,
+  Tabs,
+  Typography,
+} from "antd";
 
 import { toast } from "@/components/ui/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -49,6 +59,40 @@ const acceptedAttachmentTypes = [
   "application/zip",
   "application/x-zip-compressed",
 ];
+
+type ConversationTab = "GROUP" | "ORDER" | "PERSONAL";
+
+const normalizeRole = (role?: string | null) =>
+  String(role || "").toLowerCase();
+
+const getConversationTab = (
+  conversation: ChatConversation,
+): ConversationTab => {
+  if (conversation.type === "ADMIN_SUPPORT") return "GROUP";
+  if (conversation.type === "DIRECT") return "PERSONAL";
+  return "ORDER";
+};
+
+const getTabsForRole = (role?: string | null) => {
+  const normalizedRole = normalizeRole(role);
+
+  if (normalizedRole === "provider") {
+    return [
+      { key: "ORDER", label: "Orders" },
+      { key: "GROUP", label: "Stores" },
+    ];
+  }
+
+  if (normalizedRole === "admin" || normalizedRole === "super-admin") {
+    return [
+      { key: "GROUP", label: "Stores" },
+      { key: "PERSONAL", label: "Personal" },
+      { key: "ORDER", label: "Orders" },
+    ];
+  }
+
+  return [{ key: "ORDER", label: "Orders" }];
+};
 
 const getConversationLabel = (
   conversation: ChatConversation,
@@ -125,10 +169,16 @@ const getConversationDetails = (
     other?.name ||
     other?.shopName ||
     getConversationLabel(conversation, currentUserId);
-  const directName =
-    conversation.type === "DIRECT"
-      ? other?.name || conversation.title || "Personal chat"
+  const groupName =
+    conversation.type === "ADMIN_SUPPORT"
+      ? shopName || provider?.name || conversation.title || "Store group"
       : null;
+  const directName =
+    conversation.type === "ADMIN_SUPPORT"
+      ? "Group Conversation (Store)"
+      : conversation.type === "DIRECT"
+        ? other?.name || conversation.title || "Personal chat"
+        : null;
   const subtitle =
     conversation.type === "DIRECT"
       ? getConversationSubtitle(conversation, currentUserId)
@@ -136,10 +186,11 @@ const getConversationDetails = (
         getConversationSubtitle(conversation, currentUserId);
 
   return {
-    oppositeName: directName || oppositeName,
+    oppositeName: groupName || directName || oppositeName,
     shopName,
     orderName,
-    subtitle: subtitle ||
+    subtitle:
+      subtitle ||
       [shopName, orderName].filter(Boolean).join(" • ") ||
       getConversationSubtitle(conversation, currentUserId),
     lastMessage:
@@ -167,10 +218,8 @@ const canReplyToConversation = (
 
   if (conversation.type === "ORDER") {
     return (
-      (role === "customer" &&
-        conversation.customerId === currentUser.id) ||
-      (role === "provider" &&
-        conversation.providerId === currentUser.id)
+      (role === "customer" && conversation.customerId === currentUser.id) ||
+      (role === "provider" && conversation.providerId === currentUser.id)
     );
   }
 
@@ -191,6 +240,42 @@ const getConversationTypeLabel = (conversation: ChatConversation) => {
   return "Personal chat";
 };
 
+const getOrderNumber = (conversation: ChatConversation) =>
+  conversation.title?.replace(/^Order\s+/i, "").trim() ||
+  conversation.orderId ||
+  "";
+
+const getStorePath = (conversation: ChatConversation, role?: string | null) => {
+  if (!conversation.providerId) return null;
+  const normalizedRole = normalizeRole(role);
+
+  if (normalizedRole === "admin")
+    return `/admin/stores/${conversation.providerId}`;
+  if (normalizedRole === "super-admin") {
+    return `/super-admin/stores/${conversation.providerId}`;
+  }
+  if (normalizedRole === "provider") return "/provider/settings";
+
+  return null;
+};
+
+const getOrderPath = (conversation: ChatConversation, role?: string | null) => {
+  if (conversation.type !== "ORDER") return null;
+  const orderSearch = encodeURIComponent(getOrderNumber(conversation));
+  const normalizedRole = normalizeRole(role);
+
+  if (normalizedRole === "customer")
+    return `/account/orders?order=${orderSearch}`;
+  if (normalizedRole === "provider")
+    return `/provider/orders?order=${orderSearch}`;
+  if (normalizedRole === "admin") return `/admin/orders?order=${orderSearch}`;
+  if (normalizedRole === "super-admin") {
+    return `/super-admin/orders?order=${orderSearch}`;
+  }
+
+  return null;
+};
+
 const ChatStatus = ({ message }: { message: ChatMessage }) => {
   if (message.status === "SEEN") {
     return <CheckCheck className="h-3.5 w-3.5 text-sky-500" />;
@@ -205,6 +290,7 @@ const ChatStatus = ({ message }: { message: ChatMessage }) => {
 
 const ChatPage = () => {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const token = useAppSelector(useCurrentToken);
   const { user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -217,15 +303,26 @@ const ChatPage = () => {
   const [attachments, setAttachments] = useState<File[]>([]);
   const [replyTo, setReplyTo] = useState<ChatMessage | null>(null);
   const [mobileListOpen, setMobileListOpen] = useState(true);
+  const roleTabs = useMemo(() => getTabsForRole(user?.role), [user?.role]);
+  const [activeTab, setActiveTab] = useState<ConversationTab>(
+    roleTabs[0]?.key as ConversationTab,
+  );
 
   const { data: conversationsResponse, isLoading: conversationsLoading } =
     useGetChatConversationsQuery();
   const conversations = conversationsResponse?.data ?? [];
+  const tabbedConversations = useMemo(
+    () =>
+      conversations.filter(
+        (conversation) => getConversationTab(conversation) === activeTab,
+      ),
+    [activeTab, conversations],
+  );
   const selectedConversation =
-    conversations.find(
+    tabbedConversations.find(
       (conversation) => conversation.id === selectedConversationId,
     ) ||
-    conversations[0] ||
+    tabbedConversations[0] ||
     null;
   const activeConversationId = selectedConversation?.id || "";
 
@@ -242,25 +339,54 @@ const ChatPage = () => {
 
   const filteredConversations = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
-    if (!normalizedQuery) return conversations;
+    if (!normalizedQuery) return tabbedConversations;
 
-    return conversations.filter((conversation) => {
+    return tabbedConversations.filter((conversation) => {
       const label = getConversationLabel(conversation, user?.id).toLowerCase();
       const subtitle = getConversationSubtitle(
         conversation,
         user?.id,
       ).toLowerCase();
+      const participants = conversation.participants
+        .map((participant) =>
+          [participant.name, participant.email, participant.shopName]
+            .filter(Boolean)
+            .join(" "),
+        )
+        .join(" ")
+        .toLowerCase();
       return (
-        label.includes(normalizedQuery) || subtitle.includes(normalizedQuery)
+        label.includes(normalizedQuery) ||
+        subtitle.includes(normalizedQuery) ||
+        participants.includes(normalizedQuery)
       );
     });
-  }, [conversations, query, user?.id]);
+  }, [query, tabbedConversations, user?.id]);
 
   useEffect(() => {
-    if (!selectedConversationId && conversations[0]) {
-      setSelectedConversationId(conversations[0].id);
+    const currentExists = tabbedConversations.some(
+      (conversation) => conversation.id === selectedConversationId,
+    );
+
+    if (!currentExists) {
+      setSelectedConversationId(tabbedConversations[0]?.id || null);
     }
-  }, [conversations, selectedConversationId]);
+  }, [selectedConversationId, tabbedConversations]);
+
+  useEffect(() => {
+    const firstTab = roleTabs[0]?.key as ConversationTab | undefined;
+    if (firstTab && !roleTabs.some((tab) => tab.key === activeTab)) {
+      setActiveTab(firstTab);
+    }
+  }, [activeTab, roleTabs]);
+
+  useEffect(() => {
+    const firstTab = roleTabs[0]?.key as ConversationTab | undefined;
+    if (firstTab) {
+      setActiveTab(firstTab);
+      setSelectedConversationId(null);
+    }
+  }, [roleTabs]);
 
   useEffect(() => {
     if (!activeConversationId) return;
@@ -410,9 +536,20 @@ const ChatPage = () => {
             </div>
             <Input
               prefix={<Search className="h-4 w-4 text-muted-foreground" />}
-              placeholder="Search conversations"
+              placeholder="Search user or store"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
+            />
+            <Tabs
+              activeKey={activeTab}
+              className="mt-3"
+              items={roleTabs}
+              size="small"
+              onChange={(key) => {
+                setActiveTab(key as ConversationTab);
+                setSelectedConversationId(null);
+                setMobileListOpen(true);
+              }}
             />
           </div>
 
@@ -448,7 +585,13 @@ const ChatPage = () => {
                     </Badge>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-2">
-                        <div className="truncate font-semibold">
+                        <div
+                          className={cn(
+                            "truncate font-semibold",
+                            conversation.type === "ADMIN_SUPPORT" &&
+                              "text-base",
+                          )}
+                        >
                           {details.oppositeName}
                         </div>
                         {conversation.lastMessage?.createdAt ? (
@@ -457,11 +600,16 @@ const ChatPage = () => {
                           </span>
                         ) : null}
                       </div>
-                      {details.subtitle ? (
+                      {conversation.type === "ORDER" && details.orderName ? (
+                        <div className="truncate text-xs text-muted-foreground">
+                          {details.orderName}
+                        </div>
+                      ) : null}
+                      {/* {details.subtitle ? (
                         <div className="truncate text-xs text-muted-foreground">
                           {details.subtitle}
                         </div>
-                      ) : null}
+                      ) : null} */}
                       <div
                         className={cn(
                           "mt-1 truncate text-xs",
@@ -500,8 +648,8 @@ const ChatPage = () => {
                   <ArrowLeft className="h-5 w-5" />
                 </Button>
                 <Avatar>
-                  {getConversationLabel(selectedConversation, user?.id)
-                    .charAt(0)
+                  {getConversationDetails(selectedConversation, user?.id)
+                    .oppositeName.charAt(0)
                     .toUpperCase()}
                 </Avatar>
                 <div className="min-w-0 flex-1">
@@ -511,11 +659,46 @@ const ChatPage = () => {
                         .oppositeName
                     }
                   </div>
-                  <div className="truncate text-xs text-muted-foreground">
-                    {
-                      getConversationDetails(selectedConversation, user?.id)
-                        .subtitle
-                    }
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+                    {selectedConversation.providerId ? (
+                      <button
+                        type="button"
+                        className="font-medium text-primary hover:underline"
+                        onClick={() => {
+                          const path = getStorePath(
+                            selectedConversation,
+                            user?.role,
+                          );
+                          if (path) navigate(path);
+                        }}
+                      >
+                        {getConversationDetails(selectedConversation, user?.id)
+                          .shopName ||
+                          getConversationDetails(selectedConversation, user?.id)
+                            .oppositeName}
+                      </button>
+                    ) : null}
+                    {selectedConversation.type === "ORDER" ? (
+                      <button
+                        type="button"
+                        className="font-medium text-primary hover:underline"
+                        onClick={() => {
+                          const path = getOrderPath(
+                            selectedConversation,
+                            user?.role,
+                          );
+                          if (path) navigate(path);
+                        }}
+                      >
+                        {getOrderNumber(selectedConversation)}
+                      </button>
+                    ) : null}
+                    {/* <span>
+                      {
+                        getConversationDetails(selectedConversation, user?.id)
+                          .subtitle
+                      }
+                    </span> */}
                   </div>
                 </div>
                 <div className="hidden rounded-full border bg-secondary/40 px-3 py-1 text-xs text-muted-foreground sm:block">
@@ -664,98 +847,98 @@ const ChatPage = () => {
               <div className="shrink-0 border-t bg-card p-3">
                 {canReply ? (
                   <>
-                {replyTo ? (
-                  <div className="mb-2 flex items-start justify-between gap-3 rounded-xl border bg-secondary/50 p-2.5 text-sm">
-                    <div className="min-w-0">
-                      <div className="font-medium">
-                        Replying to {replyTo.sender?.name || "message"}
-                      </div>
-                      <div className="truncate text-xs text-muted-foreground">
-                        {replyTo.body ||
-                          replyTo.attachments?.[0]?.name ||
-                          "Attachment"}
-                      </div>
-                    </div>
-                    <Button
-                      type="text"
-                      size="small"
-                      onClick={() => setReplyTo(null)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ) : null}
-
-                {attachments.length ? (
-                  <div className="mb-2 flex max-h-20 flex-wrap gap-2 overflow-y-auto">
-                    {attachments.map((file) => (
-                      <div
-                        key={`${file.name}-${file.lastModified}`}
-                        className="flex items-center gap-2 rounded-full border bg-secondary/60 px-3 py-1 text-xs"
-                      >
-                        {file.type.startsWith("image/") ? (
-                          <ImageIcon className="h-3.5 w-3.5" />
-                        ) : (
-                          <FileText className="h-3.5 w-3.5" />
-                        )}
-                        <span className="max-w-[160px] truncate">
-                          {file.name}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setAttachments((current) =>
-                              current.filter((item) => item !== file),
-                            )
-                          }
+                    {replyTo ? (
+                      <div className="mb-2 flex items-start justify-between gap-3 rounded-xl border bg-secondary/50 p-2.5 text-sm">
+                        <div className="min-w-0">
+                          <div className="font-medium">
+                            Replying to {replyTo.sender?.name || "message"}
+                          </div>
+                          <div className="truncate text-xs text-muted-foreground">
+                            {replyTo.body ||
+                              replyTo.attachments?.[0]?.name ||
+                              "Attachment"}
+                          </div>
+                        </div>
+                        <Button
+                          type="text"
+                          size="small"
+                          onClick={() => setReplyTo(null)}
                         >
-                          <X className="h-3.5 w-3.5" />
-                        </button>
+                          <X className="h-4 w-4" />
+                        </Button>
                       </div>
-                    ))}
-                  </div>
-                ) : null}
+                    ) : null}
 
-                <div className="flex items-end gap-2 rounded-2xl border bg-background p-2 shadow-sm">
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    multiple
-                    accept="image/*,.pdf,.doc,.docx,.txt,.xls,.xlsx,.csv,.ppt,.pptx,.zip"
-                    className="hidden"
-                    onChange={(event) => handleFiles(event.target.files)}
-                  />
-                  <Button
-                    shape="circle"
-                    className="shrink-0"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <Paperclip className="h-4 w-4" />
-                  </Button>
-                  <Input.TextArea
-                    className="min-w-0 flex-1 border-0 shadow-none focus:shadow-none"
-                    autoSize={{ minRows: 1, maxRows: 4 }}
-                    placeholder="Write a message"
-                    value={draft}
-                    onChange={(event) => setDraft(event.target.value)}
-                    onPressEnter={(event) => {
-                      if (!event.shiftKey) {
-                        event.preventDefault();
-                        void handleSend();
-                      }
-                    }}
-                  />
-                  <Button
-                    type="primary"
-                    shape="circle"
-                    className="shrink-0"
-                    // loading={sending}
-                    onClick={handleSend}
-                    disabled={!draft.trim() && !attachments.length}
-                  >
-                    <Send className="h-4 w-4" />
-                  </Button>
-                </div>
+                    {attachments.length ? (
+                      <div className="mb-2 flex max-h-20 flex-wrap gap-2 overflow-y-auto">
+                        {attachments.map((file) => (
+                          <div
+                            key={`${file.name}-${file.lastModified}`}
+                            className="flex items-center gap-2 rounded-full border bg-secondary/60 px-3 py-1 text-xs"
+                          >
+                            {file.type.startsWith("image/") ? (
+                              <ImageIcon className="h-3.5 w-3.5" />
+                            ) : (
+                              <FileText className="h-3.5 w-3.5" />
+                            )}
+                            <span className="max-w-[160px] truncate">
+                              {file.name}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setAttachments((current) =>
+                                  current.filter((item) => item !== file),
+                                )
+                              }
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+
+                    <div className="flex items-end gap-2 rounded-2xl border bg-background p-2 shadow-sm">
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        multiple
+                        accept="image/*,.pdf,.doc,.docx,.txt,.xls,.xlsx,.csv,.ppt,.pptx,.zip"
+                        className="hidden"
+                        onChange={(event) => handleFiles(event.target.files)}
+                      />
+                      <Button
+                        shape="circle"
+                        className="shrink-0"
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        <Paperclip className="h-4 w-4" />
+                      </Button>
+                      <Input.TextArea
+                        className="min-w-0 flex-1 border-0 shadow-none focus:shadow-none"
+                        autoSize={{ minRows: 1, maxRows: 4 }}
+                        placeholder="Write a message"
+                        value={draft}
+                        onChange={(event) => setDraft(event.target.value)}
+                        onPressEnter={(event) => {
+                          if (!event.shiftKey) {
+                            event.preventDefault();
+                            void handleSend();
+                          }
+                        }}
+                      />
+                      <Button
+                        type="primary"
+                        shape="circle"
+                        className="shrink-0"
+                        // loading={sending}
+                        onClick={handleSend}
+                        disabled={!draft.trim() && !attachments.length}
+                      >
+                        <Send className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </>
                 ) : (
                   <div className="rounded-xl border bg-secondary/50 px-3 py-2 text-sm text-muted-foreground">

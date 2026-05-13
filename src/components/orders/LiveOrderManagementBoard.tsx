@@ -16,6 +16,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { Alert, Button, Drawer, Input, Select, Steps, Tag } from "antd";
+import { useSearchParams } from "react-router-dom";
 
 import CustomTable from "@/components/shared/table/CustomTable";
 import { useSystemCurrency } from "@/hooks/useSystemCurrency";
@@ -118,10 +119,12 @@ const LiveOrderManagementBoard = ({
   role: "provider" | "admin" | "super-admin";
   section?: "orders" | "payments";
 }) => {
+  const [searchParams] = useSearchParams();
+  const focusedOrder = searchParams.get("order") || "";
   const [query, setQuery] = useState<ManagementOrderQuery>({
     page: 1,
     limit: 10,
-    search: "",
+    search: focusedOrder,
     status: "",
     paymentMethod: "",
     paymentStatus: "",
@@ -152,6 +155,27 @@ const LiveOrderManagementBoard = ({
   const selectedOrderFromList = selectedOrder
     ? orders.find((order) => order.id === selectedOrder.id) || selectedOrder
     : null;
+
+  useEffect(() => {
+    if (!focusedOrder) return;
+
+    setQuery((current) =>
+      current.search === focusedOrder
+        ? current
+        : { ...current, search: focusedOrder, page: 1 },
+    );
+  }, [focusedOrder]);
+
+  useEffect(() => {
+    if (!focusedOrder || selectedOrder || !orders.length) return;
+
+    const matchedOrder = orders.find(
+      (order) => order.id === focusedOrder || order.orderNumber === focusedOrder,
+    );
+    if (matchedOrder) {
+      setSelectedOrder(matchedOrder);
+    }
+  }, [focusedOrder, orders, selectedOrder]);
 
   useEffect(() => {
     if (!selectedOrderFromList) {

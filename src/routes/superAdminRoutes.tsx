@@ -23,6 +23,8 @@ import SuperAdminPayments from "../pages/super-admin/SuperAdminPayments";
 import SuperAdminSiteConfig from "../pages/super-admin/SuperAdminSiteConfig";
 import SuperAdminSettings from "../pages/super-admin/SuperAdminSettings";
 import AdminWallet from "../pages/admin/AdminWallet";
+import AdminProducts from "../pages/admin/AdminProducts";
+import AdminStores from "../pages/admin/AdminStores";
 import ChatPage from "../pages/chat/ChatPage";
 
 export const superAdminRoutes: RouteObject[] = [
@@ -37,6 +39,9 @@ export const superAdminRoutes: RouteObject[] = [
       { path: "dashboard", element: <SuperAdminDashboard /> },
       { path: "admins", element: <SuperAdminAdmins /> },
       { path: "providers", element: <AdminProviders /> },
+      { path: "stores", element: <AdminStores /> },
+      { path: "stores/:providerId", element: <AdminStores /> },
+      { path: "manage-products", element: <AdminProducts /> },
       { path: "inventory", element: <SuperAdminInventory /> },
       { path: "analytics", element: <SuperAdminAnalytics /> },
       { path: "orders", element: <SuperAdminOrders /> },
