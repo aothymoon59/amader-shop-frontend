@@ -8,6 +8,7 @@ import { CmsProvider } from "@/context/CmsContext";
 import AntdProvider from "./context/AntdProvider";
 import LiveNotificationBridge from "@/components/notifications/LiveNotificationBridge";
 import SiteConfigRuntime from "@/components/site-config/SiteConfigRuntime";
+import ScrollToTop from "./components/shared/ScrollToTop";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +23,7 @@ const App = () => (
             <SiteConfigRuntime />
             <LiveNotificationBridge />
             <Outlet />
+            <ScrollToTop />
           </TooltipProvider>
         </CartProvider>
       </CmsProvider>
