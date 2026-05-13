@@ -16,6 +16,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { Alert, Button, Drawer, Input, Select, Steps, Tag } from "antd";
+import { useSearchParams } from "react-router-dom";
 
 import CustomTable from "@/components/shared/table/CustomTable";
 import { useSystemCurrency } from "@/hooks/useSystemCurrency";
@@ -31,6 +32,7 @@ import {
   type OrderRecord,
 } from "@/redux/features/orders/orderApi";
 import { formatCurrencyAmount } from "@/utils/currency";
+import { clearAllParams } from "@/utils/clearSearchParams";
 
 const orderStatusOptions: OrderStatus[] = [
   "PENDING",
@@ -118,10 +120,12 @@ const LiveOrderManagementBoard = ({
   role: "provider" | "admin" | "super-admin";
   section?: "orders" | "payments";
 }) => {
+  const [searchParams] = useSearchParams();
+  const focusedOrder = searchParams.get("order") || "";
   const [query, setQuery] = useState<ManagementOrderQuery>({
     page: 1,
     limit: 10,
-    search: "",
+    search: focusedOrder,
     status: "",
     paymentMethod: "",
     paymentStatus: "",
@@ -152,6 +156,33 @@ const LiveOrderManagementBoard = ({
   const selectedOrderFromList = selectedOrder
     ? orders.find((order) => order.id === selectedOrder.id) || selectedOrder
     : null;
+
+  useEffect(() => {
+    if (!focusedOrder) return;
+
+    setQuery((current) =>
+      current.search === focusedOrder
+        ? current
+        : { ...current, search: focusedOrder, page: 1 },
+    );
+  }, [focusedOrder]);
+
+  useEffect(() => {
+    if (!focusedOrder) {
+      setSelectedOrder(null);
+      setDraftOrder(null);
+      return;
+    }
+
+    const matchedOrder = orders.find(
+      (order) =>
+        order.id === focusedOrder || order.orderNumber === focusedOrder,
+    );
+
+    if (matchedOrder) {
+      setSelectedOrder(matchedOrder);
+    }
+  }, [focusedOrder]);
 
   useEffect(() => {
     if (!selectedOrderFromList) {
@@ -339,6 +370,7 @@ const LiveOrderManagementBoard = ({
     {
       title: "Actions",
       key: "actions",
+      fixed: "right",
       render: (_: unknown, order: OrderRecord) => (
         <Button type="link" onClick={() => setSelectedOrder(order)}>
           Manage
@@ -508,6 +540,32 @@ const LiveOrderManagementBoard = ({
     });
   };
 
+  const handleClearFilters = () => {
+    setQuery({
+      page: 1,
+      limit: query.limit || 10,
+      search: "",
+      status: "",
+      paymentMethod: "",
+      paymentStatus: "",
+      dateFrom: "",
+      dateTo: "",
+    });
+    clearAllParams();
+  };
+
+  const handleCloseModal = () => {
+    setSelectedOrder(null);
+    setDraftOrder(null);
+
+    clearAllParams();
+
+    setTimeout(() => {
+      setSelectedOrder(null);
+      setDraftOrder(null);
+    }, 0);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -669,22 +727,7 @@ const LiveOrderManagementBoard = ({
               }))
             }
           />
-          <Button
-            onClick={() =>
-              setQuery({
-                page: 1,
-                limit: query.limit || 10,
-                search: "",
-                status: "",
-                paymentMethod: "",
-                paymentStatus: "",
-                dateFrom: "",
-                dateTo: "",
-              })
-            }
-          >
-            Clear Filters
-          </Button>
+          <Button onClick={handleClearFilters}>Clear Filters</Button>
         </div>
       </div>
 
@@ -719,14 +762,14 @@ const LiveOrderManagementBoard = ({
       {section === "orders" ? (
         <Drawer
           open={Boolean(selectedOrder && draftOrder)}
-          onClose={() => setSelectedOrder(null)}
+          onClose={handleCloseModal}
           width={960}
           title={
             draftOrder ? `Manage ${draftOrder.orderNumber}` : "Manage Order"
           }
           extra={
             <div className="flex gap-2">
-              <Button onClick={() => setSelectedOrder(null)}>Close</Button>
+              <Button onClick={handleCloseModal}>Close</Button>
               <Button type="primary" onClick={handleSave} loading={isUpdating}>
                 Save Updates
               </Button>

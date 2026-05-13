@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Store, ShoppingCart, Menu, X } from "lucide-react";
+import { ShoppingCart, Menu, X, Heart } from "lucide-react";
 import { Avatar, Divider, Dropdown, Typography } from "antd";
 
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/context/CartContext";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import ChatNavButton from "@/components/chat/ChatNavButton";
+import BrandLogo from "@/components/shared/BrandLogo";
 
 const navLinks = [
   { title: "Home", path: "/" },
@@ -64,6 +65,14 @@ const Header = () => {
       },
     ];
 
+    if (user?.role === "customer") {
+      baseItems.splice(2, 0, {
+        key: "wishlist",
+        label: "Wishlist",
+        href: "/account/wishlist",
+      });
+    }
+
     if (user?.role === "provider") {
       baseItems.push(
         { key: "products", label: "Products", href: "/provider/products" },
@@ -103,10 +112,7 @@ const Header = () => {
   return (
     <header className="sticky top-0 z-50 border-b bg-card/80 backdrop-blur-md">
       <div className="container flex h-16 items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          <Store className="h-7 w-7 text-primary" />
-          <span className="text-xl font-bold text-foreground">SmallShop</span>
-        </Link>
+        <BrandLogo to="/" size="md" nameClassName="text-foreground" />
 
         <nav className="hidden md:flex items-center gap-6">
           {navLinks.map((link) => (
@@ -127,16 +133,25 @@ const Header = () => {
 
         <div className="hidden md:flex items-center gap-3">
           {canUseCart ? (
-            <Link to="/cart" className="relative">
-              <Button variant="ghost" size="icon">
-                <ShoppingCart className="h-5 w-5" />
-              </Button>
-              {itemCount > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-primary text-primary-foreground text-[11px] flex items-center justify-center font-semibold">
-                  {itemCount}
-                </span>
-              )}
-            </Link>
+            <>
+              {isAuthenticated ? (
+                <Link to="/account/wishlist">
+                  <Button variant="ghost" size="icon">
+                    <Heart className="h-5 w-5" />
+                  </Button>
+                </Link>
+              ) : null}
+              <Link to="/cart" className="relative">
+                <Button variant="ghost" size="icon">
+                  <ShoppingCart className="h-5 w-5" />
+                </Button>
+                {itemCount > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-primary text-primary-foreground text-[11px] flex items-center justify-center font-semibold">
+                    {itemCount}
+                  </span>
+                )}
+              </Link>
+            </>
           ) : null}
           {isAuthenticated ? (
             <>
@@ -252,6 +267,24 @@ const Header = () => {
                 {link.title}
               </Link>
             ))}
+            {canUseCart ? (
+              <>
+                {isAuthenticated ? (
+                  <Link
+                    to="/account/wishlist"
+                    onClick={() => setMobileNav(false)}
+                    className={cn(
+                      "block text-sm font-medium py-2",
+                      location.pathname === "/account/wishlist"
+                        ? "text-primary"
+                        : "text-muted-foreground",
+                    )}
+                  >
+                    Wishlist
+                  </Link>
+                ) : null}
+              </>
+            ) : null}
             {canUseCart ? (
               <Link
                 to="/cart"

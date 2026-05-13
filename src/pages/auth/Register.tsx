@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Link, useNavigate } from "react-router-dom";
-import { Store } from "lucide-react";
 import { Button, Form, Input } from "antd";
+import BrandLogo from "@/components/shared/BrandLogo";
 import { toast } from "@/components/ui/use-toast";
 import { useRegisterUserMutation } from "@/redux/features/auth/authApi";
+import { useGetPublicSiteConfigQuery } from "@/redux/features/generalApi/publicSiteConfigApi";
 
 type RegisterFormValues = {
   firstName: string;
@@ -16,6 +17,8 @@ const Register = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [registerUser, { isLoading }] = useRegisterUserMutation();
+  const { data: siteConfigResponse } = useGetPublicSiteConfigQuery();
+  const siteName = siteConfigResponse?.data.siteOverview.name || "SmallShop";
 
   const onFinish = async (values: RegisterFormValues) => {
     try {
@@ -53,12 +56,16 @@ const Register = () => {
     <div className="min-h-screen flex">
       <div className="hidden lg:flex flex-1 gradient-hero items-center justify-center p-12">
         <div className="max-w-md text-center">
-          <Store className="h-16 w-16 mx-auto mb-6 text-primary" />
+          <BrandLogo
+            variant="logo"
+            size="xl"
+            className="mb-6 justify-center"
+          />
           <h2
             className="text-3xl font-bold mb-4"
             style={{ color: "hsl(0,0%,100%)" }}
           >
-            Join SmallShop
+            Join {siteName}
           </h2>
           <p style={{ color: "hsl(220,14%,70%)" }}>
             Create an account to start shopping or selling.
@@ -68,6 +75,12 @@ const Register = () => {
 
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-sm">
+          <BrandLogo
+            to="/"
+            size="md"
+            className="mb-8 lg:hidden"
+            nameClassName="text-foreground"
+          />
           <h1 className="text-2xl font-bold mb-1">Create Account</h1>
           <p className="text-sm text-muted-foreground mb-6">
             Fill in your details to get started

@@ -68,19 +68,31 @@ const EmailCloudinaryConfigSettingsSection = () => {
 
       <Form form={form} layout="vertical" onFinish={handleSubmit}>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <Form.Item label="Email From Name" name={["emailCloudinaryConfig", "emailFromName"]}>
+          <Form.Item
+            label="Email From Name"
+            name={["emailCloudinaryConfig", "emailFromName"]}
+          >
             <Input disabled={isLoading || isUpdating} />
           </Form.Item>
 
-          <Form.Item label="Email From Address" name={["emailCloudinaryConfig", "emailFromAddress"]}>
+          <Form.Item
+            label="Email From Address"
+            name={["emailCloudinaryConfig", "emailFromAddress"]}
+          >
             <Input disabled={isLoading || isUpdating} />
           </Form.Item>
 
-          <Form.Item label="SMTP Host" name={["emailCloudinaryConfig", "smtpHost"]}>
+          <Form.Item
+            label="SMTP Host"
+            name={["emailCloudinaryConfig", "smtpHost"]}
+          >
             <Input disabled={isLoading || isUpdating} />
           </Form.Item>
 
-          <Form.Item label="SMTP Port" name={["emailCloudinaryConfig", "smtpPort"]}>
+          <Form.Item
+            label="SMTP Port"
+            name={["emailCloudinaryConfig", "smtpPort"]}
+          >
             <InputNumber
               min={1}
               max={65535}
@@ -89,11 +101,17 @@ const EmailCloudinaryConfigSettingsSection = () => {
             />
           </Form.Item>
 
-          <Form.Item label="SMTP Username" name={["emailCloudinaryConfig", "smtpUsername"]}>
+          <Form.Item
+            label="SMTP Username"
+            name={["emailCloudinaryConfig", "smtpUsername"]}
+          >
             <Input disabled={isLoading || isUpdating} />
           </Form.Item>
 
-          <Form.Item label="SMTP Password" name={["emailCloudinaryConfig", "smtpPassword"]}>
+          <Form.Item
+            label="SMTP Password"
+            name={["emailCloudinaryConfig", "smtpPassword"]}
+          >
             <Input.Password disabled={isLoading || isUpdating} />
           </Form.Item>
 
@@ -105,29 +123,45 @@ const EmailCloudinaryConfigSettingsSection = () => {
             <Switch disabled={isLoading || isUpdating} />
           </Form.Item>
 
-          <Form.Item label="Cloudinary Cloud Name" name={["emailCloudinaryConfig", "cloudinaryCloudName"]}>
+          <Form.Item
+            label="Cloudinary Cloud Name"
+            name={["emailCloudinaryConfig", "cloudinaryCloudName"]}
+          >
             <Input disabled={isLoading || isUpdating} />
           </Form.Item>
 
-          <Form.Item label="Cloudinary API Key" name={["emailCloudinaryConfig", "cloudinaryApiKey"]}>
+          <Form.Item
+            label="Cloudinary API Key"
+            name={["emailCloudinaryConfig", "cloudinaryApiKey"]}
+          >
             <Input disabled={isLoading || isUpdating} />
           </Form.Item>
 
-          <Form.Item label="Cloudinary API Secret" name={["emailCloudinaryConfig", "cloudinaryApiSecret"]}>
+          <Form.Item
+            label="Cloudinary API Secret"
+            name={["emailCloudinaryConfig", "cloudinaryApiSecret"]}
+          >
             <Input.Password disabled={isLoading || isUpdating} />
           </Form.Item>
 
-          <Form.Item label="Cloudinary Upload Preset" name={["emailCloudinaryConfig", "cloudinaryUploadPreset"]}>
+          {/* <Form.Item label="Cloudinary Upload Preset" name={["emailCloudinaryConfig", "cloudinaryUploadPreset"]}>
             <Input disabled={isLoading || isUpdating} />
-          </Form.Item>
+          </Form.Item> */}
 
-          <Form.Item label="Cloudinary Folder" name={["emailCloudinaryConfig", "cloudinaryFolder"]}>
+          <Form.Item
+            label="Cloudinary Folder"
+            name={["emailCloudinaryConfig", "cloudinaryFolder"]}
+          >
             <Input disabled={isLoading || isUpdating} />
           </Form.Item>
         </div>
 
         <div className="flex justify-end">
-          <Button type="primary" onClick={() => form.submit()} loading={isUpdating}>
+          <Button
+            type="primary"
+            onClick={() => form.submit()}
+            loading={isUpdating}
+          >
             Save Email & Cloudinary Config
           </Button>
         </div>
