@@ -1,6 +1,6 @@
 import { Button, Empty, Spin, Table, Tag } from "antd";
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 
 import { useSystemCurrency } from "@/hooks/useSystemCurrency";
 import { defaultSystemCurrency } from "@/redux/features/generalApi/systemSettingsApi";
@@ -10,10 +10,27 @@ import dayjs from "dayjs";
 
 const OrderHistory = () => {
   const { currency = defaultSystemCurrency } = useSystemCurrency();
+  const [searchParams] = useSearchParams();
   const { data, isLoading } = useGetMyOrdersQuery();
   const orders = data?.data ?? [];
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const focusedOrder = searchParams.get("order") || "";
+  const orderedRows = useMemo(() => {
+    if (!focusedOrder) return orders;
+
+    return [...orders].sort((left, right) => {
+      const leftMatch =
+        left.id === focusedOrder || left.orderNumber === focusedOrder ? 0 : 1;
+      const rightMatch =
+        right.id === focusedOrder || right.orderNumber === focusedOrder ? 0 : 1;
+      return leftMatch - rightMatch;
+    });
+  }, [focusedOrder, orders]);
+
+  useEffect(() => {
+    if (focusedOrder) setPage(1);
+  }, [focusedOrder]);
   const columns = [
     {
       title: "Order",
@@ -136,11 +153,17 @@ const OrderHistory = () => {
           <Table
             rowKey="id"
             columns={columns}
-            dataSource={orders}
+            dataSource={orderedRows}
+            rowClassName={(order) =>
+              focusedOrder &&
+              (order.id === focusedOrder || order.orderNumber === focusedOrder)
+                ? "bg-primary/5"
+                : ""
+            }
             pagination={{
               current: page,
               pageSize,
-              total: orders.length,
+              total: orderedRows.length,
               showSizeChanger: true,
               pageSizeOptions: ["5", "10", "20", "50"],
               showTotal: (total, range) =>

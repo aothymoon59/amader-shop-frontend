@@ -5,6 +5,7 @@ import type {
   CommonCmsSection,
   ContactPageSection,
   HomePageSection,
+  LegalCmsPage,
 } from "@/types/cmsSections";
 
 export type SystemCurrency = {
@@ -33,6 +34,7 @@ export type SystemSettings = {
   aboutPageSections: AboutPageSection[];
   commonSections: CommonCmsSection[];
   contactPageSections: ContactPageSection[];
+  legalPages: LegalCmsPage[];
   seoConfigs: SeoConfigRecord[];
   gaGtmConfig: {
     googleAnalyticsMeasurementId: string;

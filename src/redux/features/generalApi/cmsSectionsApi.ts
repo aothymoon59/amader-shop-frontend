@@ -4,6 +4,7 @@ import type {
   AboutPageSection,
   CommonCmsSection,
   ContactPageSection,
+  LegalCmsPage,
   ProductsPageSection,
 } from "@/types/cmsSections";
 
@@ -167,6 +168,37 @@ export const cmsSectionsApi = baseApi.injectEndpoints({
       }),
       providesTags: [tagTypes.HOME_PAGE_CMS],
     }),
+    getAdminLegalPages: builder.query<
+      ApiResponse<{ pages: LegalCmsPage[]; updatedAt: string }>,
+      void
+    >({
+      query: () => ({
+        url: "/system-settings/legal-pages",
+        method: "GET",
+      }),
+      providesTags: [tagTypes.HOME_PAGE_CMS],
+    }),
+    updateLegalPages: builder.mutation<
+      ApiResponse<{ pages: LegalCmsPage[]; updatedAt: string }>,
+      { pages: LegalCmsPage[] }
+    >({
+      query: (body) => ({
+        url: "/system-settings/legal-pages",
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: [tagTypes.HOME_PAGE_CMS, tagTypes.SYSTEM_SETTINGS],
+    }),
+    getPublicLegalPages: builder.query<
+      ApiResponse<{ pages: LegalCmsPage[]; updatedAt: string }>,
+      void
+    >({
+      query: () => ({
+        url: "/system-settings/public/legal-pages",
+        method: "GET",
+      }),
+      providesTags: [tagTypes.HOME_PAGE_CMS],
+    }),
   }),
 });
 
@@ -184,4 +216,7 @@ export const {
   useGetAdminContactPageSectionsQuery,
   useUpdateContactPageSectionsMutation,
   useGetPublicContactPageSectionsQuery,
+  useGetAdminLegalPagesQuery,
+  useUpdateLegalPagesMutation,
+  useGetPublicLegalPagesQuery,
 } = cmsSectionsApi;

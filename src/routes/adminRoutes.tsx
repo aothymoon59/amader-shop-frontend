@@ -8,6 +8,7 @@ import AdminCMSAbout from "../pages/admin/AdminCMSAbout";
 import AdminCMSCommon from "../pages/admin/AdminCMSCommon";
 import AdminCMSContact from "../pages/admin/AdminCMSContact";
 import AdminCMSHome from "../pages/admin/AdminCMSHome";
+import AdminCMSLegal from "../pages/admin/AdminCMSLegal";
 import AdminCMSProducts from "../pages/admin/AdminCMSProducts";
 import AdminCmsSystem from "../pages/admin/AdminCmsSystem";
 import AdminCustomers from "../pages/admin/AdminCustomers";
@@ -22,6 +23,7 @@ import AdminProviders from "../pages/admin/AdminProviders";
 import AdminReports from "../pages/admin/AdminReports";
 import AdminReviews from "../pages/admin/AdminReviews";
 import AdminSiteConfig from "../pages/admin/AdminSiteConfig";
+import AdminStores from "../pages/admin/AdminStores";
 import AdminSettings from "../pages/admin/AdminSettings";
 import AdminWallet from "../pages/admin/AdminWallet";
 import ChatPage from "../pages/chat/ChatPage";
@@ -44,6 +46,8 @@ export const adminRoutes: RouteObject[] = [
       { path: "payments", element: <AdminPayments /> },
       { path: "wallet", element: <AdminWallet /> },
       { path: "providers", element: <AdminProviders /> },
+      { path: "stores", element: <AdminStores /> },
+      { path: "stores/:providerId", element: <AdminStores /> },
       { path: "customers", element: <AdminCustomers /> },
       { path: "contact-messages", element: <AdminContactMessages /> },
       { path: "chat", element: <ChatPage /> },
@@ -56,6 +60,7 @@ export const adminRoutes: RouteObject[] = [
       { path: "cms/management/products", element: <AdminCMSProducts /> },
       { path: "cms/management/contact", element: <AdminCMSContact /> },
       { path: "cms/management/common", element: <AdminCMSCommon /> },
+      { path: "cms/management/legal", element: <AdminCMSLegal /> },
       { path: "cms/site-config", element: <AdminSiteConfig /> },
       { path: "cms/system", element: <AdminCmsSystem /> },
       { path: "settings", element: <AdminSettings /> },

@@ -8,6 +8,7 @@ import type {
   AboutPageSection,
   CommonCmsSection,
   HomePageSection,
+  LegalCmsPage,
 } from "@/types/cmsSections";
 
 export type PublicSiteConfig = {
@@ -15,6 +16,7 @@ export type PublicSiteConfig = {
   homePageSections: HomePageSection[];
   aboutPageSections: AboutPageSection[];
   commonSections: CommonCmsSection[];
+  legalPages: LegalCmsPage[];
   seoConfigs: SeoConfigRecord[];
   gaGtmConfig: SystemSettings["gaGtmConfig"];
   socialMediaConfig: SystemSettings["socialMediaConfig"];

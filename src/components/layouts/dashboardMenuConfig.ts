@@ -50,6 +50,7 @@ export const dashboardMenuItems: Record<string, SidebarItem[]> = {
       title: "User Management",
       icon: Users,
       children: [
+        { title: "Stores", icon: Store, path: "/admin/stores" },
         { title: "Providers", icon: Store, path: "/admin/providers" },
         { title: "Customers", icon: Users, path: "/admin/customers" },
       ],
@@ -115,6 +116,7 @@ export const dashboardMenuItems: Record<string, SidebarItem[]> = {
       icon: Users,
       children: [
         { title: "Admins", icon: Shield, path: "/super-admin/admins" },
+        { title: "Stores", icon: Store, path: "/super-admin/stores" },
         { title: "Providers", icon: UserCheck, path: "/super-admin/providers" },
       ],
     },

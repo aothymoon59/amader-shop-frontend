@@ -34,7 +34,11 @@ export interface CmsPage {
 type CmsContextValue = {
   pages: CmsPage[];
   getPageBySlug: (slug: CmsPageSlug) => CmsPage | undefined;
-  updatePage: (slug: CmsPageSlug, updates: Partial<CmsPage>, updatedBy: string) => void;
+  updatePage: (
+    slug: CmsPageSlug,
+    updates: Partial<CmsPage>,
+    updatedBy: string,
+  ) => void;
 };
 
 const CMS_STORAGE_KEY = "smallshop-cms-pages";
@@ -52,7 +56,8 @@ const defaultPages: CmsPage[] = [
     sectionBody:
       "SmallShop was founded with a simple mission: make it easy for small businesses to sell online. Our platform gives vendors the tools they need to manage products, process orders, run POS sales, and grow with confidence.\n\nWe believe in transparency, quality, and community. Every vendor on our platform goes through a verification process so customers can shop with trust.",
     metaTitle: "About SmallShop",
-    metaDescription: "Learn about SmallShop and our mission to help vendors and customers grow together.",
+    metaDescription:
+      "Learn about SmallShop and our mission to help vendors and customers grow together.",
     lastUpdated: "2026-04-06 10:00",
     updatedBy: "System Seed",
   },
@@ -62,7 +67,8 @@ const defaultPages: CmsPage[] = [
     path: "/contact",
     status: "Published",
     heroTitle: "Contact Us",
-    heroSubtitle: "We would love to hear from you and help with your questions.",
+    heroSubtitle:
+      "We would love to hear from you and help with your questions.",
     sectionTitle: "Get in touch",
     sectionBody:
       "Reach out to our support team for account help, vendor onboarding questions, order issues, or partnership inquiries.",
@@ -70,9 +76,11 @@ const defaultPages: CmsPage[] = [
     contactPhone: "+1-800-SMALL-SHOP",
     contactAddress: "123 Commerce St, NY 10001",
     formTitle: "Send us a message",
-    formDescription: "Share your question and our team will get back to you soon.",
+    formDescription:
+      "Share your question and our team will get back to you soon.",
     metaTitle: "Contact SmallShop",
-    metaDescription: "Contact the SmallShop support team for help and business inquiries.",
+    metaDescription:
+      "Contact the SmallShop support team for help and business inquiries.",
     lastUpdated: "2026-04-06 10:00",
     updatedBy: "System Seed",
   },
@@ -82,12 +90,14 @@ const defaultPages: CmsPage[] = [
     path: "/terms",
     status: "Published",
     heroTitle: "Terms of Service",
-    heroSubtitle: "The basic rules, responsibilities, and conditions for using SmallShop.",
+    heroSubtitle:
+      "The basic rules, responsibilities, and conditions for using SmallShop.",
     sectionTitle: "Terms overview",
     sectionBody:
       "By using SmallShop, you agree to follow our marketplace policies, payment rules, and vendor/customer conduct standards.\n\nThis demo content can be edited from the CMS now and later connected to an API-backed publishing workflow.",
     metaTitle: "SmallShop Terms of Service",
-    metaDescription: "Read the SmallShop terms of service and platform usage conditions.",
+    metaDescription:
+      "Read the SmallShop terms of service and platform usage conditions.",
     lastUpdated: "2026-04-06 10:00",
     updatedBy: "System Seed",
   },
@@ -97,12 +107,14 @@ const defaultPages: CmsPage[] = [
     path: "/privacy",
     status: "Published",
     heroTitle: "Privacy Policy",
-    heroSubtitle: "How SmallShop handles, stores, and protects customer and vendor data.",
+    heroSubtitle:
+      "How SmallShop handles, stores, and protects customer and vendor data.",
     sectionTitle: "Privacy overview",
     sectionBody:
       "SmallShop collects only the data needed to operate the marketplace, improve service quality, and support secure transactions.\n\nThis demo policy content is managed from the CMS so admins can update public legal pages without code changes.",
     metaTitle: "SmallShop Privacy Policy",
-    metaDescription: "Understand how SmallShop collects and uses data across the platform.",
+    metaDescription:
+      "Understand how SmallShop collects and uses data across the platform.",
     lastUpdated: "2026-04-06 10:00",
     updatedBy: "System Seed",
   },

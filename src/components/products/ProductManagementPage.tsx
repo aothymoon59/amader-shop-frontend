@@ -25,6 +25,7 @@ import {
   Search,
   Trash2,
 } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 
 import CustomTable from "@/components/shared/table/CustomTable";
 import RefreshButton from "@/components/shared/button/RefreshButton";
@@ -68,10 +69,11 @@ const getProductImage = (product: Product) =>
   "https://placehold.co/600x400/e5e7eb/6b7280?text=No+Image";
 
 const ProductManagementPage = ({ role }: ProductManagementPageProps) => {
+  const [searchParams] = useSearchParams();
   const [filters, setFilters] = useState<FilterState>({
     search: "",
     categoryId: undefined,
-    providerId: undefined,
+    providerId: searchParams.get("providerId") || undefined,
     status: undefined,
     isFeatured: undefined,
     isDiscount: undefined,
@@ -303,7 +305,9 @@ const ProductManagementPage = ({ role }: ProductManagementPageProps) => {
         width: 150,
         render: (_, product) => (
           <div>
-            <div className="font-medium">{formatCurrencyAmount(product.price, currency)}</div>
+            <div className="font-medium">
+              {formatCurrencyAmount(product.price, currency)}
+            </div>
             {product.discountType && (product.discountValue || 0) > 0 ? (
               <div className="text-xs text-emerald-600">
                 {product.discountType === "PERCENTAGE"
@@ -352,6 +356,7 @@ const ProductManagementPage = ({ role }: ProductManagementPageProps) => {
         title: "Actions",
         key: "actions",
         width: 140,
+        fixed: "right",
         render: (_, product) => (
           <Space>
             <Button

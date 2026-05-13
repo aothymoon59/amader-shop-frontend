@@ -43,7 +43,7 @@ export type ChatMessage = {
 
 export type ChatConversation = {
   id: string;
-  type: "ORDER" | "ADMIN_SUPPORT";
+  type: "ORDER" | "ADMIN_SUPPORT" | "DIRECT";
   orderId?: string | null;
   providerId?: string | null;
   customerId?: string | null;

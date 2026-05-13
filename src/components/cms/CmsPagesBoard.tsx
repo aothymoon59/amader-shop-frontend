@@ -7,7 +7,7 @@ type CmsPagesBoardProps = {
 };
 
 type CmsPageDefinition = {
-  key: "home" | "about" | "products" | "contact" | "common";
+  key: "home" | "about" | "products" | "contact" | "common" | "legal";
   name: string;
   route: string;
   description: string;
@@ -48,6 +48,13 @@ const cmsPages: CmsPageDefinition[] = [
     route: "Shared blocks",
     description:
       "Manage reusable public sections such as Vendor CTA, Why Choose Us, and FAQ from one place.",
+  },
+  {
+    key: "legal",
+    name: "Legal Pages",
+    route: "/terms, /privacy",
+    description:
+      "Manage Terms of Service and Privacy Policy content with a rich text editor.",
   },
 ];
 

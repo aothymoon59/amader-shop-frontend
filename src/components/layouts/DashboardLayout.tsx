@@ -6,7 +6,6 @@ import { Alert, Avatar, Divider, Dropdown, Typography } from "antd";
 import {
   ChevronLeft,
   Menu,
-  Store,
   LogOut,
   X,
   ChevronDown,
@@ -22,6 +21,7 @@ import {
 } from "./dashboardMenuConfig";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import ChatNavButton from "@/components/chat/ChatNavButton";
+import BrandLogo from "@/components/shared/BrandLogo";
 
 interface DashboardLayoutProps {
   role: "admin" | "provider" | "super-admin";
@@ -133,14 +133,23 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         <div className="flex h-16 items-center justify-between border-b border-sidebar-border px-4">
           {!collapsed && (
             <Link to="/" className="flex items-center gap-2">
-              <Store className="h-7 w-7 text-sidebar-primary" />
+              <BrandLogo
+                variant="logo"
+                size="sm"
+                iconClassName="text-sidebar-primary"
+              />
               <span className="text-lg font-bold text-sidebar-primary-foreground">
                 {dashboardRoleLabels[role]}
               </span>
             </Link>
           )}
           {collapsed && (
-            <Store className="mx-auto h-7 w-7 text-sidebar-primary" />
+            <BrandLogo
+              variant="logo"
+              size="sm"
+              className="mx-auto"
+              iconClassName="text-sidebar-primary"
+            />
           )}
           <button
             onClick={() => setMobileOpen(false)}
@@ -264,7 +273,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             to="/"
             className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors mt-1"
           >
-            <Store className="h-5 w-5 shrink-0" />
+            <BrandLogo
+              variant="logo"
+              size="xs"
+              iconClassName="text-current"
+            />
             {!collapsed && <span>Back to Store</span>}
           </Link>
           <button

@@ -13,13 +13,17 @@ type SeoConfigFormValues = SeoConfigRecord;
 
 const defaultSeoPages = [
   "home",
+  "products",
+  "product details",
   "about",
   "contact",
-  "managed ballot",
-  "e-voting statues",
-  "blog",
   "privacy policy",
   "terms of service",
+  "provider apply",
+  "cart",
+  "checkout",
+  "login",
+  "register",
 ];
 
 const createEmptySeoConfig = (page: string): SeoConfigRecord => ({
@@ -39,7 +43,7 @@ const createEmptySeoConfig = (page: string): SeoConfigRecord => ({
 
 const SeoConfigSettingsSection = () => {
   const [form] = Form.useForm<SeoConfigFormValues>();
-  const { pages } = useCms();
+  // const { pages } = useCms();
   const { data, isLoading } = useGetSystemSettingsQuery();
   const [updateSystemSettings, { isLoading: isUpdating }] =
     useUpdateSystemSettingsMutation();
@@ -49,13 +53,11 @@ const SeoConfigSettingsSection = () => {
       Array.from(
         new Set([
           ...defaultSeoPages,
-          ...pages.map((page) => page.slug.replace(/-/g, " ")),
+          // ...pages.map((page) => page.slug.replace(/-/g, " ")),
           ...(data?.data?.seoConfigs || []).map((config) => config.page),
         ]),
-      )
-        .filter(Boolean)
-        .sort((a, b) => a.localeCompare(b)),
-    [data?.data?.seoConfigs, pages],
+      ).filter(Boolean),
+    [data?.data?.seoConfigs],
   );
 
   const [selectedPage, setSelectedPage] = useState(pageOptions[0] || "home");
@@ -135,7 +137,7 @@ const SeoConfigSettingsSection = () => {
           onChange={setSelectedPage}
           disabled={isLoading || isUpdating}
           options={pageOptions.map((page) => ({
-            label: page,
+            label: page.toLocaleUpperCase(),
             value: page,
           }))}
         />
@@ -206,7 +208,11 @@ const SeoConfigSettingsSection = () => {
         </Form.Item>
 
         <div className="flex justify-end">
-          <Button type="primary" onClick={() => form.submit()} loading={isUpdating}>
+          <Button
+            type="primary"
+            onClick={() => form.submit()}
+            loading={isUpdating}
+          >
             Save SEO Config
           </Button>
         </div>
