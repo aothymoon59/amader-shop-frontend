@@ -32,6 +32,7 @@ import {
   type OrderRecord,
 } from "@/redux/features/orders/orderApi";
 import { formatCurrencyAmount } from "@/utils/currency";
+import { clearAllParams } from "@/utils/clearSearchParams";
 
 const orderStatusOptions: OrderStatus[] = [
   "PENDING",
@@ -167,15 +168,21 @@ const LiveOrderManagementBoard = ({
   }, [focusedOrder]);
 
   useEffect(() => {
-    if (!focusedOrder || selectedOrder || !orders.length) return;
+    if (!focusedOrder) {
+      setSelectedOrder(null);
+      setDraftOrder(null);
+      return;
+    }
 
     const matchedOrder = orders.find(
-      (order) => order.id === focusedOrder || order.orderNumber === focusedOrder,
+      (order) =>
+        order.id === focusedOrder || order.orderNumber === focusedOrder,
     );
+
     if (matchedOrder) {
       setSelectedOrder(matchedOrder);
     }
-  }, [focusedOrder, orders, selectedOrder]);
+  }, [focusedOrder]);
 
   useEffect(() => {
     if (!selectedOrderFromList) {
@@ -533,6 +540,32 @@ const LiveOrderManagementBoard = ({
     });
   };
 
+  const handleClearFilters = () => {
+    setQuery({
+      page: 1,
+      limit: query.limit || 10,
+      search: "",
+      status: "",
+      paymentMethod: "",
+      paymentStatus: "",
+      dateFrom: "",
+      dateTo: "",
+    });
+    clearAllParams();
+  };
+
+  const handleCloseModal = () => {
+    setSelectedOrder(null);
+    setDraftOrder(null);
+
+    clearAllParams();
+
+    setTimeout(() => {
+      setSelectedOrder(null);
+      setDraftOrder(null);
+    }, 0);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -694,22 +727,7 @@ const LiveOrderManagementBoard = ({
               }))
             }
           />
-          <Button
-            onClick={() =>
-              setQuery({
-                page: 1,
-                limit: query.limit || 10,
-                search: "",
-                status: "",
-                paymentMethod: "",
-                paymentStatus: "",
-                dateFrom: "",
-                dateTo: "",
-              })
-            }
-          >
-            Clear Filters
-          </Button>
+          <Button onClick={handleClearFilters}>Clear Filters</Button>
         </div>
       </div>
 
@@ -744,14 +762,14 @@ const LiveOrderManagementBoard = ({
       {section === "orders" ? (
         <Drawer
           open={Boolean(selectedOrder && draftOrder)}
-          onClose={() => setSelectedOrder(null)}
+          onClose={handleCloseModal}
           width={960}
           title={
             draftOrder ? `Manage ${draftOrder.orderNumber}` : "Manage Order"
           }
           extra={
             <div className="flex gap-2">
-              <Button onClick={() => setSelectedOrder(null)}>Close</Button>
+              <Button onClick={handleCloseModal}>Close</Button>
               <Button type="primary" onClick={handleSave} loading={isUpdating}>
                 Save Updates
               </Button>

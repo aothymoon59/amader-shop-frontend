@@ -254,7 +254,8 @@ const getStorePath = (conversation: ChatConversation, role?: string | null) => {
   if (normalizedRole === "super-admin") {
     return `/super-admin/stores/${conversation.providerId}`;
   }
-  if (normalizedRole === "provider") return "/provider/settings";
+  if (normalizedRole === "provider")
+    return "/provider/settings?tab=business-profile";
 
   return null;
 };
