@@ -71,6 +71,11 @@ const getConversationLabel = (
     );
   }
 
+  if (conversation.type === "DIRECT") {
+    const other = otherParticipants[0];
+    return other?.name || conversation.title || "Personal chat";
+  }
+
   const other = otherParticipants[0];
   return conversation.title || other?.shopName || other?.name || "Order chat";
 };
@@ -94,7 +99,11 @@ const getConversationSubtitle = (
   );
 
   if (conversation.type === "ADMIN_SUPPORT") {
-    return "Provider and admin support";
+    return "Store group with provider and admins";
+  }
+
+  if (conversation.type === "DIRECT") {
+    return "Personal admin chat";
   }
 
   return others
@@ -116,12 +125,21 @@ const getConversationDetails = (
     other?.name ||
     other?.shopName ||
     getConversationLabel(conversation, currentUserId);
+  const directName =
+    conversation.type === "DIRECT"
+      ? other?.name || conversation.title || "Personal chat"
+      : null;
+  const subtitle =
+    conversation.type === "DIRECT"
+      ? getConversationSubtitle(conversation, currentUserId)
+      : [shopName, orderName].filter(Boolean).join(" - ") ||
+        getConversationSubtitle(conversation, currentUserId);
 
   return {
-    oppositeName,
+    oppositeName: directName || oppositeName,
     shopName,
     orderName,
-    subtitle:
+    subtitle: subtitle ||
       [shopName, orderName].filter(Boolean).join(" • ") ||
       getConversationSubtitle(conversation, currentUserId),
     lastMessage:
@@ -138,6 +156,39 @@ const getErrorMessage = (error: unknown) => {
   }
 
   return "Message could not be sent.";
+};
+
+const canReplyToConversation = (
+  conversation: ChatConversation | null,
+  currentUser?: { id?: string; role?: string } | null,
+) => {
+  if (!conversation || !currentUser?.id || !currentUser.role) return false;
+  const role = String(currentUser.role).toLowerCase();
+
+  if (conversation.type === "ORDER") {
+    return (
+      (role === "customer" &&
+        conversation.customerId === currentUser.id) ||
+      (role === "provider" &&
+        conversation.providerId === currentUser.id)
+    );
+  }
+
+  if (conversation.type === "ADMIN_SUPPORT") {
+    return ["provider", "admin", "super-admin", "super_admin"].includes(role);
+  }
+
+  if (conversation.type === "DIRECT") {
+    return ["admin", "super-admin", "super_admin"].includes(role);
+  }
+
+  return false;
+};
+
+const getConversationTypeLabel = (conversation: ChatConversation) => {
+  if (conversation.type === "ORDER") return "Order chat";
+  if (conversation.type === "ADMIN_SUPPORT") return "Store group";
+  return "Personal chat";
 };
 
 const ChatStatus = ({ message }: { message: ChatMessage }) => {
@@ -187,6 +238,7 @@ const ChatPage = () => {
     useSendChatMessageMutation();
   const [markChatRead] = useMarkChatReadMutation();
   const messages = messagesResponse?.data ?? [];
+  const canReply = canReplyToConversation(selectedConversation, user);
 
   const filteredConversations = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -219,6 +271,14 @@ const ChatPage = () => {
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.length, activeConversationId]);
+
+  useEffect(() => {
+    if (canReply) return;
+
+    setDraft("");
+    setAttachments([]);
+    setReplyTo(null);
+  }, [canReply, activeConversationId]);
 
   useEffect(() => {
     if (!token || !socketUrl) return;
@@ -302,6 +362,7 @@ const ChatPage = () => {
 
   const handleSend = async () => {
     if (!activeConversationId || sending) return;
+    if (!canReply) return;
     if (!draft.trim() && !attachments.length) return;
 
     try {
@@ -340,7 +401,7 @@ const ChatPage = () => {
                   Messages
                 </Typography.Title>
                 <div className="text-xs text-muted-foreground">
-                  Orders, customers, and support
+                  Store groups, orders, and personal chats
                 </div>
               </div>
               <div className="rounded-full bg-primary/10 p-2 text-primary">
@@ -458,9 +519,7 @@ const ChatPage = () => {
                   </div>
                 </div>
                 <div className="hidden rounded-full border bg-secondary/40 px-3 py-1 text-xs text-muted-foreground sm:block">
-                  {selectedConversation.type === "ORDER"
-                    ? "Order chat"
-                    : "Support chat"}
+                  {getConversationTypeLabel(selectedConversation)}
                 </div>
               </div>
 
@@ -570,17 +629,19 @@ const ChatPage = () => {
                                   : "text-muted-foreground",
                               )}
                             >
-                              <Button
-                                type="text"
-                                size="small"
-                                className={cn(
-                                  "h-6 px-1",
-                                  isMine && "text-primary-foreground/80",
-                                )}
-                                onClick={() => setReplyTo(message)}
-                              >
-                                <Reply className="h-3.5 w-3.5" />
-                              </Button>
+                              {canReply ? (
+                                <Button
+                                  type="text"
+                                  size="small"
+                                  className={cn(
+                                    "h-6 px-1",
+                                    isMine && "text-primary-foreground/80",
+                                  )}
+                                  onClick={() => setReplyTo(message)}
+                                >
+                                  <Reply className="h-3.5 w-3.5" />
+                                </Button>
+                              ) : null}
                               <span>{formatDateTime(message.createdAt)}</span>
                               {isMine ? <ChatStatus message={message} /> : null}
                             </div>
@@ -601,6 +662,8 @@ const ChatPage = () => {
               </div>
 
               <div className="shrink-0 border-t bg-card p-3">
+                {canReply ? (
+                  <>
                 {replyTo ? (
                   <div className="mb-2 flex items-start justify-between gap-3 rounded-xl border bg-secondary/50 p-2.5 text-sm">
                     <div className="min-w-0">
@@ -693,6 +756,13 @@ const ChatPage = () => {
                     <Send className="h-4 w-4" />
                   </Button>
                 </div>
+                  </>
+                ) : (
+                  <div className="rounded-xl border bg-secondary/50 px-3 py-2 text-sm text-muted-foreground">
+                    You can read this order conversation, but only the customer
+                    and provider can reply.
+                  </div>
+                )}
               </div>
             </>
           ) : (
