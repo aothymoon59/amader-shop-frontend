@@ -339,6 +339,7 @@ const LiveOrderManagementBoard = ({
     {
       title: "Actions",
       key: "actions",
+      fixed: "right",
       render: (_: unknown, order: OrderRecord) => (
         <Button type="link" onClick={() => setSelectedOrder(order)}>
           Manage

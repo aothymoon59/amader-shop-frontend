@@ -303,7 +303,9 @@ const ProductManagementPage = ({ role }: ProductManagementPageProps) => {
         width: 150,
         render: (_, product) => (
           <div>
-            <div className="font-medium">{formatCurrencyAmount(product.price, currency)}</div>
+            <div className="font-medium">
+              {formatCurrencyAmount(product.price, currency)}
+            </div>
             {product.discountType && (product.discountValue || 0) > 0 ? (
               <div className="text-xs text-emerald-600">
                 {product.discountType === "PERCENTAGE"
@@ -352,6 +354,7 @@ const ProductManagementPage = ({ role }: ProductManagementPageProps) => {
         title: "Actions",
         key: "actions",
         width: 140,
+        fixed: "right",
         render: (_, product) => (
           <Space>
             <Button
