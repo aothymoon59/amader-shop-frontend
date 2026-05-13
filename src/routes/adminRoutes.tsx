@@ -8,6 +8,7 @@ import AdminCMSAbout from "../pages/admin/AdminCMSAbout";
 import AdminCMSCommon from "../pages/admin/AdminCMSCommon";
 import AdminCMSContact from "../pages/admin/AdminCMSContact";
 import AdminCMSHome from "../pages/admin/AdminCMSHome";
+import AdminCMSLegal from "../pages/admin/AdminCMSLegal";
 import AdminCMSProducts from "../pages/admin/AdminCMSProducts";
 import AdminCmsSystem from "../pages/admin/AdminCmsSystem";
 import AdminCustomers from "../pages/admin/AdminCustomers";
@@ -56,6 +57,7 @@ export const adminRoutes: RouteObject[] = [
       { path: "cms/management/products", element: <AdminCMSProducts /> },
       { path: "cms/management/contact", element: <AdminCMSContact /> },
       { path: "cms/management/common", element: <AdminCMSCommon /> },
+      { path: "cms/management/legal", element: <AdminCMSLegal /> },
       { path: "cms/site-config", element: <AdminSiteConfig /> },
       { path: "cms/system", element: <AdminCmsSystem /> },
       { path: "settings", element: <AdminSettings /> },

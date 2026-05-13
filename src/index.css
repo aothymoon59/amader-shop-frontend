@@ -130,6 +130,48 @@
   .animate-pulse-slow {
     animation: pulse 3s ease-in-out infinite;
   }
+  .cms-rich-content h2 {
+    @apply mb-3 mt-6 max-w-full break-words text-xl font-semibold text-foreground;
+  }
+  .cms-rich-content h3 {
+    @apply mb-2 mt-5 max-w-full break-words text-lg font-semibold text-foreground;
+  }
+  .cms-rich-content p {
+    @apply mb-4 max-w-full break-words;
+  }
+  .cms-rich-content ul,
+  .cms-rich-content ol {
+    @apply mb-4 ml-5 max-w-full space-y-2 break-words sm:ml-6;
+  }
+  .cms-rich-content ul {
+    @apply list-disc;
+  }
+  .cms-rich-content ol {
+    @apply list-decimal;
+  }
+  .cms-rich-content a {
+    @apply break-all text-primary underline underline-offset-4;
+  }
+  .cms-rich-content img,
+  .cms-rich-content video,
+  .cms-rich-content iframe {
+    @apply h-auto max-w-full rounded-lg;
+  }
+  .cms-rich-content table {
+    @apply block max-w-full overflow-x-auto whitespace-nowrap rounded-lg border text-left;
+  }
+  .cms-rich-content th,
+  .cms-rich-content td {
+    @apply border-b px-3 py-2 align-top;
+  }
+  .cms-rich-content pre,
+  .cms-rich-content code {
+    @apply max-w-full whitespace-pre-wrap break-words rounded bg-secondary px-1 py-0.5 text-foreground;
+  }
+  .cms-rich-content * {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
 }
 
 @keyframes float {

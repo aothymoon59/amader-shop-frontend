@@ -37,12 +37,54 @@ export type ProductsPageSection = BaseCmsSection<ProductsPageSectionKey>;
 export type ContactPageSectionKey = "hero" | "contactDetails" | "contactForm";
 export type ContactPageSection = BaseCmsSection<ContactPageSectionKey>;
 
+export type LegalPageSlug = "terms" | "privacy";
+export type LegalCmsPage = {
+  slug: LegalPageSlug;
+  name: string;
+  path: string;
+  enabled: boolean;
+  heroTitle: string;
+  heroSubtitle: string;
+  contentTitle: string;
+  contentHtml: string;
+  updatedAt: string;
+};
+
 export type ManagedCmsSection =
   | HomePageSection
   | AboutPageSection
   | CommonCmsSection
   | ProductsPageSection
   | ContactPageSection;
+
+export const defaultLegalPages: LegalCmsPage[] = [
+  {
+    slug: "terms",
+    name: "Terms of Service",
+    path: "/terms",
+    enabled: true,
+    heroTitle: "Terms of Service",
+    heroSubtitle:
+      "Please read these terms carefully before using the marketplace.",
+    contentTitle: "Platform terms",
+    contentHtml:
+      "<p>By using Amader Shop, you agree to follow our marketplace policies, payment rules, and vendor/customer conduct standards.</p><p>These terms can be updated from the CMS Management area.</p>",
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    slug: "privacy",
+    name: "Privacy Policy",
+    path: "/privacy",
+    enabled: true,
+    heroTitle: "Privacy Policy",
+    heroSubtitle:
+      "Learn how we collect, use, and protect information across the marketplace.",
+    contentTitle: "How we handle data",
+    contentHtml:
+      "<p>Amader Shop collects only the data needed to operate the marketplace, improve service quality, and support secure transactions.</p><p>This policy content can be updated from the CMS Management area.</p>",
+    updatedAt: new Date().toISOString(),
+  },
+];
 
 export const defaultAboutPageSections: AboutPageSection[] = [
   {
@@ -53,7 +95,8 @@ export const defaultAboutPageSections: AboutPageSection[] = [
     title: "About Amader Shop",
     subtitle:
       "We are building a marketplace that helps local stores grow online and helps customers shop with confidence.",
-    description: "Trusted vendors, better reach, and smoother commerce for everyone.",
+    description:
+      "Trusted vendors, better reach, and smoother commerce for everyone.",
     content: {
       primaryButtonText: "Explore Marketplace",
       primaryButtonLink: "/products",
@@ -127,7 +170,8 @@ export const defaultCommonSections: CommonCmsSection[] = [
     enabled: true,
     order: 2,
     title: "Frequently asked questions",
-    subtitle: "Quick answers about the platform, orders, and vendor participation.",
+    subtitle:
+      "Quick answers about the platform, orders, and vendor participation.",
     description: "",
     content: {
       items: [
@@ -199,7 +243,8 @@ export const defaultProductsPageSections: ProductsPageSection[] = [
     enabled: true,
     order: 2,
     title: "All Products",
-    subtitle: "Find the right products with search, filters, and category browsing.",
+    subtitle:
+      "Find the right products with search, filters, and category browsing.",
     description: "",
     content: {},
   },
@@ -213,7 +258,8 @@ export const defaultContactPageSections: ContactPageSection[] = [
     order: 1,
     title: "Contact Us",
     subtitle: "We would love to hear from you and help with your questions.",
-    description: "Support, vendor onboarding, orders, and partnership inquiries.",
+    description:
+      "Support, vendor onboarding, orders, and partnership inquiries.",
     content: {},
   },
   {
