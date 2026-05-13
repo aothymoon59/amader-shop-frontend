@@ -2,6 +2,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Shield } from "lucide-react";
 import { Button, Form, Input } from "antd";
+import BrandLogo from "@/components/shared/BrandLogo";
 import { toast } from "@/components/ui/use-toast";
 import { useLoginMutation } from "@/redux/features/auth/authApi";
 import { useAppDispatch } from "@/redux/hooks";
@@ -94,9 +95,13 @@ const AdminLogin = () => {
     <div className="min-h-screen flex items-center justify-center bg-sidebar p-8">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="mx-auto h-14 w-14 rounded-xl gradient-primary flex items-center justify-center mb-4">
-            <Shield className="h-7 w-7 text-primary-foreground" />
-          </div>
+          <BrandLogo
+            to="/"
+            variant="full"
+            size="sm"
+            className="mb-4 justify-center"
+            nameClassName="text-white"
+          />
 
           <h1
             className="text-2xl font-bold"

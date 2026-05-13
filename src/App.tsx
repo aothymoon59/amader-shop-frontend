@@ -7,6 +7,7 @@ import { CartProvider } from "@/context/CartContext";
 import { CmsProvider } from "@/context/CmsContext";
 import AntdProvider from "./context/AntdProvider";
 import LiveNotificationBridge from "@/components/notifications/LiveNotificationBridge";
+import SiteConfigRuntime from "@/components/site-config/SiteConfigRuntime";
 
 const queryClient = new QueryClient();
 
@@ -18,6 +19,7 @@ const App = () => (
           <TooltipProvider>
             <Toaster />
             <Sonner />
+            <SiteConfigRuntime />
             <LiveNotificationBridge />
             <Outlet />
           </TooltipProvider>

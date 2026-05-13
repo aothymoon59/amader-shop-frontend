@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Store, ShoppingCart, Menu, X, Heart } from "lucide-react";
+import { ShoppingCart, Menu, X, Heart } from "lucide-react";
 import { Avatar, Divider, Dropdown, Typography } from "antd";
 
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/context/CartContext";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import ChatNavButton from "@/components/chat/ChatNavButton";
+import BrandLogo from "@/components/shared/BrandLogo";
 
 const navLinks = [
   { title: "Home", path: "/" },
@@ -111,10 +112,7 @@ const Header = () => {
   return (
     <header className="sticky top-0 z-50 border-b bg-card/80 backdrop-blur-md">
       <div className="container flex h-16 items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          <Store className="h-7 w-7 text-primary" />
-          <span className="text-xl font-bold text-foreground">SmallShop</span>
-        </Link>
+        <BrandLogo to="/" size="md" nameClassName="text-foreground" />
 
         <nav className="hidden md:flex items-center gap-6">
           {navLinks.map((link) => (
